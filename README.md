@@ -63,7 +63,7 @@ Go to GitHub → your repository → **Pull Requests** → **New Pull Request**
 ---
 
 7. Keep Branch Updated
-**Before starting new work:
+**Before starting new work:**
 ```bash
     git checkout dev
     git pull origin dev
