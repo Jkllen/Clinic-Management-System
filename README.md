@@ -6,6 +6,7 @@
 ```bash
     git clone https://github.com/Jkllen/Clinic-Management-System
     cd Clinic-Management-System
+    dotnet new wpf --force
 ```
 ---
 
