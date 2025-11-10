@@ -1,44 +1,64 @@
-using System;
 using System.Data.SQLite;
 using System.IO;
 
-namespace ClinicManagementSystem.Services
+namespace Clinic_Management_System.Services
 {
-    public class DatabaseService
+    public static class DatabaseService
     {
-        private static readonly string DbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "clinic.db");
-        private static readonly string ConnectionString = $"Data Source={DbPath};Version=3;";
+        private static readonly string dbFile = "clinic.db";
+        private static readonly string connectionString = $"Data Source={dbFile};Version=3;";
 
-        public DatabaseService()
+        public static void InitializeDatabase()
         {
-            if (!File.Exists(DbPath))
-            {
-                SQLiteConnection.CreateFile(DbPath);
-                InitializeDatabase();
-            }
-        }
+            bool dbExists = File.Exists(dbFile);
 
-        private void InitializeDatabase()
-        {
-            using var conn = new SQLiteConnection(ConnectionString);
+            if (!dbExists)
+                SQLiteConnection.CreateFile(dbFile);
+
+            using var conn = new SQLiteConnection(connectionString);
             conn.Open();
 
             string createUserTable = @"
-                CREATE TABLE IF NOT EXISTS users (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    username TEXT NOT NULL UNIQUE,
-                    password_hash TEXT NOT NULL,
-                    full_name TEXT
-                );
-            ";
+                CREATE TABLE IF NOT EXISTS Users (
+                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    Username TEXT NOT NULL UNIQUE,
+                    PasswordHash TEXT NOT NULL
+                );";
 
             using var cmd = new SQLiteCommand(createUserTable, conn);
             cmd.ExecuteNonQuery();
+
+            // Seed default user if table empty
+            cmd.CommandText = "SELECT COUNT(*) FROM Users;";
+            long count = (long)cmd.ExecuteScalar()!;
+            if (count == 0)
+            {
+                string defaultUsername = "admin";
+                string defaultPasswordHash = EncryptionService.ComputeSHA256("admin123");
+
+                cmd.CommandText = "INSERT INTO Users (Username, PasswordHash) VALUES (@u, @p)";
+                cmd.Parameters.Clear();
+                cmd.Parameters.AddWithValue("@u", defaultUsername);
+                cmd.Parameters.AddWithValue("@p", defaultPasswordHash);
+                cmd.ExecuteNonQuery();
+            }
         }
 
-        public SQLiteConnection GetConnection()
+        public static bool AuthenticateUser(string username, string password)
         {
-            return new SQLiteConnection(ConnectionString);
+            using var conn = new SQLiteConnection(connectionString);
+            conn.Open();
+
+            string query = "SELECT PasswordHash FROM Users WHERE Username=@u";
+            using var cmd = new SQLiteCommand(query, conn);
+            cmd.Parameters.AddWithValue("@u", username);
+
+            object? result = cmd.ExecuteScalar();
+            if (result is not string storedHash) // safe null check + type check
+                return false;
+
+            string inputHash = EncryptionService.ComputeSHA256(password);
+            return storedHash == inputHash;
         }
     }
 }

@@ -1,71 +1,95 @@
-using ClinicManagementSystem.Models.Entities;
-using ClinicManagementSystem.Services;
 using System;
 using System.ComponentModel;
-using System.Data.SQLite;
-using System.Runtime.CompilerServices;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using Clinic_Management_System.Services;
 
-namespace ClinicManagementSystem.Models.ViewModels
+namespace Clinic_Management_System.Models.ViewModels
 {
     public class LoginViewModel : INotifyPropertyChanged
     {
-        private readonly DatabaseService _dbService;
-        private string _username = string.Empty;
-        private string _password = string.Empty;
+        private string _username = string.Empty; // initialize to remove CS8618
 
         public string Username
         {
             get => _username;
-            set { _username = value; OnPropertyChanged(); }
+            set { _username = value; OnPropertyChanged(nameof(Username)); }
         }
 
-        public string Password
+        // Command passing PasswordBox as parameter
+        public ICommand LoginCommand { get; }
+
+        public LoginViewModel()
         {
-            get => _password;
-            set { _password = value; OnPropertyChanged(); }
+            LoginCommand = new RelayCommand<PasswordBox>(Login);
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        public LoginViewModel()
-        {
-            _dbService = new DatabaseService();
-        }
-
-        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-        {
+        private void OnPropertyChanged(string propertyName) =>
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
 
-        public bool AuthenticateUser()
+        private void Login(PasswordBox passwordBox)
         {
-            if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Password))
+            if (passwordBox == null)
             {
-                MessageBox.Show("Please enter username and password.", "Warning");
-                return false;
+                MessageBox.Show("PasswordBox reference is missing.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
             }
 
-            string hashedPassword = EncryptionService.ComputeSHA256(Password);
+            string password = passwordBox.Password;
 
-            using var conn = _dbService.GetConnection();
-            conn.Open();
-
-            string query = "SELECT * FROM users WHERE username=@username AND password_hash=@password";
-            using var cmd = new SQLiteCommand(query, conn);
-            cmd.Parameters.AddWithValue("@username", Username);
-            cmd.Parameters.AddWithValue("@password", hashedPassword);
-
-            using var reader = cmd.ExecuteReader();
-            if (reader.Read())
+            if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(password))
             {
-                string fullName = reader["full_name"].ToString() ?? Username;
-                MessageBox.Show($"Welcome back, {fullName}!", "Login Successful");
-                return true;
+                MessageBox.Show("Please enter both username and password.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
             }
 
-            MessageBox.Show("Invalid username or password.", "Login Failed");
-            return false;
+            if (DatabaseService.AuthenticateUser(Username, password))
+            {
+                MessageBox.Show("Login successful!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                // TODO: Open main window or dashboard
+            }
+            else
+            {
+                MessageBox.Show("Invalid username or password.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
+    }
+
+    // Generic RelayCommand for typed parameter
+    public class RelayCommand<T> : ICommand where T : class
+    {
+        private readonly Action<T> _execute;
+        private readonly Predicate<T>? _canExecute;
+
+        public RelayCommand(Action<T> execute, Predicate<T>? canExecute = null)
+        {
+            _execute = execute ?? throw new ArgumentNullException(nameof(execute));
+            _canExecute = canExecute;
+        }
+
+        public event EventHandler? CanExecuteChanged;
+
+        public bool CanExecute(object? parameter)
+        {
+            if (_canExecute == null)
+                return true;
+
+            if (parameter is T tParam)
+                return _canExecute(tParam);
+
+            return false; // parameter not of type T
+        }
+
+        public void Execute(object? parameter)
+        {
+            if (parameter is T tParam)
+                _execute(tParam);
+        }
+
+        public void RaiseCanExecuteChanged() =>
+            CanExecuteChanged?.Invoke(this, EventArgs.Empty);
     }
 }

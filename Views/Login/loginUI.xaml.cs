@@ -1,36 +1,58 @@
-using ClinicManagementSystem.Models.ViewModels;
 using System.Windows;
+using System.Windows.Input;
+using Clinic_Management_System.Models.ViewModels;
+using Clinic_Management_System.Services;
 
-namespace ClinicManagementSystem.Views.Login
+namespace Clinic_Management_System.Views.Login
 {
     public partial class LoginUI : Window
     {
-        private readonly LoginViewModel _viewModel;
+        private readonly LoginViewModel _vm;
 
         public LoginUI()
         {
             InitializeComponent();
-            _viewModel = new LoginViewModel();
-            DataContext = _viewModel;
+            
+            // Ensure database exists + seed default admin
+            DatabaseService.InitializeDatabase();
+
+            _vm = new LoginViewModel();
+            DataContext = _vm;
+        }
+
+        // Make window draggable
+        private void Window_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed)
+                this.DragMove();
+        }
+
+        private void ForgotPassword_Click(object sender, MouseButtonEventArgs e)
+        {
+            MessageBox.Show("Forgot Password clicked");
         }
 
         private void Login_Click(object sender, RoutedEventArgs e)
         {
-            _viewModel.Username = UserIdBox.Text;
-            _viewModel.Password = PasswordBox.Password;
+            string username = UserIdBox.Text.Trim();
+            string password = PasswordBox.Password.Trim();
 
-            bool success = _viewModel.AuthenticateUser();
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+            {
+                MessageBox.Show("Error: Please enter both username and password.", "Login Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            bool success = DatabaseService.AuthenticateUser(username, password);
             if (success)
             {
-                // TODO: Navigate to Dashboard
-                // new DashboardUI().Show();
-                this.Close();
+                MessageBox.Show("Login successful!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                // TODO: Open main dashboard window here
             }
-        }
-
-        private void ForgotPassword_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Forgot password feature not yet implemented.");
+            else
+            {
+                MessageBox.Show("Invalid username or password.", "Login Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 }
