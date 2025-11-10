@@ -74,3 +74,5 @@ Go to GitHub → your repository → **Pull Requests** → **New Pull Request**
 
 ---
 
+**NOTE:**
+- **git checkout -b feature/<name>** change in between feature directory.
