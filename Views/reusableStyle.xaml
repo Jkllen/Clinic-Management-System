@@ -1,0 +1,7 @@
+<Application.Resources>
+    <LinearGradientBrush x:Key="LoginGradientBackground"
+                         StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#FFFFFFFF" Offset="0"/>
+        <GradientStop Color="#91EFEF" Offset="1"/>
+    </LinearGradientBrush>
+</Application.Resources>
