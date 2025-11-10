@@ -17,7 +17,7 @@
 ```
 - Create your **feature branch** (replace **<feature-name>**);
 ```bash
-    git checkout -b feature/<feature/<feature-name>
+    git checkout -b feature/<feature-name>
 ```
 **Examples:**
 - feature/login
@@ -75,4 +75,4 @@ Go to GitHub → your repository → **Pull Requests** → **New Pull Request**
 ---
 
 **NOTE:**
-- **git checkout -b feature/<name>** change in between feature directory.
+- **git checkout -b feature/feature-name** change in between feature directory.
