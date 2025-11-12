@@ -2,7 +2,7 @@
 using System.Data;
 using System.Windows;
 
-namespace ClinicManagementSystem;
+namespace Clinic_Management_System;
 
 /// <summary>
 /// Interaction logic for App.xaml

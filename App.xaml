@@ -1,7 +1,7 @@
-﻿<Application x:Class="ClinicManagementSystem.App"
+﻿<Application x:Class="Clinic_Management_System.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:ClinicManagementSystem"
+             xmlns:local="clr-namespace:Clinic_Management_System"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
          
