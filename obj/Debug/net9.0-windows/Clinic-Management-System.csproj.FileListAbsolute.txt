@@ -20,3 +20,12 @@ C:\Users\lawrence\Documents\Clinic-Management-System\obj\Debug\net9.0-windows\re
 C:\Users\lawrence\Documents\Clinic-Management-System\obj\Debug\net9.0-windows\Clinic-Management-System.pdb
 C:\Users\lawrence\Documents\Clinic-Management-System\obj\Debug\net9.0-windows\Clinic-Management-System.genruntimeconfig.cache
 C:\Users\lawrence\Documents\Clinic-Management-System\obj\Debug\net9.0-windows\ref\Clinic-Management-System.dll
+C:\Users\lawrence\Documents\Clinic-Management-System\obj\Debug\net9.0-windows\Appointment_Functions\AddAppointmentWindow.baml
+C:\Users\lawrence\Documents\Clinic-Management-System\obj\Debug\net9.0-windows\Appointment_Functions\AddAppointmentWindow.g.cs
+C:\Users\lawrence\Documents\Clinic-Management-System\obj\Debug\net9.0-windows\Appointment_Functions\SortWindow.baml
+C:\Users\lawrence\Documents\Clinic-Management-System\obj\Debug\net9.0-windows\Appointment_Functions\SortWindow.g.cs
+C:\Users\lawrence\Documents\Clinic-Management-System\obj\Debug\net9.0-windows\Appointment_Functions\FilterWindow.baml
+C:\Users\lawrence\Documents\Clinic-Management-System\obj\Debug\net9.0-windows\Appointment_Functions\FilterWindow.g.cs
+C:\Users\lawrence\Documents\Clinic-Management-System\obj\Debug\net9.0-windows\Clinic-Management-System.csproj.AssemblyReference.cache
+C:\Users\lawrence\Documents\Clinic-Management-System\bin\Debug\net9.0-windows\Newtonsoft.Json.dll
+C:\Users\lawrence\Documents\Clinic-Management-System\obj\Debug\net9.0-windows\Clinic-M.128F4593.Up2Date

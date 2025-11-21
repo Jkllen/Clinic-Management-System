@@ -1,0 +1,148 @@
+<Window x:Class="Clinic_Management_System.Appointment_Functions.AddAppointmentWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        Title="Add Appointment"
+        Height="620" Width="420"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        Background="#F9F9F9">
+
+    <Window.Resources>
+        <!-- Fixed & Working Placeholder Style for TextBox -->
+        <Style x:Key="PlaceholderTextBox" TargetType="TextBox">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Grid>
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="0"/>
+                            <TextBlock x:Name="Placeholder"
+                                       Text="{TemplateBinding Tag}"
+                                       Foreground="Gray"
+                                       Margin="8,0,0,0"
+                                       VerticalAlignment="Center"
+                                       IsHitTestVisible="False"
+                                       Opacity="0.6"
+                                       Visibility="Collapsed"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="Text" Value="">
+                                <Setter TargetName="Placeholder" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                            <Trigger Property="Text" Value="{x:Null}">
+                                <Setter TargetName="Placeholder" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="Placeholder" Property="Visibility" Value="Collapsed"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Height" Value="38"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="25">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0">
+            <TextBlock Text="Add New Appointment"
+                       FontWeight="Bold"
+                       FontSize="16"
+                       Foreground="#2E4A78"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,15"/>
+
+            <!-- Patient ID -->
+            <TextBlock Text="Patient ID" FontWeight="SemiBold" Margin="0,4,0,4"/>
+            <TextBox x:Name="txtPatientID"
+                     Style="{StaticResource PlaceholderTextBox}"
+                     Tag="Enter Patient ID"/>
+
+            <!-- Patient Name -->
+            <TextBlock Text="Patient Name" FontWeight="SemiBold" Margin="0,4,0,4"/>
+            <TextBox x:Name="txtPatientName"
+                     Style="{StaticResource PlaceholderTextBox}"
+                     Tag="Enter Patient Name"/>
+
+            <!-- Treatment -->
+            <TextBlock Text="Treatment" FontWeight="SemiBold" Margin="0,4,0,4"/>
+            <TextBox x:Name="txtTreatment"
+                     Style="{StaticResource PlaceholderTextBox}"
+                     Tag="e.g., Cleaning, Extraction, Filling"/>
+
+            <!-- DATE - Now using DatePicker (Calendar) -->
+            <TextBlock Text="Appointment Date" FontWeight="SemiBold" Margin="0,4,0,4"/>
+            <DatePicker x:Name="dpDate"
+                        Height="30"
+                        FontSize="14"
+                        SelectedDate="{x:Static sys:DateTime.Now}"
+                        DisplayDateStart="{x:Static sys:DateTime.Now}"
+                        BorderBrush="#CCCCCC"
+                        Background="White"
+                        SelectedDateFormat="Short"/>
+
+            <!-- TIME - Nice Time Picker -->
+            <TextBlock Text="Appointment Time" FontWeight="SemiBold" Margin="0,4,0,4"/>
+            <TextBox x:Name="txtTime"
+                     Style="{StaticResource PlaceholderTextBox}"
+                     Tag="e.g., 10:30 AM"
+                     ToolTip="You can type or use ↑ ↓ arrows"/>
+
+            <!-- Type -->
+            <TextBlock Text="Appointment Type" FontWeight="SemiBold" Margin="0,4,0,4"/>
+            <ComboBox x:Name="cmbType" Height="30" FontSize="14" SelectedIndex="0">
+                <ComboBoxItem Content="Walk-in"/>
+                <ComboBoxItem Content="Scheduled"/>
+            </ComboBox>
+
+            <!-- Status -->
+            <TextBlock Text="Status" FontWeight="SemiBold" Margin="0,4,0,4"/>
+            <ComboBox x:Name="cmbStatus" Height="30" FontSize="14" SelectedIndex="0">
+                <ComboBoxItem Content="Pending"/>
+                <ComboBoxItem Content="Ongoing"/>
+                <ComboBoxItem Content="Completed"/>
+                <ComboBoxItem Content="Cancelled"/>
+            </ComboBox>
+        </StackPanel>
+
+        <!-- Submit Button -->
+        <Button Grid.Row="1"
+                Content="Submit Appointment"
+                Height="48"
+                Background="#2E4A78"
+                Foreground="White"
+                FontSize="16"
+                FontWeight="SemiBold"
+                Margin="0,25,0,10"
+                Cursor="Hand"
+                Click="Submit_Click">
+            <Button.Style>
+                <Style TargetType="Button">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{TemplateBinding Background}"
+                                        CornerRadius="8">
+                                    <ContentPresenter HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                    <Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="#1e3a5f"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </Button.Style>
+        </Button>
+    </Grid>
+</Window>

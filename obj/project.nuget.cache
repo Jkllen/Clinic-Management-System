@@ -1,8 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "LkmrGyVsFpI=",
+  "dgSpecHash": "R5DFu362pY4=",
   "success": true,
   "projectFilePath": "C:\\Users\\lawrence\\Documents\\Clinic-Management-System\\Clinic-Management-System.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\lawrence\\.nuget\\packages\\newtonsoft.json\\13.0.4\\newtonsoft.json.13.0.4.nupkg.sha512"
+  ],
   "logs": []
 }

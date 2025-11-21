@@ -1,0 +1,13 @@
+<Window x:Class="Clinic_Management_System.Appointment_Functions.SortWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Sort Appointments"
+        Height="200" Width="300"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize">
+    <StackPanel Margin="20" VerticalAlignment="Center">
+        <TextBlock Text="Sort by Patient ID" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+        <Button Content="Ascending" Height="42" Background="#2E4A78" Foreground="White" Margin="0,0,0,10" Click="Ascending_Click"/>
+        <Button Content="Descending" Height="42" Background="#2E4A78" Foreground="White" Click="Descending_Click"/>
+    </StackPanel>
+</Window>
