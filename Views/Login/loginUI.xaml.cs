@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using Clinic_Management_System.Models.ViewModels;
 using Clinic_Management_System.Services;
@@ -8,11 +9,12 @@ namespace Clinic_Management_System.Views.Login
     public partial class LoginUI : Window
     {
         private readonly LoginViewModel _vm;
+        private bool _showPassword = false;
 
         public LoginUI()
         {
             InitializeComponent();
-            
+
             // Ensure database exists + seed default admin
             DatabaseService.InitializeDatabase();
 
@@ -54,5 +56,57 @@ namespace Clinic_Management_System.Views.Login
                 MessageBox.Show("Invalid username or password.", "Login Failed", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
+        private void UserIdBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            UserPlaceholder.Visibility = string.IsNullOrEmpty(UserIdBox.Text)
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+        }
+
+        private void TogglePassword_Click(object sender, RoutedEventArgs e)
+        {
+            _showPassword = !_showPassword;
+
+            if (_showPassword)
+            {
+                VisiblePasswordBox.Text = PasswordBox.Password;
+                VisiblePasswordBox.Visibility = Visibility.Visible;
+                PasswordBox.Visibility = Visibility.Collapsed;
+                ShowPassBtn.Content = "🚫";
+            }
+            else
+            {
+                PasswordBox.Password = VisiblePasswordBox.Text;
+                VisiblePasswordBox.Visibility = Visibility.Collapsed;
+                PasswordBox.Visibility = Visibility.Visible;
+                ShowPassBtn.Content = "👁";
+            }
+
+            UpdatePasswordPlaceholder();
+        }
+
+        private void PasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
+        {
+            if (!_showPassword)
+                UpdatePasswordPlaceholder();
+        }
+
+        private void VisiblePasswordBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (_showPassword)
+                UpdatePasswordPlaceholder();
+        }
+
+        private void UpdatePasswordPlaceholder()
+        {
+            bool isEmpty = _showPassword
+                ? string.IsNullOrEmpty(VisiblePasswordBox.Text)
+                : string.IsNullOrEmpty(PasswordBox.Password);
+
+            PassPlaceholder.Visibility = isEmpty ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+
     }
 }
