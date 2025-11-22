@@ -106,9 +106,6 @@
             <TextBlock Text="Status" FontWeight="SemiBold" Margin="0,4,0,4"/>
             <ComboBox x:Name="cmbStatus" Height="30" FontSize="14" SelectedIndex="0">
                 <ComboBoxItem Content="Pending"/>
-                <ComboBoxItem Content="Ongoing"/>
-                <ComboBoxItem Content="Completed"/>
-                <ComboBoxItem Content="Cancelled"/>
             </ComboBox>
         </StackPanel>
 

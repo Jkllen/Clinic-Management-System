@@ -7,11 +7,13 @@
         ResizeMode="NoResize">
     <StackPanel Margin="20">
         <TextBlock Text="Filter Appointments" FontSize="22" FontWeight="Bold" Margin="0,0,0,15" HorizontalAlignment="Center"/>
+        <TextBlock Text="Type" FontSize="12" FontWeight="Regular" Margin="0,0,0,5" HorizontalAlignment="Left"/>
         <ComboBox x:Name="cmbType" Margin="0,0,0,10">
             <ComboBoxItem Content="Any" IsSelected="True"/>
             <ComboBoxItem Content="Walk-in"/>
             <ComboBoxItem Content="Scheduled"/>
         </ComboBox>
+        <TextBlock Text="Status" FontSize="12" FontWeight="Regular" Margin="0,0,0,5" HorizontalAlignment="Left"/>
         <ComboBox x:Name="cmbStatus" Margin="0,0,0,20">
             <ComboBoxItem Content="Any" IsSelected="True"/>
             <ComboBoxItem Content="Pending"/>
