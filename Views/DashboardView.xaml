@@ -10,8 +10,13 @@
 
     <Grid Background="{StaticResource ScreenBackgroundBrush}">
 
-        <!-- Main dashboard content -->
-        <Grid Margin="26,28,18,14">
+        <!-- 
+            MinWidth and MinHeight preserve the dashboard layout.
+            If the window becomes smaller than this, scrollbars appear instead of crushing the UI.
+        -->
+        <Grid MinWidth="1050"
+                MinHeight="820"
+                Margin="26,28,18,14">
 
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
@@ -20,16 +25,29 @@
 
             <!-- Left dashboard area -->
             <Grid Grid.Column="0"
-                  Margin="0,0,16,0">
+                    Margin="0,0,16,0">
 
                 <Grid.RowDefinitions>
+                    <!-- Row 0: Header and search -->
                     <RowDefinition Height="78"/>
+
+                    <!-- Row 1: Top dashboard cards -->
                     <RowDefinition Height="220"/>
+
+                    <!-- Row 2: Middle cards -->
                     <RowDefinition Height="155"/>
+
+                    <!-- Row 3: Queue title -->
                     <RowDefinition Height="70"/>
+
+                    <!-- Row 4: Queue panel -->
                     <RowDefinition Height="140"/>
+
+                    <!-- Row 5: Recent transactions title -->
                     <RowDefinition Height="70"/>
-                    <RowDefinition Height="*"/>
+
+                    <!-- Row 6: Recent transactions panel -->
+                    <RowDefinition Height="140"/>
                 </Grid.RowDefinitions>
 
                 <!-- Header and search -->
@@ -40,8 +58,8 @@
                     </Grid.ColumnDefinitions>
 
                     <Grid Grid.Column="0"
-                          HorizontalAlignment="Left"
-                          VerticalAlignment="Top">
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Top">
 
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -49,40 +67,43 @@
                         </Grid.RowDefinitions>
 
                         <TextBlock Grid.Row="0"
-                                   Text="Dashboard"
-                                   FontSize="30"
-                                   FontWeight="Bold"
-                                   Foreground="Black"/>
+                                    Text="Dashboard"
+                                    FontSize="30"
+                                    FontWeight="Bold"
+                                    Foreground="Black"/>
 
                         <TextBlock Grid.Row="1"
-                                   Text="Overview of clinic operations"
-                                   FontSize="20"
-                                   Foreground="#7A7A7A"
-                                   Margin="0,4,0,0"/>
+                                    Text="Overview of clinic operations"
+                                    FontSize="20"
+                                    Foreground="#7A7A7A"
+                                    Margin="0,4,0,0"/>
                     </Grid>
 
                     <!-- Search box -->
                     <Grid Grid.Column="1"
-                          Width="230"
-                          Height="52"
-                          HorizontalAlignment="Right">
+                            Width="230"
+                            Height="52"
+                            HorizontalAlignment="Right">
 
                         <TextBox Style="{StaticResource SearchTextBoxStyle}"
-                                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"/>
+                                    Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"/>
 
                         <TextBlock Text="Search user or patient ID"
-                                   FontSize="14"
-                                   Foreground="#8A8A8A"
-                                   VerticalAlignment="Center"
-                                   Margin="54,0,0,0"
-                                   IsHitTestVisible="False">
+                                    FontSize="14"
+                                    Foreground="#8A8A8A"
+                                    VerticalAlignment="Center"
+                                    Margin="54,0,0,0"
+                                    IsHitTestVisible="False">
+
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Visibility" Value="Collapsed"/>
+
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding SearchText}" Value="">
                                             <Setter Property="Visibility" Value="Visible"/>
                                         </DataTrigger>
+
                                         <DataTrigger Binding="{Binding SearchText}" Value="{x:Null}">
                                             <Setter Property="Visibility" Value="Visible"/>
                                         </DataTrigger>
@@ -92,11 +113,11 @@
                         </TextBlock>
 
                         <fa:IconBlock Icon="Search"
-                                      FontSize="18"
-                                      Foreground="#9A9A9A"
-                                      VerticalAlignment="Center"
-                                      HorizontalAlignment="Left"
-                                      Margin="18,0,0,0"/>
+                                        FontSize="18"
+                                        Foreground="#9A9A9A"
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Left"
+                                        Margin="18,0,0,0"/>
                     </Grid>
                 </Grid>
 
@@ -121,7 +142,7 @@
 
                             <!-- Total Patients -->
                             <Grid Grid.Row="0"
-                                  VerticalAlignment="Center">
+                                    VerticalAlignment="Center">
 
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="72"/>
@@ -137,15 +158,15 @@
                                         VerticalAlignment="Center">
 
                                     <fa:IconBlock Icon="Users"
-                                                  Foreground="White"
-                                                  FontSize="34"
-                                                  HorizontalAlignment="Center"
-                                                  VerticalAlignment="Center"/>
+                                                    Foreground="White"
+                                                    FontSize="34"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"/>
                                 </Border>
 
                                 <Grid Grid.Column="1"
-                                      Margin="4,0,0,0"
-                                      VerticalAlignment="Center">
+                                        Margin="4,0,0,0"
+                                        VerticalAlignment="Center">
 
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
@@ -153,21 +174,21 @@
                                     </Grid.RowDefinitions>
 
                                     <TextBlock Grid.Row="0"
-                                               Text="Total Patients"
-                                               FontSize="15"
-                                               TextWrapping="Wrap"
-                                               TextTrimming="CharacterEllipsis"/>
+                                                Text="Total Patients"
+                                                FontSize="15"
+                                                TextWrapping="Wrap"
+                                                TextTrimming="CharacterEllipsis"/>
 
                                     <TextBlock Grid.Row="1"
-                                               Text="{Binding TotalPatients}"
-                                               FontSize="24"
-                                               Foreground="#50C878"/>
+                                                Text="{Binding TotalPatients}"
+                                                FontSize="24"
+                                                Foreground="#50C878"/>
                                 </Grid>
                             </Grid>
 
                             <!-- New Patients -->
                             <Grid Grid.Row="1"
-                                  VerticalAlignment="Center">
+                                    VerticalAlignment="Center">
 
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="72"/>
@@ -183,15 +204,15 @@
                                         VerticalAlignment="Center">
 
                                     <fa:IconBlock Icon="UserPlus"
-                                                  Foreground="White"
-                                                  FontSize="34"
-                                                  HorizontalAlignment="Center"
-                                                  VerticalAlignment="Center"/>
+                                                    Foreground="White"
+                                                    FontSize="34"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"/>
                                 </Border>
 
                                 <Grid Grid.Column="1"
-                                      Margin="4,0,0,0"
-                                      VerticalAlignment="Center">
+                                        Margin="4,0,0,0"
+                                        VerticalAlignment="Center">
 
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
@@ -199,15 +220,15 @@
                                     </Grid.RowDefinitions>
 
                                     <TextBlock Grid.Row="0"
-                                               Text="New Patients This Month"
-                                               FontSize="15"
-                                               TextWrapping="Wrap"
-                                               TextTrimming="CharacterEllipsis"/>
+                                                Text="New Patients This Month"
+                                                FontSize="15"
+                                                TextWrapping="Wrap"
+                                                TextTrimming="CharacterEllipsis"/>
 
                                     <TextBlock Grid.Row="1"
-                                               Text="{Binding NewPatientsThisMonth}"
-                                               FontSize="24"
-                                               Foreground="#50C878"/>
+                                                Text="{Binding NewPatientsThisMonth}"
+                                                FontSize="24"
+                                                Foreground="#50C878"/>
                                 </Grid>
                             </Grid>
                         </Grid>
@@ -241,15 +262,15 @@
                                         VerticalAlignment="Center">
 
                                     <fa:IconBlock Icon="Box"
-                                                  Foreground="White"
-                                                  FontSize="32"
-                                                  HorizontalAlignment="Center"
-                                                  VerticalAlignment="Center"/>
+                                                    Foreground="White"
+                                                    FontSize="32"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"/>
                                 </Border>
 
                                 <Grid Grid.Column="1"
-                                      Margin="4,0,0,0"
-                                      VerticalAlignment="Center">
+                                        Margin="4,0,0,0"
+                                        VerticalAlignment="Center">
 
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
@@ -257,23 +278,23 @@
                                     </Grid.RowDefinitions>
 
                                     <TextBlock Grid.Row="0"
-                                               Text="Low Stock Items"
-                                               FontSize="15"
-                                               TextWrapping="Wrap"
-                                               TextTrimming="CharacterEllipsis"/>
+                                                Text="Low Stock Items"
+                                                FontSize="15"
+                                                TextWrapping="Wrap"
+                                                TextTrimming="CharacterEllipsis"/>
 
                                     <TextBlock Grid.Row="1"
-                                               Text="Most Urgent"
-                                               FontSize="15"
-                                               Foreground="#D21E1E"
-                                               TextWrapping="Wrap"
-                                               TextTrimming="CharacterEllipsis"/>
+                                                Text="Most Urgent"
+                                                FontSize="15"
+                                                Foreground="#D21E1E"
+                                                TextWrapping="Wrap"
+                                                TextTrimming="CharacterEllipsis"/>
                                 </Grid>
                             </Grid>
 
                             <!-- Low stock list -->
                             <Grid Grid.Row="1"
-                                  Margin="0,8,0,0">
+                                    Margin="0,8,0,0">
 
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
@@ -281,13 +302,14 @@
                                 </Grid.RowDefinitions>
 
                                 <TextBlock Grid.Row="0"
-                                           Text="Items"
-                                           FontWeight="Bold"
-                                           FontSize="14"
-                                           Margin="0,0,0,6"/>
+                                            Text="Items"
+                                            FontWeight="Bold"
+                                            FontSize="14"
+                                            Margin="0,0,0,6"/>
 
                                 <ItemsControl Grid.Row="1"
-                                              ItemsSource="{Binding LowStockItems}">
+                                                ItemsSource="{Binding LowStockItems}">
+
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
                                             <Grid Margin="0,1,0,1">
@@ -297,27 +319,27 @@
                                                 </Grid.ColumnDefinitions>
 
                                                 <TextBlock Grid.Column="0"
-                                                           Text="{Binding ItemName}"
-                                                           FontSize="12"
-                                                           TextWrapping="Wrap"
-                                                           TextTrimming="CharacterEllipsis"/>
+                                                            Text="{Binding ItemName}"
+                                                            FontSize="12"
+                                                            TextWrapping="Wrap"
+                                                            TextTrimming="CharacterEllipsis"/>
 
                                                 <TextBlock Grid.Column="1"
-                                                           Text="{Binding QuantityLeft, StringFormat={}{0} Left}"
-                                                           FontSize="12"
-                                                           Foreground="#D21E1E"
-                                                           HorizontalAlignment="Right"/>
+                                                            Text="{Binding QuantityLeft, StringFormat={}{0} Left}"
+                                                            FontSize="12"
+                                                            Foreground="#D21E1E"
+                                                            HorizontalAlignment="Right"/>
                                             </Grid>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
                             </Grid>
 
-                            <TextBlock Grid.Row="2"
-                                       Text="View All"
-                                       FontSize="12"
-                                       FontWeight="Bold"
-                                       HorizontalAlignment="Right"/>
+                            <Button Grid.Row="2"
+                                    Content="View All"
+                                    Command="{Binding ViewInventoryCommand}"
+                                    Style="{StaticResource ViewAllButtonStyle}"
+                                    HorizontalAlignment="Right"/>
                         </Grid>
                     </Border>
 
@@ -335,7 +357,7 @@
 
                             <!-- Pending Payments -->
                             <Grid Grid.Row="0"
-                                  VerticalAlignment="Center">
+                                    VerticalAlignment="Center">
 
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="72"/>
@@ -351,15 +373,15 @@
                                         VerticalAlignment="Center">
 
                                     <fa:IconBlock Icon="ExclamationCircle"
-                                                  Foreground="White"
-                                                  FontSize="34"
-                                                  HorizontalAlignment="Center"
-                                                  VerticalAlignment="Center"/>
+                                                    Foreground="White"
+                                                    FontSize="34"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"/>
                                 </Border>
 
                                 <Grid Grid.Column="1"
-                                      Margin="4,0,0,0"
-                                      VerticalAlignment="Center">
+                                        Margin="4,0,0,0"
+                                        VerticalAlignment="Center">
 
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
@@ -367,21 +389,21 @@
                                     </Grid.RowDefinitions>
 
                                     <TextBlock Grid.Row="0"
-                                               Text="Pending Payments"
-                                               FontSize="15"
-                                               TextWrapping="Wrap"
-                                               TextTrimming="CharacterEllipsis"/>
+                                                Text="Pending Payments"
+                                                FontSize="15"
+                                                TextWrapping="Wrap"
+                                                TextTrimming="CharacterEllipsis"/>
 
                                     <TextBlock Grid.Row="1"
-                                               Text="{Binding PendingPayments}"
-                                               FontSize="24"
-                                               Foreground="#C49D49"/>
+                                                Text="{Binding PendingPayments}"
+                                                FontSize="24"
+                                                Foreground="#C49D49"/>
                                 </Grid>
                             </Grid>
 
                             <!-- Unpaid Balance -->
                             <Grid Grid.Row="1"
-                                  VerticalAlignment="Center">
+                                    VerticalAlignment="Center">
 
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="72"/>
@@ -397,15 +419,15 @@
                                         VerticalAlignment="Center">
 
                                     <fa:IconBlock Icon="Receipt"
-                                                  Foreground="White"
-                                                  FontSize="34"
-                                                  HorizontalAlignment="Center"
-                                                  VerticalAlignment="Center"/>
+                                                    Foreground="White"
+                                                    FontSize="34"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"/>
                                 </Border>
 
                                 <Grid Grid.Column="1"
-                                      Margin="4,0,0,0"
-                                      VerticalAlignment="Center">
+                                        Margin="4,0,0,0"
+                                        VerticalAlignment="Center">
 
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
@@ -413,34 +435,34 @@
                                     </Grid.RowDefinitions>
 
                                     <TextBlock Grid.Row="0"
-                                               Text="Unpaid Balance"
-                                               FontSize="15"
-                                               TextWrapping="Wrap"
-                                               TextTrimming="CharacterEllipsis"/>
+                                                Text="Unpaid Balance"
+                                                FontSize="15"
+                                                TextWrapping="Wrap"
+                                                TextTrimming="CharacterEllipsis"/>
 
                                     <TextBlock Grid.Row="1"
-                                               Text="{Binding TotalUnpaidBalance, StringFormat=₱ {0:N2}}"
-                                               FontSize="15"
-                                               Foreground="Red"
-                                               FontWeight="Bold"
-                                               TextWrapping="Wrap"
-                                               TextTrimming="CharacterEllipsis"/>
+                                                Text="{Binding TotalUnpaidBalance, StringFormat=₱ {0:N2}}"
+                                                FontSize="15"
+                                                Foreground="Red"
+                                                FontWeight="Bold"
+                                                TextWrapping="Wrap"
+                                                TextTrimming="CharacterEllipsis"/>
                                 </Grid>
                             </Grid>
 
-                            <TextBlock Grid.Row="2"
-                                       Text="View All"
-                                       FontSize="12"
-                                       FontWeight="Bold"
-                                       HorizontalAlignment="Right"
-                                       VerticalAlignment="Bottom"/>
+                            <Button Grid.Row="2"
+                                    Content="View All"
+                                    Command="{Binding ViewBillingCommand}"
+                                    Style="{StaticResource ViewAllButtonStyle}"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Bottom"/>
                         </Grid>
                     </Border>
                 </Grid>
 
                 <!-- Middle cards -->
                 <Grid Grid.Row="2"
-                      Margin="0,10,0,0">
+                        Margin="0,10,0,0">
 
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -475,38 +497,44 @@
                                         VerticalAlignment="Center">
 
                                     <fa:IconBlock Icon="Bullseye"
-                                                  Foreground="White"
-                                                  FontSize="30"
-                                                  HorizontalAlignment="Center"
-                                                  VerticalAlignment="Center"/>
+                                                Foreground="White"
+                                                FontSize="30"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"/>
                                 </Border>
 
                                 <TextBlock Grid.Column="1"
-                                           Text="Recent Activity Log"
-                                           FontSize="17"
-                                           TextWrapping="Wrap"
-                                           VerticalAlignment="Center"
-                                           Margin="4,0,0,0"/>
+                                        Text="Recent Activity Log"
+                                        FontSize="17"
+                                        TextWrapping="Wrap"
+                                        VerticalAlignment="Center"
+                                        Margin="4,0,0,0"/>
                             </Grid>
 
-                            <ItemsControl Grid.Row="1"
-                                          ItemsSource="{Binding RecentActivities}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding Description}"
-                                                   FontSize="12"
-                                                   TextWrapping="Wrap"
-                                                   TextTrimming="CharacterEllipsis"/>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
+                            <!-- Scroll only inside the activity list -->
+                            <ScrollViewer Grid.Row="1"
+                                        VerticalScrollBarVisibility="Auto"
+                                        HorizontalScrollBarVisibility="Disabled"
+                                        CanContentScroll="False">
 
-                            <TextBlock Grid.Row="2"
-                                       Text="View All"
-                                       FontSize="12"
-                                       FontWeight="Bold"
-                                       HorizontalAlignment="Right"
-                                       VerticalAlignment="Bottom"/>
+                                <ItemsControl ItemsSource="{Binding RecentActivities}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Description}"
+                                                    FontSize="12"
+                                                    TextWrapping="Wrap"
+                                                    Margin="0,0,0,3"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+
+                            <Button Grid.Row="2"
+                                    Content="View All"
+                                    Command="{Binding ViewReportsCommand}"
+                                    Style="{StaticResource ViewAllButtonStyle}"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Bottom"/>
                         </Grid>
                     </Border>
 
@@ -524,31 +552,31 @@
                             </Grid.RowDefinitions>
 
                             <TextBlock Grid.Row="0"
-                                       Text="Patient Visits Trend"
-                                       FontSize="17"
-                                       TextWrapping="Wrap"
-                                       TextTrimming="CharacterEllipsis"/>
+                                        Text="Patient Visits Trend"
+                                        FontSize="17"
+                                        TextWrapping="Wrap"
+                                        TextTrimming="CharacterEllipsis"/>
 
                             <fa:IconBlock Grid.Row="1"
-                                          Icon="ChartBar"
-                                          FontSize="46"
-                                          Foreground="#8C8C8C"
-                                          HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"/>
+                                            Icon="ChartBar"
+                                            FontSize="46"
+                                            Foreground="#8C8C8C"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"/>
 
                             <TextBlock Grid.Row="2"
-                                       Text="Line/Bar Chart"
-                                       Foreground="#B5B5B5"
-                                       HorizontalAlignment="Center"
-                                       FontSize="12"/>
+                                        Text="Line/Bar Chart"
+                                        Foreground="#B5B5B5"
+                                        HorizontalAlignment="Center"
+                                        FontSize="12"/>
 
                             <TextBlock Grid.Row="3"
-                                       Text="Monthly patient visualization"
-                                       Foreground="#B5B5B5"
-                                       HorizontalAlignment="Center"
-                                       FontSize="11"
-                                       TextWrapping="Wrap"
-                                       TextAlignment="Center"/>
+                                        Text="Monthly patient visualization"
+                                        Foreground="#B5B5B5"
+                                        HorizontalAlignment="Center"
+                                        FontSize="11"
+                                        TextWrapping="Wrap"
+                                        TextAlignment="Center"/>
                         </Grid>
                     </Border>
 
@@ -566,41 +594,41 @@
                             </Grid.RowDefinitions>
 
                             <TextBlock Grid.Row="0"
-                                       Text="Revenue Summary"
-                                       FontSize="17"
-                                       TextWrapping="Wrap"
-                                       TextTrimming="CharacterEllipsis"/>
+                                        Text="Revenue Summary"
+                                        FontSize="17"
+                                        TextWrapping="Wrap"
+                                        TextTrimming="CharacterEllipsis"/>
 
                             <fa:IconBlock Grid.Row="1"
-                                          Icon="ChartLine"
-                                          FontSize="46"
-                                          Foreground="#8C8C8C"
-                                          HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"/>
+                                            Icon="ChartLine"
+                                            FontSize="46"
+                                            Foreground="#8C8C8C"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"/>
 
                             <TextBlock Grid.Row="2"
-                                       Text="Area Chart"
-                                       Foreground="#B5B5B5"
-                                       HorizontalAlignment="Center"
-                                       FontSize="12"/>
+                                        Text="Area Chart"
+                                        Foreground="#B5B5B5"
+                                        HorizontalAlignment="Center"
+                                        FontSize="12"/>
 
                             <TextBlock Grid.Row="3"
-                                       Text="Monthly revenue trends"
-                                       Foreground="#B5B5B5"
-                                       HorizontalAlignment="Center"
-                                       FontSize="11"
-                                       TextWrapping="Wrap"
-                                       TextAlignment="Center"/>
+                                        Text="Monthly revenue trends"
+                                        Foreground="#B5B5B5"
+                                        HorizontalAlignment="Center"
+                                        FontSize="11"
+                                        TextWrapping="Wrap"
+                                        TextAlignment="Center"/>
                         </Grid>
                     </Border>
                 </Grid>
 
                 <!-- Queue title -->
                 <TextBlock Grid.Row="3"
-                           Text="Queue"
-                           FontSize="30"
-                           FontWeight="Bold"
-                           VerticalAlignment="Center"/>
+                            Text="Queue"
+                            FontSize="30"
+                            FontWeight="Bold"
+                            VerticalAlignment="Center"/>
 
                 <!-- Queue panel -->
                 <Border Grid.Row="4"
@@ -608,13 +636,13 @@
                         Padding="16">
 
                     <DataGrid ItemsSource="{Binding TodayQueue}"
-                              Style="{StaticResource DashboardDataGridStyle}"
-                              ColumnHeaderStyle="{StaticResource DashboardDataGridColumnHeaderStyle}"
-                              CellStyle="{StaticResource DashboardDataGridCellStyle}"
-                              HorizontalScrollBarVisibility="Auto"
-                              VerticalScrollBarVisibility="Auto"
-                              ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                              ScrollViewer.VerticalScrollBarVisibility="Auto">
+                            Style="{StaticResource DashboardDataGridStyle}"
+                            ColumnHeaderStyle="{StaticResource DashboardDataGridColumnHeaderStyle}"
+                            CellStyle="{StaticResource DashboardDataGridCellStyle}"
+                            HorizontalScrollBarVisibility="Auto"
+                            VerticalScrollBarVisibility="Auto"
+                            ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                            ScrollViewer.VerticalScrollBarVisibility="Auto">
 
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="No."
@@ -650,10 +678,10 @@
 
                 <!-- Recent transactions title -->
                 <TextBlock Grid.Row="5"
-                           Text="Recent Patient Transactions"
-                           FontSize="30"
-                           FontWeight="Bold"
-                           VerticalAlignment="Center"/>
+                            Text="Recent Patient Transactions"
+                            FontSize="30"
+                            FontWeight="Bold"
+                            VerticalAlignment="Center"/>
 
                 <!-- Transactions panel -->
                 <Border Grid.Row="6"
@@ -661,13 +689,13 @@
                         Padding="16">
 
                     <DataGrid ItemsSource="{Binding RecentTransactions}"
-                              Style="{StaticResource DashboardDataGridStyle}"
-                              ColumnHeaderStyle="{StaticResource DashboardDataGridColumnHeaderStyle}"
-                              CellStyle="{StaticResource DashboardDataGridCellStyle}"
-                              HorizontalScrollBarVisibility="Auto"
-                              VerticalScrollBarVisibility="Auto"
-                              ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                              ScrollViewer.VerticalScrollBarVisibility="Auto">
+                            Style="{StaticResource DashboardDataGridStyle}"
+                            ColumnHeaderStyle="{StaticResource DashboardDataGridColumnHeaderStyle}"
+                            CellStyle="{StaticResource DashboardDataGridCellStyle}"
+                            HorizontalScrollBarVisibility="Auto"
+                            VerticalScrollBarVisibility="Auto"
+                            ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                            ScrollViewer.VerticalScrollBarVisibility="Auto">
 
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Time"
@@ -712,32 +740,32 @@
                     </Grid.RowDefinitions>
 
                     <TextBlock Grid.Row="0"
-                               Text="Appointments"
-                               FontSize="30"
-                               FontWeight="Bold"
-                               HorizontalAlignment="Center"/>
+                                Text="Appointments"
+                                FontSize="30"
+                                FontWeight="Bold"
+                                HorizontalAlignment="Center"/>
 
                     <TextBlock Grid.Row="1"
-                               Text="{Binding CurrentMonth}"
-                               FontSize="26"
-                               FontWeight="Bold"
-                               Foreground="#12A8EF"
-                               HorizontalAlignment="Center"
-                               Margin="0,12,0,6"/>
+                                Text="{Binding CurrentMonth}"
+                                FontSize="26"
+                                FontWeight="Bold"
+                                Foreground="#12A8EF"
+                                HorizontalAlignment="Center"
+                                Margin="0,12,0,6"/>
 
                     <Viewbox Grid.Row="2"
-                             Stretch="Uniform"
-                             StretchDirection="Both"
-                             HorizontalAlignment="Center"
-                             VerticalAlignment="Top"
-                             Width="500"
-                             Height="500">
+                                Stretch="Uniform"
+                                StretchDirection="Both"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Top"
+                                Width="500"
+                                Height="500">
 
                         <Calendar SelectedDate="{Binding SelectedCalendarDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                  DisplayDate="{Binding SelectedCalendarDate, Mode=TwoWay}"
-                                  FirstDayOfWeek="Sunday"
-                                  Width="340"
-                                  Height="245"/>
+                                    DisplayDate="{Binding SelectedCalendarDate, Mode=TwoWay}"
+                                    FirstDayOfWeek="Sunday"
+                                    Width="340"
+                                    Height="245"/>
                     </Viewbox>
                 </Grid>
 
@@ -756,10 +784,10 @@
                         </Grid.RowDefinitions>
 
                         <TextBlock Grid.Row="0"
-                                   Text="TODAY’S APPOINTMENT"
-                                   FontSize="28"
-                                   FontWeight="Bold"
-                                   HorizontalAlignment="Center"/>
+                                    Text="TODAY’S APPOINTMENT"
+                                    FontSize="28"
+                                    FontWeight="Bold"
+                                    HorizontalAlignment="Center"/>
 
                         <Border Grid.Row="1"
                                 Height="1"
@@ -767,20 +795,20 @@
                                 Margin="14,12,14,22"/>
 
                         <TextBlock Grid.Row="2"
-                                   Text="{Binding SelectedAppointmentHeader}"
-                                   FontSize="20"
-                                   FontWeight="Bold"
-                                   Margin="0,0,0,18"/>
+                                    Text="{Binding SelectedAppointmentHeader}"
+                                    FontSize="20"
+                                    FontWeight="Bold"
+                                    Margin="0,0,0,18"/>
 
                         <DataGrid Grid.Row="3"
-                                  ItemsSource="{Binding SelectedDateAppointments}"
-                                  Style="{StaticResource DashboardDataGridStyle}"
-                                  ColumnHeaderStyle="{StaticResource DashboardDataGridColumnHeaderStyle}"
-                                  CellStyle="{StaticResource DashboardDataGridCellStyle}"
-                                  HorizontalScrollBarVisibility="Auto"
-                                  VerticalScrollBarVisibility="Auto"
-                                  ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                                  ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                    ItemsSource="{Binding SelectedDateAppointments}"
+                                    Style="{StaticResource DashboardDataGridStyle}"
+                                    ColumnHeaderStyle="{StaticResource DashboardDataGridColumnHeaderStyle}"
+                                    CellStyle="{StaticResource DashboardDataGridCellStyle}"
+                                    HorizontalScrollBarVisibility="Auto"
+                                    VerticalScrollBarVisibility="Auto"
+                                    ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                    ScrollViewer.VerticalScrollBarVisibility="Auto">
 
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="TIME"
@@ -813,18 +841,18 @@
                                 </Grid.ColumnDefinitions>
 
                                 <fa:IconBlock Grid.Column="0"
-                                              Icon="QuestionCircle"
-                                              FontSize="36"
-                                              Foreground="White"
-                                              VerticalAlignment="Center"/>
+                                                Icon="QuestionCircle"
+                                                FontSize="36"
+                                                Foreground="White"
+                                                VerticalAlignment="Center"/>
 
                                 <TextBlock Grid.Column="1"
-                                           Text="HELP"
-                                           FontSize="26"
-                                           FontWeight="Bold"
-                                           Foreground="White"
-                                           Margin="12,0,0,0"
-                                           VerticalAlignment="Center"/>
+                                            Text="HELP"
+                                            FontSize="26"
+                                            FontWeight="Bold"
+                                            Foreground="White"
+                                            Margin="12,0,0,0"
+                                            VerticalAlignment="Center"/>
                             </Grid>
                         </Button>
                     </Grid>

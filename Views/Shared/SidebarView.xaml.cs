@@ -6,7 +6,7 @@ using System.Windows.Controls;
 namespace CruzNeryClinic.Views.Shared
 {
     // SidebarView is a reusable sidebar UserControl.
-    // It exposes navigation and logout events so each screen or MainWindow can respond.
+    // It exposes navigation and logout events so MainShellView can respond.
     public partial class SidebarView : UserControl
     {
         private readonly SidebarViewModel _viewModel;
@@ -19,7 +19,8 @@ namespace CruzNeryClinic.Views.Shared
             InitializeComponent();
 
             _viewModel = new SidebarViewModel();
-            DataContext = _viewModel;
+            
+            SidebarRoot.DataContext = _viewModel;
 
             _viewModel.NavigationRequested += moduleName =>
             {

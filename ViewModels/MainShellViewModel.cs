@@ -61,9 +61,15 @@ namespace CruzNeryClinic.ViewModels
 
         private DashboardView CreateDashboardView()
         {
+            DashboardViewModel dashboardViewModel = new DashboardViewModel();
+
+            // This makes Dashboard "View All" buttons navigate through the shell.
+            // Because it uses NavigateTo(), the sidebar selected item also updates.
+            dashboardViewModel.NavigationRequested += NavigateTo;
+
             DashboardView dashboardView = new DashboardView
             {
-                DataContext = new DashboardViewModel()
+                DataContext = dashboardViewModel
             };
 
             return dashboardView;

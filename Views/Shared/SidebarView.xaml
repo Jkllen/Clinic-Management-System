@@ -42,7 +42,8 @@
     </UserControl.Resources>
 
     <!-- Reusable sidebar used by Dashboard, Users, Patients, Appointment, Billing, etc. -->
-    <Grid Background="#223357">
+    <Grid x:Name="SidebarRoot" 
+          Background="#223357">
 
         <Grid.RowDefinitions>
             <!-- Row 0: Clinic logo -->

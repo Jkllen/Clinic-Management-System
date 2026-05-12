@@ -25,6 +25,8 @@ namespace CruzNeryClinic.ViewModels
         private DateTime _selectedCalendarDate = DateTime.Today;
         private string _selectedAppointmentHeader = DateTime.Today.ToString("dddd | MMMM d, yyyy").ToUpper();
 
+        public event Action<string>? NavigationRequested;
+
         public event Action? LogoutRequested;
 
         public DashboardViewModel()
@@ -41,6 +43,10 @@ namespace CruzNeryClinic.ViewModels
 
             RefreshCommand = new RelayCommand(LoadDashboard);
             LogoutCommand = new RelayCommand(Logout);
+
+            ViewInventoryCommand = new RelayCommand(() => NavigateTo("Inventory"));
+            ViewBillingCommand = new RelayCommand(() => NavigateTo("Billing"));
+            ViewReportsCommand = new RelayCommand(() => NavigateTo("Reports"));
 
             LoadDashboard();
         }
@@ -126,6 +132,10 @@ namespace CruzNeryClinic.ViewModels
 
         public ICommand LogoutCommand { get; }
 
+        public ICommand ViewInventoryCommand { get; }
+        public ICommand ViewBillingCommand { get; }
+        public ICommand ViewReportsCommand { get; }
+
         private void LoadDashboard()
         {
             DashboardSummary summary = dashboardRepository.GetDashboardSummary();
@@ -164,6 +174,14 @@ namespace CruzNeryClinic.ViewModels
             {
                 SelectedDateAppointments.Add(item);
             }
+        }
+
+        private void NavigateTo(string moduleName)
+        {
+            if (!SessionService.CanAccessModule(moduleName))
+                return;
+
+            NavigationRequested?.Invoke(moduleName);
         }
 
         private void Logout()
