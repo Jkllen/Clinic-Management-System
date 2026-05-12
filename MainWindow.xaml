@@ -1,0 +1,21 @@
+﻿<Window x:Class="CruzNeryClinic.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Cruz-Nery Dental Clinic Management System"
+        Width="1366"
+        Height="768"
+        MinWidth="900"
+        MinHeight="600"
+        WindowStartupLocation="CenterScreen"
+        Background="White">
+
+    <!--
+        This window is the main container of the whole application.
+        It displays SplashView first, then LoginView, then DashboardView later.
+        Minimum width and height help keep the design usable when resized.
+    -->
+
+    <Grid>
+        <ContentControl x:Name="MainContent"/>
+    </Grid>
+</Window>

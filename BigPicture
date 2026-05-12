@@ -1,0 +1,40 @@
+DatabaseService.cs
+- This file is responsible for locating and opening the SQLite database.
+
+It answers:
+1. Where is the database stored?
+2. How do we connect to it?
+
+Instead of writing this again and again:
+
+new SqliteConnection("Data Source=...");
+
+we just call:
+
+DatabaseService.GetConnection();
+Why it is important
+
+It gives us one central place for the database path. If we later change the database location, we only edit one file.
+
+DatabaseInitializer.cs
+- This file creates the database tables when the app first opens.
+
+It answers:
+
+1. Do the tables exist?
+2. If not, create them.
+3. Do the default admin accounts exist?
+4. If not, insert them.
+
+It creates tables like:
+
+Users
+Patients
+Appointments
+BillingTransactions
+PaymentRecords
+InventoryItems
+InventoryUsage
+InventoryRestocks
+ActivityLogs
+BackupRecords

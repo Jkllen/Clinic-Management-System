@@ -1,0 +1,51 @@
+<UserControl
+    x:Class="CruzNeryClinic.Views.SplashView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DesignHeight="900"
+    d:DesignWidth="1600"
+    mc:Ignorable="d">
+
+    <!--
+        SplashView
+        This screen appears first when the system opens.
+        It shows the Cruz-Nery Dental Clinic logo while the app initializes.
+    -->
+
+    <Grid>
+
+        <!--
+            Main background gradient.
+            This copies the light-to-cyan style from your splash screen design.
+        -->
+        <Grid.Background>
+            <!--
+                Main background gradient.
+                Starts from top-left white and ends at bottom-right cyan.
+            -->
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Offset="0.00" Color="#FFFFFF" />
+                <GradientStop Offset="1.00" Color="#91EFEF" />
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <!--
+            Center content area.
+            The logo is centered both horizontally and vertically.
+        -->
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+
+            <!--  Clinic logo  -->
+            <Image
+                Width="440"
+                Height="440"
+                RenderOptions.BitmapScalingMode="HighQuality"
+                Source="/Assets/Images/logo.png"
+                Stretch="Uniform" />
+
+        </StackPanel>
+
+    </Grid>
+</UserControl>

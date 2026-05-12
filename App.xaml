@@ -1,0 +1,416 @@
+﻿<Application x:Class="CruzNeryClinic.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:CruzNeryClinic"
+             StartupUri="MainWindow.xaml">
+    
+    <Application.Resources>
+        <!-- Main application font -->
+        <FontFamily x:Key="AppFont">Open Sans</FontFamily>
+
+        <!-- Default TextBlock font -->
+        <Style TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
+        </Style>
+
+        <!-- Default TextBox font -->
+        <Style TargetType="TextBox">
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
+        </Style>
+
+        <!-- Default PasswordBox font -->
+        <Style TargetType="PasswordBox">
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
+        </Style>
+
+        <!-- Default Button font -->
+        <Style TargetType="Button">
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
+        </Style>
+
+        <!-- Default ComboBox font -->
+        <Style TargetType="ComboBox">
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
+        </Style>
+
+        <!-- Shared rounded button style -->
+        <Style x:Key="PrimaryButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#223357"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonBorder"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="28">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"/>
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#2E4575"/>
+                            </Trigger>
+
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#182641"/>
+                            </Trigger>
+
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.55"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Rounded password box style for login password input & Used for same style create new password-->
+        <Style x:Key="LoginPasswordBoxStyle" TargetType="PasswordBox">
+            <Setter Property="Height" Value="52"/>
+            <Setter Property="FontSize" Value="22"/>
+            <Setter Property="Foreground" Value="#111111"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#9A9A9A"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="28,0,20,0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="PasswordBox">
+                        <Border x:Name="PasswordBoxBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8"
+                                SnapsToDevicePixels="True">
+                            <Grid>
+                                <ScrollViewer x:Name="PART_ContentHost"
+                                            Margin="{TemplateBinding Padding}"
+                                            VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="PasswordBoxBorder" Property="BorderBrush" Value="#223357"/>
+                            </Trigger>
+
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="PasswordBoxBorder" Property="BorderBrush" Value="#223357"/>
+                                <Setter TargetName="PasswordBoxBorder" Property="BorderThickness" Value="2"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 
+            Transparent icon button style.
+            Used for the eye/eye-slash password toggle.
+            Removes the default hover box but keeps hover feedback through opacity.
+        -->
+        <Style x:Key="IconButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Opacity" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="Transparent">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"/>
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+                            <!-- Slight hover effect without showing default button box -->
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Opacity" Value="0.75"/>
+                            </Trigger>
+
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Opacity" Value="0.55"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        
+        <!-- Rounded textbox style used when password visibility is turned on. -->
+        <Style x:Key="VisiblePasswordTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Height" Value="52"/>
+            <Setter Property="FontSize" Value="22"/>
+            <Setter Property="Foreground" Value="#111111"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#9A9A9A"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="28,0,48,0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="TextBoxBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8"
+                                SnapsToDevicePixels="True">
+                            <Grid>
+                                <ScrollViewer x:Name="PART_ContentHost"
+                                            Margin="{TemplateBinding Padding}"
+                                            VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="TextBoxBorder" Property="BorderBrush" Value="#223357"/>
+                            </Trigger>
+
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="TextBoxBorder" Property="BorderBrush" Value="#223357"/>
+                                <Setter TargetName="TextBoxBorder" Property="BorderThickness" Value="2"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Main dark blue used by the sidebar and primary buttons -->
+        <SolidColorBrush x:Key="SidebarBrush" Color="#223357"/>
+        <SolidColorBrush x:Key="SelectedMenuBrush" Color="#E6FCFF"/>
+        <SolidColorBrush x:Key="AccentBlueBrush" Color="#2F98D0"/>
+        <SolidColorBrush x:Key="SuccessGreenBrush" Color="#50C878"/>
+        <SolidColorBrush x:Key="DangerRedBrush" Color="#E53935"/>
+        <SolidColorBrush x:Key="CardBorderBrush" Color="#D8D8D8"/>
+        <SolidColorBrush x:Key="ScreenBackgroundBrush" Color="#FFFDF8"/>
+
+        <!-- Shared white rounded dashboard/module card -->
+        <Style x:Key="DashboardCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="{StaticResource CardBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="Padding" Value="18"/>
+        </Style>
+
+        <!-- Shared large table/container box (Used in Today's Appointment in dashboard) -->
+        <Style x:Key="LargePanelStyle" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#D8D8D8"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="Padding" Value="20"/>
+        </Style>
+
+        <!-- Shared sidebar menu button -->
+        <Style x:Key="SidebarMenuButtonStyle" TargetType="Button">
+            <Setter Property="Height" Value="54"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="24,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="MenuBorder"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="10"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Stretch"
+                                            VerticalAlignment="Center"/>
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="MenuBorder" Property="Background" Value="#31466F"/>
+                            </Trigger>
+
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="MenuBorder" Property="Background" Value="#192846"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Shared selected sidebar menu button -->
+        <Style x:Key="SelectedSidebarMenuButtonStyle"
+            TargetType="Button"
+            BasedOn="{StaticResource SidebarMenuButtonStyle}">
+            <Setter Property="Background" Value="{StaticResource SelectedMenuBrush}"/>
+            <Setter Property="Foreground" Value="Black"/>
+        </Style>
+
+        <!-- Shared search textbox style used in dashboard and module screens -->
+        <Style x:Key="SearchTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Height" Value="42"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="#111111"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#D8D8D8"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="24,0,18,0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="TextBoxBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="16"
+                                SnapsToDevicePixels="True">
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                        Margin="{TemplateBinding Padding}"
+                                        VerticalAlignment="Center"/>
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="TextBoxBorder" Property="BorderBrush" Value="#223357"/>
+                            </Trigger>
+
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="TextBoxBorder" Property="BorderBrush" Value="#223357"/>
+                                <Setter TargetName="TextBoxBorder" Property="BorderThickness" Value="2"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Shared help button -->
+        <Style x:Key="HelpButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="170"/>
+            <Setter Property="Height" Value="66"/>
+            <Setter Property="Background" Value="#223357"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="26"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonBorder"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="18">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"/>
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#2E4575"/>
+                            </Trigger>
+
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#182641"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+
+        <!-- Shared table style used by Dashboard, Patients, Appointments, Billing, and Users -->
+        <Style x:Key="DashboardDataGridStyle" TargetType="DataGrid">
+            <Setter Property="AutoGenerateColumns" Value="False"/>
+            <Setter Property="CanUserAddRows" Value="False"/>
+            <Setter Property="CanUserDeleteRows" Value="False"/>
+            <Setter Property="CanUserResizeRows" Value="False"/>
+            <Setter Property="HeadersVisibility" Value="Column"/>
+            <Setter Property="GridLinesVisibility" Value="All"/>
+            <Setter Property="RowHeaderWidth" Value="0"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
+            <Setter Property="HorizontalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="IsReadOnly" Value="True"/>
+        </Style>
+
+        <Style x:Key="DashboardDataGridColumnHeaderStyle" TargetType="DataGridColumnHeader">
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        </Style>
+
+        <Style x:Key="DashboardDataGridCellStyle" TargetType="DataGridCell">
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DataGridCell">
+                        <Border Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Shared scrollbar style for DataGrid tables -->
+        <Style TargetType="{x:Type ScrollBar}">
+            <Setter Property="Width" Value="8"/>
+            <Setter Property="Height" Value="8"/>
+            <Setter Property="Background" Value="Transparent"/>
+
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ScrollBar}">
+                        <Grid Background="Transparent">
+
+                            <!-- Track contains the draggable thumb -->
+                            <Track x:Name="PART_Track"
+                                IsDirectionReversed="true">
+
+                                <Track.Thumb>
+                                    <Thumb>
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="{x:Type Thumb}">
+                                                <Border CornerRadius="4"
+                                                        Background="#445577"
+                                                        Opacity="0.6"
+                                                        Margin="2,0"/>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+    </Application.Resources>
+</Application>

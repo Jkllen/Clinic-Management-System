@@ -1,0 +1,34 @@
+<UserControl x:Class="CruzNeryClinic.Views.MainShellView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:shared="clr-namespace:CruzNeryClinic.Views.Shared"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignWidth="1600"
+             d:DesignHeight="900">
+
+    <!--
+        MainShellView is the logged-in layout.
+        The sidebar stays fixed.
+        Only ModuleContent changes when clicking sidebar buttons.
+    -->
+
+    <Grid Background="{StaticResource ScreenBackgroundBrush}">
+        <Grid.ColumnDefinitions>
+            <!-- Sidebar column scales with window size but stays within a usable range. -->
+            <ColumnDefinition Width="0.28*" MinWidth="260" MaxWidth="390"/>
+
+            <!-- Main content changes depending on selected module. -->
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <shared:SidebarView x:Name="Sidebar"
+                            Grid.Column="0"
+                            SelectedModule="{Binding SelectedModule, Mode=TwoWay}"/>
+
+        <ContentControl x:Name="ModuleContent"
+                        Grid.Column="1"
+                        Content="{Binding CurrentModuleView}"/>
+    </Grid>
+</UserControl>

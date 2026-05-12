@@ -1,0 +1,386 @@
+<UserControl x:Class="CruzNeryClinic.Views.SecurityQuestionsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignWidth="1600"
+             d:DesignHeight="900">
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+
+        <!-- Textbox style for the answer fields. -->
+        <Style x:Key="SecurityAnswerTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Height" Value="52"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="Foreground" Value="#111111"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#8B8B8B"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="13,0,18,0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="TextBoxBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8">
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                          Margin="{TemplateBinding Padding}"
+                                          VerticalAlignment="Center"/>
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="TextBoxBorder" Property="BorderBrush" Value="#223357"/>
+                            </Trigger>
+
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="TextBoxBorder" Property="BorderBrush" Value="#223357"/>
+                                <Setter TargetName="TextBoxBorder" Property="BorderThickness" Value="2"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <!-- Main responsive screen container. -->
+    <Grid>
+
+        <!-- Background gradient: top-left white to bottom-right cyan. -->
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#FFFFFF" Offset="0.00"/>
+                <GradientStop Color="#91EFEF" Offset="1.00"/>
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <!-- 
+            Viewbox keeps the wide card flexible.
+            If the window gets smaller, the whole security card scales down.
+        -->
+        <Viewbox Stretch="Uniform"
+                 StretchDirection="DownOnly"
+                 HorizontalAlignment="Center"
+                 VerticalAlignment="Center"
+                 Margin="30">
+
+            <!-- Original design size based on your Figma layout. -->
+            <Grid Width="1180" Height="630">
+
+                <!-- Main wide card. -->
+                <Border CornerRadius="34"
+                        Background="#EAFDFD"
+                        BorderBrush="White"
+                        BorderThickness="1"
+                        Padding="0">
+
+                    <Border.Effect>
+                        <DropShadowEffect Color="#707070"
+                                          BlurRadius="10"
+                                          ShadowDepth="4"
+                                          Opacity="0.28"/>
+                    </Border.Effect>
+
+                    <Grid>
+
+                        <Grid.RowDefinitions>
+                            <!-- 0: Header area with logo, title, and pin image -->
+                            <RowDefinition Height="190"/>
+
+                            <!-- 1: Questions and answers table -->
+                            <RowDefinition Height="300"/>
+
+                            <!-- 2: Error message -->
+                            <RowDefinition Height="45"/>
+
+                            <!-- 3: Buttons -->
+                            <RowDefinition Height="75"/>
+
+                            <!-- 4: Bottom spacing -->
+                            <RowDefinition Height="20"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Top-right decorative image -->
+                        <Image Grid.Row="0"
+                            Source="/Assets/Images/pin.png"
+                            Width="82"
+                            Height="82"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            Margin="0,42,76,0"
+                            Stretch="Uniform"
+                            RenderOptions.BitmapScalingMode="HighQuality"/>
+
+                        <!-- Header area: logo and title -->
+                        <Grid Grid.Row="0"
+                            Margin="65,42,80,0"
+                            VerticalAlignment="Top"
+                            Height="150">
+
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="170"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Logo positioned top-left -->
+                            <Image Grid.Column="0"
+                                Source="/Assets/Images/logo.png"
+                                Width="150"
+                                Height="150"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Top"
+                                Stretch="Uniform"
+                                RenderOptions.BitmapScalingMode="HighQuality"/>
+
+                            <!-- Title and instruction beside logo -->
+                            <StackPanel Grid.Column="1"
+                                        VerticalAlignment="Center"
+                                        Margin="20,0,0,0">
+
+                                <TextBlock Text="Security Questions"
+                                        FontFamily="{StaticResource AppFont}"
+                                        FontSize="34"
+                                        FontWeight="Bold"
+                                        Foreground="#111111"/>
+
+                                <TextBlock Text="Please answer 3 security questions before creating a&#x0a;new password"
+                                        FontFamily="{StaticResource AppFont}"
+                                        FontSize="22"
+                                        Foreground="#7B7B7B"
+                                        LineHeight="26"
+                                        Margin="0,5,0,0"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Main questions and answers section -->
+                        <Grid Grid.Row="1"
+                            Margin="115,10,90,0"
+                            Height="300"
+                            VerticalAlignment="Top">
+
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="500"/>
+                                <ColumnDefinition Width="45"/>
+                                <ColumnDefinition Width="380"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="45"/>
+                                <RowDefinition Height="78"/>
+                                <RowDefinition Height="1"/>
+                                <RowDefinition Height="78"/>
+                                <RowDefinition Height="1"/>
+                                <RowDefinition Height="78"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Column headers -->
+                            <TextBlock Grid.Row="0"
+                                    Grid.Column="0"
+                                    Text="Questions"
+                                    FontFamily="{StaticResource AppFont}"
+                                    FontSize="24"
+                                    FontWeight="Bold"
+                                    Foreground="#111111"/>
+
+                            <TextBlock Grid.Row="0"
+                                    Grid.Column="2"
+                                    Text="Answers"
+                                    FontFamily="{StaticResource AppFont}"
+                                    FontSize="24"
+                                    FontWeight="Bold"
+                                    Foreground="#111111"/>
+
+                            <!-- Question 1 -->
+                            <TextBlock Grid.Row="1"
+                                    Grid.Column="0"
+                                    Text="{Binding SecurityQuestion1, StringFormat=1. {0}}"
+                                    FontFamily="{StaticResource AppFont}"
+                                    FontSize="21"
+                                    Foreground="#111111"
+                                    TextWrapping="Wrap"
+                                    VerticalAlignment="Center"
+                                    Margin="0,0,25,0"/>
+
+                            <Grid Grid.Row="1"
+                                Grid.Column="2"
+                                VerticalAlignment="Center">
+
+                                <TextBox Style="{StaticResource SecurityAnswerTextBoxStyle}"
+                                        Text="{Binding Answer1, UpdateSourceTrigger=PropertyChanged}"/>
+
+                                <TextBlock Text="Enter your answer"
+                                        FontFamily="{StaticResource AppFont}"
+                                        FontSize="17"
+                                        Foreground="#8A8A8A"
+                                        Margin="30,0,0,0"
+                                        VerticalAlignment="Center"
+                                        IsHitTestVisible="False">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Answer1}" Value="">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Answer1}" Value="{x:Null}">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Grid>
+
+                            <!-- Separator line 1 -->
+                            <Border Grid.Row="2"
+                                    Grid.Column="0"
+                                    Grid.ColumnSpan="3"
+                                    Height="1"
+                                    Background="#A9A9A9"/>
+
+                            <!-- Question 2 -->
+                            <TextBlock Grid.Row="3"
+                                    Grid.Column="0"
+                                    Text="{Binding SecurityQuestion2, StringFormat=2. {0}}"
+                                    FontFamily="{StaticResource AppFont}"
+                                    FontSize="21"
+                                    Foreground="#111111"
+                                    TextWrapping="Wrap"
+                                    VerticalAlignment="Center"
+                                    Margin="0,0,25,0"/>
+
+                            <Grid Grid.Row="3"
+                                Grid.Column="2"
+                                VerticalAlignment="Center">
+
+                                <TextBox Style="{StaticResource SecurityAnswerTextBoxStyle}"
+                                        Text="{Binding Answer2, UpdateSourceTrigger=PropertyChanged}"/>
+
+                                <TextBlock Text="Enter your answer"
+                                        FontFamily="{StaticResource AppFont}"
+                                        FontSize="17"
+                                        Foreground="#8A8A8A"
+                                        Margin="30,0,0,0"
+                                        VerticalAlignment="Center"
+                                        IsHitTestVisible="False">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Answer2}" Value="">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Answer2}" Value="{x:Null}">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Grid>
+
+                            <!-- Separator line 2 -->
+                            <Border Grid.Row="4"
+                                    Grid.Column="0"
+                                    Grid.ColumnSpan="3"
+                                    Height="1"
+                                    Background="#A9A9A9"/>
+
+                            <!-- Question 3 -->
+                            <TextBlock Grid.Row="5"
+                                    Grid.Column="0"
+                                    Text="{Binding SecurityQuestion3, StringFormat=3. {0}}"
+                                    FontFamily="{StaticResource AppFont}"
+                                    FontSize="21"
+                                    Foreground="#111111"
+                                    TextWrapping="Wrap"
+                                    VerticalAlignment="Center"
+                                    Margin="0,0,25,0"/>
+
+                            <Grid Grid.Row="5"
+                                Grid.Column="2"
+                                VerticalAlignment="Center">
+
+                                <TextBox Style="{StaticResource SecurityAnswerTextBoxStyle}"
+                                        Text="{Binding Answer3, UpdateSourceTrigger=PropertyChanged}"/>
+
+                                <TextBlock Text="Enter your answer"
+                                        FontFamily="{StaticResource AppFont}"
+                                        FontSize="17"
+                                        Foreground="#8A8A8A"
+                                        Margin="30,0,0,0"
+                                        VerticalAlignment="Center"
+                                        IsHitTestVisible="False">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Answer3}" Value="">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Answer3}" Value="{x:Null}">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Grid>
+                        </Grid>
+
+                        <!-- Error message row -->
+                        <TextBlock Grid.Row="2"
+                                Text="{Binding ErrorMessage}"
+                                Visibility="{Binding HasError, Converter={StaticResource BoolToVisibilityConverter}}"
+                                Foreground="#C62828"
+                                FontSize="15"
+                                FontWeight="SemiBold"
+                                TextWrapping="Wrap"
+                                TextAlignment="Center"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Margin="30,0,30,0"/>
+
+                        <!-- Button row -->
+                        <StackPanel Grid.Row="3"
+                                    Orientation="Horizontal"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center">
+
+                            <Button Content="Back"
+                                    Command="{Binding BackCommand}"
+                                    Width="140"
+                                    Height="55"
+                                    Background="#B6B6B6"
+                                    Foreground="White"
+                                    FontFamily="{StaticResource AppFont}"
+                                    FontSize="26"
+                                    FontWeight="Bold"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Margin="0,0,20,0"/>
+
+                            <Button Content="Enter"
+                                    Command="{Binding ContinueCommand}"
+                                    Width="170"
+                                    Height="55"
+                                    Background="#223357"
+                                    Foreground="White"
+                                    FontFamily="{StaticResource AppFont}"
+                                    FontSize="28"
+                                    FontWeight="Bold"
+                                    Style="{StaticResource PrimaryButtonStyle}"/>
+                        </StackPanel>
+
+                    </Grid>
+                </Border>
+            </Grid>
+        </Viewbox>
+    </Grid>
+</UserControl>

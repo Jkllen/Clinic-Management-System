@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ClosedXML" Version="0.105.0" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="FontAwesome.Sharp" Version="6.6.0" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.7" />
+    <PackageReference Include="QuestPDF" Version="2026.2.4" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Content Include="Assets\Images\logo.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Images\pin.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+
+</Project>
