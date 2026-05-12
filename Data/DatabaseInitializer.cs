@@ -509,6 +509,48 @@ CREATE INDEX IF NOT EXISTS idx_activity_created ON ActivityLogs(CreatedAt);
                 securityQuestionId3: cityQuestionId,
                 securityAnswer3: "city"
             );
+
+            SeedUser(
+                connection,
+                userCode: "DEV-002",
+                firstName: "Lawrence",
+                middleName: "",
+                lastName: "Malaga",
+                username: "devLM",
+                plainPassword: "PASS#12",
+                role: "Admin",
+                contactNumber: "N/A",
+
+                securityQuestionId1: schoolQuestionId,
+                securityAnswer1: "school",
+
+                securityQuestionId2: petQuestionId,
+                securityAnswer2: "pet",
+
+                securityQuestionId3: cityQuestionId,
+                securityAnswer3: "city"
+            );
+
+            SeedUser(
+                connection,
+                userCode: "DEV-003",
+                firstName: "Wenifredo",
+                middleName: "",
+                lastName: "De Lemos",
+                username: "devWDL",
+                plainPassword: "PASS#12",
+                role: "Admin",
+                contactNumber: "N/A",
+
+                securityQuestionId1: schoolQuestionId,
+                securityAnswer1: "school",
+
+                securityQuestionId2: petQuestionId,
+                securityAnswer2: "pet",
+
+                securityQuestionId3: cityQuestionId,
+                securityAnswer3: "city"
+            );
         }
 
         private static void SeedUser(
