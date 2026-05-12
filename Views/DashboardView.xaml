@@ -159,7 +159,7 @@
 
                                     <fa:IconBlock Icon="Users"
                                                     Foreground="White"
-                                                    FontSize="34"
+                                                    FontSize="24"
                                                     HorizontalAlignment="Center"
                                                     VerticalAlignment="Center"/>
                                 </Border>
@@ -523,7 +523,7 @@
                                             <TextBlock Text="{Binding Description}"
                                                     FontSize="12"
                                                     TextWrapping="Wrap"
-                                                    Margin="0,0,0,3"/>
+                                                    Margin="10,0,0,3"/>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
@@ -701,6 +701,10 @@
                             <DataGridTextColumn Header="Time"
                                                 Binding="{Binding Time}"
                                                 Width="90"/>
+                            
+                            <DataGridTextColumn Header="Patient ID"
+                                                Binding="{Binding PatientCode}"
+                                                Width="180"/>
 
                             <DataGridTextColumn Header="Patient Name"
                                                 Binding="{Binding PatientName}"

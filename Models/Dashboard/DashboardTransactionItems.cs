@@ -5,6 +5,8 @@ namespace CruzNeryClinic.Models.Dashboard
     {
         public string Time { get; set; } = string.Empty;
 
+        public string PatientCode { get; set; } = string.Empty;
+        
         public string PatientName { get; set; } = string.Empty;
 
         public string Service { get; set; } = string.Empty;

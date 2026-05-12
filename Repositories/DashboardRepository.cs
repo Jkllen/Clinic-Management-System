@@ -207,6 +207,7 @@ SELECT
     b.ServiceName,
     b.AmountPaid,
     b.PaymentStatus,
+    p.PatientCode,
     p.FirstName,
     p.MiddleName,
     p.LastName
@@ -234,6 +235,7 @@ LIMIT @Limit;";
                 transactions.Add(new DashboardTransactionItem
                 {
                     Time = transactionDate.ToString("hh:mm tt"),
+                    PatientCode = reader["PatientCode"].ToString() ?? string.Empty,
                     PatientName = patientName,
                     Service = reader["ServiceName"].ToString() ?? string.Empty,
                     Amount = Convert.ToDecimal(reader["AmountPaid"]),
