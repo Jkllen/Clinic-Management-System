@@ -201,37 +201,41 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="ComboBox">
                         <Grid>
-                            <ToggleButton x:Name="ToggleButton"
-                                        Width="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
-                                        HorizontalAlignment="Stretch"
-                                        Background="Transparent"
-                                        BorderThickness="0"
-                                        ClickMode="Press"
-                                        Focusable="False"
-                                        IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                            <ToggleButton
+                                x:Name="ToggleButton"
+                                Width="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
+                                HorizontalAlignment="Stretch"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                ClickMode="Press"
+                                Focusable="False"
+                                IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
 
-                                <Border x:Name="ComboBorder"
-                                        HorizontalAlignment="Stretch"
-                                        Background="{TemplateBinding Background}"
-                                        BorderBrush="{TemplateBinding BorderBrush}"
-                                        BorderThickness="{TemplateBinding BorderThickness}"
-                                        CornerRadius="14">
+                                <Border
+                                    x:Name="ComboBorder"
+                                    HorizontalAlignment="Stretch"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="14">
 
                                     <Grid>
-                                        <ContentPresenter x:Name="ContentSite"
-                                                        Margin="16,0,46,0"
-                                                        HorizontalAlignment="Left"
-                                                        VerticalAlignment="Center"
-                                                        Content="{TemplateBinding SelectionBoxItem}"
-                                                        ContentStringFormat="{TemplateBinding SelectionBoxItemStringFormat}"
-                                                        ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" />
+                                        <ContentPresenter
+                                            x:Name="ContentSite"
+                                            Margin="16,0,46,0"
+                                            HorizontalAlignment="Left"
+                                            VerticalAlignment="Center"
+                                            Content="{TemplateBinding SelectionBoxItem}"
+                                            ContentStringFormat="{TemplateBinding SelectionBoxItemStringFormat}"
+                                            ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" />
 
-                                        <TextBlock x:Name="PlaceholderText"
-                                                Margin="16,0,46,0"
-                                                VerticalAlignment="Center"
-                                                Foreground="#A0A0A0"
-                                                IsHitTestVisible="False"
-                                                Text="{TemplateBinding Tag}">
+                                        <TextBlock
+                                            x:Name="PlaceholderText"
+                                            Margin="16,0,46,0"
+                                            VerticalAlignment="Center"
+                                            Foreground="#A0A0A0"
+                                            IsHitTestVisible="False"
+                                            Text="{TemplateBinding Tag}">
                                             <TextBlock.Style>
                                                 <Style TargetType="TextBlock">
                                                     <Setter Property="Visibility" Value="Collapsed" />
@@ -244,29 +248,32 @@
                                             </TextBlock.Style>
                                         </TextBlock>
 
-                                        <fa:IconBlock Margin="0,0,16,0"
-                                                    HorizontalAlignment="Right"
-                                                    VerticalAlignment="Center"
-                                                    FontSize="16"
-                                                    Foreground="Black"
-                                                    Icon="AngleDown" />
+                                        <fa:IconBlock
+                                            Margin="0,0,16,0"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Center"
+                                            FontSize="16"
+                                            Foreground="Black"
+                                            Icon="AngleDown" />
                                     </Grid>
                                 </Border>
                             </ToggleButton>
 
-                            <Popup x:Name="PART_Popup"
+                            <Popup
+                                x:Name="PART_Popup"
                                 AllowsTransparency="True"
                                 Focusable="False"
                                 IsOpen="{TemplateBinding IsDropDownOpen}"
                                 Placement="Bottom"
                                 PopupAnimation="Slide">
 
-                                <Border Width="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
-                                        MaxHeight="220"
-                                        Background="White"
-                                        BorderBrush="#DADADA"
-                                        BorderThickness="1"
-                                        CornerRadius="8">
+                                <Border
+                                    Width="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
+                                    MaxHeight="220"
+                                    Background="White"
+                                    BorderBrush="#DADADA"
+                                    BorderThickness="1"
+                                    CornerRadius="8">
 
                                     <ScrollViewer Margin="2">
                                         <ItemsPresenter />
@@ -295,24 +302,24 @@
             <Setter Property="Background" Value="#FFF9FD" />
         </Style>
 
-        <!-- Blue scrollbar style for User Management tables -->
+        <!--  Blue scrollbar style for User Management tables  -->
         <Style x:Key="BlueDataGridScrollBarStyle" TargetType="{x:Type ScrollBar}">
-            <Setter Property="Background" Value="#ffffff"/>
-            <Setter Property="Width" Value="Auto"/>
-            <Setter Property="Height" Value="Auto"/>
+            <Setter Property="Background" Value="#ffffff" />
+            <Setter Property="Width" Value="Auto" />
+            <Setter Property="Height" Value="Auto" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type ScrollBar}">
                         <Grid Background="{TemplateBinding Background}">
-                            <Track x:Name="PART_Track"
-                                IsDirectionReversed="True">
+                            <Track x:Name="PART_Track" IsDirectionReversed="True">
                                 <Track.Thumb>
                                     <Thumb>
                                         <Thumb.Template>
                                             <ControlTemplate TargetType="Thumb">
-                                                <Border Background="#223357"
-                                                        CornerRadius="6"
-                                                        Margin="2"/>
+                                                <Border
+                                                    Margin="2"
+                                                    Background="#223357"
+                                                    CornerRadius="6" />
                                             </ControlTemplate>
                                         </Thumb.Template>
                                     </Thumb>
@@ -322,7 +329,7 @@
 
                         <ControlTemplate.Triggers>
                             <Trigger Property="Orientation" Value="Horizontal">
-                                <Setter TargetName="PART_Track" Property="IsDirectionReversed" Value="False"/>
+                                <Setter TargetName="PART_Track" Property="IsDirectionReversed" Value="False" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -542,43 +549,25 @@
                         Icon="Search" />
                 </Grid>
 
-                <!--  Filter button placeholder  -->
-                <Button Grid.Column="2" Style="{StaticResource PillToolButtonStyle}">
+                <!--  Filter dropdown  -->
+                <ComboBox
+                    Grid.Column="2"
+                    Height="52"
+                    FontSize="16"
+                    ItemsSource="{Binding FilterOptions}"
+                    SelectedItem="{Binding SelectedFilterOption, Mode=TwoWay}"
+                    Style="{StaticResource AddUserOverlayComboBoxStyle}"
+                    Tag="Filter" />
 
-                    <StackPanel Orientation="Horizontal">
-                        <fa:IconBlock
-                            Margin="0,0,10,0"
-                            VerticalAlignment="Center"
-                            FontSize="24"
-                            Foreground="Black"
-                            Icon="Filter" />
-
-                        <TextBlock
-                            VerticalAlignment="Center"
-                            FontSize="22"
-                            Foreground="Black"
-                            Text="Filter" />
-                    </StackPanel>
-                </Button>
-
-                <!--  Sort button placeholder  -->
-                <Button Grid.Column="4" Style="{StaticResource PillToolButtonStyle}">
-
-                    <StackPanel Orientation="Horizontal">
-                        <fa:IconBlock
-                            Margin="0,0,10,0"
-                            VerticalAlignment="Center"
-                            FontSize="24"
-                            Foreground="Black"
-                            Icon="SortAmountDown" />
-
-                        <TextBlock
-                            VerticalAlignment="Center"
-                            FontSize="22"
-                            Foreground="Black"
-                            Text="Sort By" />
-                    </StackPanel>
-                </Button>
+                <!--  Sort dropdown  -->
+                <ComboBox
+                    Grid.Column="4"
+                    Height="52"
+                    FontSize="16"
+                    ItemsSource="{Binding SortOptions}"
+                    SelectedItem="{Binding SelectedSortOption, Mode=TwoWay}"
+                    Style="{StaticResource AddUserOverlayComboBoxStyle}"
+                    Tag="Sort By" />
 
                 <!--  Add New User button  -->
                 <Button
@@ -610,22 +599,22 @@
                 </Button>
             </Grid>
 
-            <!--  Table panel and Help Button Area -->
-            <Grid Grid.Row="3" 
-                  Margin="0,0,0,18">
-                
+            <!--  Table panel and Help Button Area  -->
+            <Grid Grid.Row="3" Margin="0,0,0,18">
+
                 <Grid.RowDefinitions>
-                    <!-- Table Area -->
-                    <RowDefinition Height="*"/>
-                    <!-- Help Button Area-->
-                    <RowDefinition Height="76"/>
+                    <!--  Table Area  -->
+                    <RowDefinition Height="*" />
+                    <!--  Help Button Area  -->
+                    <RowDefinition Height="76" />
                 </Grid.RowDefinitions>
 
                 <!--  Main table container  -->
-                <Border Grid.Row="0"
-                        Margin="0,0,0,0"
-                        Padding="20"
-                        Style="{StaticResource LargePanelStyle}">
+                <Border
+                    Grid.Row="0"
+                    Margin="0,0,0,0"
+                    Padding="20"
+                    Style="{StaticResource LargePanelStyle}">
 
                     <Grid>
                         <Grid.RowDefinitions>
@@ -647,20 +636,19 @@
                         <!--  Users table  -->
                         <DataGrid
                             Grid.Row="1"
+                            CanUserResizeRows="False"
                             CellStyle="{StaticResource DashboardDataGridCellStyle}"
                             ColumnHeaderStyle="{StaticResource DashboardDataGridColumnHeaderStyle}"
                             ItemsSource="{Binding Users}"
                             MinRowHeight="42"
                             RowHeight="46"
-                            SelectedItem="{Binding SelectedUser, Mode=TwoWay}"
-                            Style="{StaticResource DashboardDataGridStyle}"
-                            ScrollViewer.VerticalScrollBarVisibility="Auto"
                             ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                            CanUserResizeRows="False">
-                            
+                            ScrollViewer.VerticalScrollBarVisibility="Auto"
+                            SelectedItem="{Binding SelectedUser, Mode=TwoWay}"
+                            Style="{StaticResource DashboardDataGridStyle}">
+
                             <DataGrid.Resources>
-                                <Style 
-                                    TargetType="{x:Type ScrollBar}" BasedOn="{StaticResource BlueDataGridScrollBarStyle}"/>
+                                <Style BasedOn="{StaticResource BlueDataGridScrollBarStyle}" TargetType="{x:Type ScrollBar}" />
                             </DataGrid.Resources>
 
                             <DataGrid.Columns>
@@ -695,9 +683,15 @@
                                     Binding="{Binding Role}"
                                     Header="Role" />
 
-                                <DataGridTemplateColumn 
+                                <DataGridTextColumn
+                                    Width="1*"
+                                    MinWidth="110"
+                                    Binding="{Binding AccountStatus}"
+                                    Header="Status" />
+
+                                <DataGridTemplateColumn
                                     Width="1.6*"
-                                    MinWidth="190" 
+                                    MinWidth="190"
                                     Header="Actions">
 
                                     <DataGridTemplateColumn.CellTemplate>
@@ -769,12 +763,13 @@
                 </Border>
 
                 <!--  Help button  -->
-                <Button Grid.Row="1"
-                        Margin="0,12,0,0"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Center"
-                        Panel.ZIndex="10"
-                        Style="{StaticResource HelpButtonStyle}">
+                <Button
+                    Grid.Row="1"
+                    Margin="0,12,0,0"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Panel.ZIndex="10"
+                    Style="{StaticResource HelpButtonStyle}">
 
                     <StackPanel Orientation="Horizontal">
                         <fa:IconBlock
@@ -1013,9 +1008,10 @@
                                 </StackPanel>
 
                                 <!--  Middle name  -->
-                                <StackPanel Grid.Row="2" 
-                                            Grid.Column="0"
-                                            Margin="0,0,0,18">
+                                <StackPanel
+                                    Grid.Row="2"
+                                    Grid.Column="0"
+                                    Margin="0,0,0,18">
                                     <TextBlock
                                         FontSize="22"
                                         Foreground="#777777"
@@ -1036,396 +1032,409 @@
                                     Margin="0,12,0,0"
                                     Background="#D0D0D0" />
 
-                                <!-- Password -->
-                                <Grid Grid.Row="4"
+                                <!--  Password  -->
+                                <Grid
+                                    Grid.Row="4"
                                     Grid.Column="0"
                                     Margin="0,16,0,0">
 
-                                    <PasswordBox x:Name="AddUserPasswordBox"
-                                                PasswordChanged="AddUserPasswordBox_PasswordChanged"
-                                                Style="{StaticResource AddUserOverlayPasswordBoxStyle}"
-                                                Visibility="{Binding IsAddUserPasswordHidden, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                    <PasswordBox
+                                        x:Name="AddUserPasswordBox"
+                                        PasswordChanged="AddUserPasswordBox_PasswordChanged"
+                                        Style="{StaticResource AddUserOverlayPasswordBoxStyle}"
+                                        Visibility="{Binding IsAddUserPasswordHidden, Converter={StaticResource BoolToVisibilityConverter}}" />
 
-                                    <TextBox Text="{Binding NewUserPassword, UpdateSourceTrigger=PropertyChanged}"
-                                            Style="{StaticResource AddUserOverlayTextBoxStyle}"
-                                            Visibility="{Binding IsAddUserPasswordVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                    <TextBox
+                                        Style="{StaticResource AddUserOverlayTextBoxStyle}"
+                                        Text="{Binding NewUserPassword, UpdateSourceTrigger=PropertyChanged}"
+                                        Visibility="{Binding IsAddUserPasswordVisible, Converter={StaticResource BoolToVisibilityConverter}}" />
 
-                                    <TextBlock Text="Enter your password"
-                                            Foreground="#A0A0A0"
-                                            FontSize="14"
-                                            Margin="16,0,0,0"
-                                            VerticalAlignment="Center"
-                                            IsHitTestVisible="False"
-                                            Visibility="{Binding IsNewUserPasswordEmpty, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                    <TextBlock
+                                        Margin="16,0,0,0"
+                                        VerticalAlignment="Center"
+                                        FontSize="14"
+                                        Foreground="#A0A0A0"
+                                        IsHitTestVisible="False"
+                                        Text="Enter your password"
+                                        Visibility="{Binding IsNewUserPasswordEmpty, Converter={StaticResource BoolToVisibilityConverter}}" />
 
-                                    <Button Command="{Binding ToggleAddUserPasswordVisibilityCommand}"
-                                            Style="{StaticResource IconButtonStyle}"
-                                            Width="36"
-                                            Height="36"
-                                            HorizontalAlignment="Right"
-                                            VerticalAlignment="Center"
-                                            Margin="0,0,8,0">
-                                        <fa:IconBlock Icon="{Binding AddUserPasswordEyeIcon}"
-                                                    FontSize="18"
-                                                    Foreground="#666666"/>
+                                    <Button
+                                        Width="36"
+                                        Height="36"
+                                        Margin="0,0,8,0"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Center"
+                                        Command="{Binding ToggleAddUserPasswordVisibilityCommand}"
+                                        Style="{StaticResource IconButtonStyle}">
+                                        <fa:IconBlock
+                                            FontSize="18"
+                                            Foreground="#666666"
+                                            Icon="{Binding AddUserPasswordEyeIcon}" />
                                     </Button>
                                 </Grid>
 
-                                <!-- Confirm password -->
-                                <Grid Grid.Row="4"
+                                <!--  Confirm password  -->
+                                <Grid
+                                    Grid.Row="4"
                                     Grid.Column="2"
                                     Margin="0,16,0,0">
 
-                                    <PasswordBox x:Name="AddUserConfirmPasswordBox"
-                                                PasswordChanged="AddUserConfirmPasswordBox_PasswordChanged"
-                                                Style="{StaticResource AddUserOverlayPasswordBoxStyle}"
-                                                Visibility="{Binding IsAddUserConfirmPasswordHidden, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                    <PasswordBox
+                                        x:Name="AddUserConfirmPasswordBox"
+                                        PasswordChanged="AddUserConfirmPasswordBox_PasswordChanged"
+                                        Style="{StaticResource AddUserOverlayPasswordBoxStyle}"
+                                        Visibility="{Binding IsAddUserConfirmPasswordHidden, Converter={StaticResource BoolToVisibilityConverter}}" />
 
-                                    <TextBox Text="{Binding NewUserConfirmPassword, UpdateSourceTrigger=PropertyChanged}"
-                                            Style="{StaticResource AddUserOverlayTextBoxStyle}"
-                                            Visibility="{Binding IsAddUserConfirmPasswordVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                    <TextBox
+                                        Style="{StaticResource AddUserOverlayTextBoxStyle}"
+                                        Text="{Binding NewUserConfirmPassword, UpdateSourceTrigger=PropertyChanged}"
+                                        Visibility="{Binding IsAddUserConfirmPasswordVisible, Converter={StaticResource BoolToVisibilityConverter}}" />
 
-                                    <TextBlock Text="Confirm your password"
-                                            Foreground="#A0A0A0"
-                                            FontSize="14"
-                                            Margin="16,0,0,0"
-                                            VerticalAlignment="Center"
-                                            IsHitTestVisible="False"
-                                            Visibility="{Binding IsNewUserConfirmPasswordEmpty, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                    <TextBlock
+                                        Margin="16,0,0,0"
+                                        VerticalAlignment="Center"
+                                        FontSize="14"
+                                        Foreground="#A0A0A0"
+                                        IsHitTestVisible="False"
+                                        Text="Confirm your password"
+                                        Visibility="{Binding IsNewUserConfirmPasswordEmpty, Converter={StaticResource BoolToVisibilityConverter}}" />
 
-                                    <Button Command="{Binding ToggleAddUserConfirmPasswordVisibilityCommand}"
-                                            Style="{StaticResource IconButtonStyle}"
-                                            Width="36"
-                                            Height="36"
-                                            HorizontalAlignment="Right"
-                                            VerticalAlignment="Center"
-                                            Margin="0,0,8,0">
-                                        <fa:IconBlock Icon="{Binding AddUserConfirmPasswordEyeIcon}"
-                                                    FontSize="18"
-                                                    Foreground="#666666"/>
+                                    <Button
+                                        Width="36"
+                                        Height="36"
+                                        Margin="0,0,8,0"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Center"
+                                        Command="{Binding ToggleAddUserConfirmPasswordVisibilityCommand}"
+                                        Style="{StaticResource IconButtonStyle}">
+                                        <fa:IconBlock
+                                            FontSize="18"
+                                            Foreground="#666666"
+                                            Icon="{Binding AddUserConfirmPasswordEyeIcon}" />
                                     </Button>
                                 </Grid>
                             </Grid>
                         </Grid>
 
-                            <!--  STEP 2: Security Questions  -->
-                            <Grid Visibility="{Binding IsSecurityStepVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <!--  STEP 2: Security Questions  -->
+                        <Grid Visibility="{Binding IsSecurityStepVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="110" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <StackPanel
+                                Grid.Row="0"
+                                Margin="0,8,0,0"
+                                Orientation="Horizontal">
+
+                                <Border
+                                    Width="86"
+                                    Height="86"
+                                    Background="#FFF9FD"
+                                    BorderBrush="#F0D7EF"
+                                    BorderThickness="1"
+                                    CornerRadius="43">
+                                    <fa:IconBlock
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        FontSize="40"
+                                        Foreground="#223357"
+                                        Icon="UserShield" />
+                                </Border>
+
+                                <StackPanel Margin="20,10,0,0">
+                                    <TextBlock
+                                        FontSize="28"
+                                        FontWeight="Bold"
+                                        Foreground="Black"
+                                        Text="Security Questions" />
+
+                                    <TextBlock
+                                        Margin="0,8,0,0"
+                                        FontSize="18"
+                                        Foreground="#6F6F6F"
+                                        Text="Choose a question that only you can answer. Used for password&#x0a;recovery." />
+                                </StackPanel>
+                            </StackPanel>
+
+                            <Grid Grid.Row="1" Margin="0,20,0,0">
                                 <Grid.RowDefinitions>
-                                    <RowDefinition Height="110" />
-                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="120" />
+                                    <RowDefinition Height="120" />
+                                    <RowDefinition Height="120" />
                                 </Grid.RowDefinitions>
+
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1.45*" />
+                                    <ColumnDefinition Width="32" />
+                                    <ColumnDefinition Width="1*" />
+                                </Grid.ColumnDefinitions>
+
+                                <!--  Q1  -->
+                                <StackPanel Grid.Row="0" Grid.Column="0">
+                                    <TextBlock FontSize="22" Foreground="#777777">
+                                        <Run Text="Security question 1:" />
+                                        <Run Foreground="#E53935" Text=" *" />
+                                    </TextBlock>
+                                    <TextBlock
+                                        Margin="0,4,0,6"
+                                        FontSize="12"
+                                        FontStyle="Italic"
+                                        Foreground="#777777"
+                                        Text="Choose a question:" />
+                                    <ComboBox
+                                        DisplayMemberPath="QuestionText"
+                                        ItemsSource="{Binding SecurityQuestions}"
+                                        SelectedItem="{Binding SelectedSecurityQuestion1, Mode=TwoWay}"
+                                        Style="{StaticResource AddUserOverlayComboBoxStyle}"
+                                        Tag="Choose a security question" />
+                                </StackPanel>
 
                                 <StackPanel
                                     Grid.Row="0"
-                                    Margin="0,8,0,0"
-                                    Orientation="Horizontal">
-
-                                    <Border
-                                        Width="86"
-                                        Height="86"
-                                        Background="#FFF9FD"
-                                        BorderBrush="#F0D7EF"
-                                        BorderThickness="1"
-                                        CornerRadius="43">
-                                        <fa:IconBlock
-                                            HorizontalAlignment="Center"
-                                            VerticalAlignment="Center"
-                                            FontSize="40"
-                                            Foreground="#223357"
-                                            Icon="UserShield" />
-                                    </Border>
-
-                                    <StackPanel Margin="20,10,0,0">
-                                        <TextBlock
-                                            FontSize="28"
-                                            FontWeight="Bold"
-                                            Foreground="Black"
-                                            Text="Security Questions" />
-
-                                        <TextBlock
-                                            Margin="0,8,0,0"
-                                            FontSize="18"
-                                            Foreground="#6F6F6F"
-                                            Text="Choose a question that only you can answer. Used for password&#x0a;recovery." />
-                                    </StackPanel>
+                                    Grid.Column="2"
+                                    Margin="0,36,0,0">
+                                    <TextBlock
+                                        Margin="0,0,0,6"
+                                        FontSize="13"
+                                        Foreground="#777777"
+                                        Text="Answer" />
+                                    <TextBox
+                                        Style="{StaticResource AddUserOverlayTextBoxStyle}"
+                                        Tag="Enter your answer"
+                                        Text="{Binding SecurityAnswer1, UpdateSourceTrigger=PropertyChanged}" />
                                 </StackPanel>
 
-                                <Grid Grid.Row="1" Margin="0,20,0,0">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="120" />
-                                        <RowDefinition Height="120" />
-                                        <RowDefinition Height="120" />
-                                    </Grid.RowDefinitions>
-
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="1.45*" />
-                                        <ColumnDefinition Width="32" />
-                                        <ColumnDefinition Width="1*" />
-                                    </Grid.ColumnDefinitions>
-
-                                    <!--  Q1  -->
-                                    <StackPanel Grid.Row="0" Grid.Column="0">
-                                        <TextBlock FontSize="22" Foreground="#777777">
-                                            <Run Text="Security question 1:" />
-                                            <Run Foreground="#E53935" Text=" *" />
-                                        </TextBlock>
-                                        <TextBlock
-                                            Margin="0,4,0,6"
-                                            FontSize="12"
-                                            FontStyle="Italic"
-                                            Foreground="#777777"
-                                            Text="Choose a question:" />
-                                        <ComboBox
-                                            DisplayMemberPath="QuestionText"
-                                            ItemsSource="{Binding SecurityQuestions}"
-                                            SelectedItem="{Binding SelectedSecurityQuestion1, Mode=TwoWay}"
-                                            Style="{StaticResource AddUserOverlayComboBoxStyle}"
-                                            Tag="Choose a security question" />
-                                    </StackPanel>
-
-                                    <StackPanel
-                                        Grid.Row="0"
-                                        Grid.Column="2"
-                                        Margin="0,36,0,0">
-                                        <TextBlock
-                                            Margin="0,0,0,6"
-                                            FontSize="13"
-                                            Foreground="#777777"
-                                            Text="Answer"/>
-                                        <TextBox 
-                                            Style="{StaticResource AddUserOverlayTextBoxStyle}" 
-                                            Tag="Enter your answer"
-                                            Text="{Binding SecurityAnswer1, UpdateSourceTrigger=PropertyChanged}" />
-                                    </StackPanel>
-
-                                    <!--  Q2  -->
-                                    <StackPanel Grid.Row="1" Grid.Column="0">
-                                        <TextBlock FontSize="22" Foreground="#777777">
-                                            <Run Text="Security question 2:" />
-                                            <Run Foreground="#E53935" Text=" *" />
-                                        </TextBlock>
-                                        <TextBlock
-                                            Margin="0,4,0,6"
-                                            FontSize="12"
-                                            FontStyle="Italic"
-                                            Foreground="#777777"
-                                            Text="Choose a question:" />
-                                        <ComboBox
-                                            DisplayMemberPath="QuestionText"
-                                            ItemsSource="{Binding SecurityQuestions}"
-                                            SelectedItem="{Binding SelectedSecurityQuestion2, Mode=TwoWay}"
-                                            Style="{StaticResource AddUserOverlayComboBoxStyle}"
-                                            Tag="Choose a security question" />
-                                    </StackPanel>
-
-                                    <StackPanel
-                                        Grid.Row="1"
-                                        Grid.Column="2"
-                                        Margin="0,36,0,0">
-                                        <TextBlock
-                                            Margin="0,0,0,6"
-                                            FontSize="13"
-                                            Foreground="#777777"
-                                            Text="Answer" />
-                                        <TextBox 
-                                            Style="{StaticResource AddUserOverlayTextBoxStyle}"
-                                            Tag="Enter your answer" 
-                                            Text="{Binding SecurityAnswer2, UpdateSourceTrigger=PropertyChanged}" />
-                                    </StackPanel>
-
-                                    <!--  Q3  -->
-                                    <StackPanel Grid.Row="2" Grid.Column="0">
-                                        <TextBlock FontSize="22" Foreground="#777777">
-                                            <Run Text="Security question 3:" />
-                                            <Run Foreground="#E53935" Text=" *" />
-                                        </TextBlock>
-                                        <TextBlock
-                                            Margin="0,4,0,6"
-                                            FontSize="12"
-                                            FontStyle="Italic"
-                                            Foreground="#777777"
-                                            Text="Choose a question:" />
-                                        <ComboBox
-                                            DisplayMemberPath="QuestionText"
-                                            ItemsSource="{Binding SecurityQuestions}"
-                                            SelectedItem="{Binding SelectedSecurityQuestion3, Mode=TwoWay}"
-                                            Style="{StaticResource AddUserOverlayComboBoxStyle}"
-                                            Tag="Choose a security question" />
-                                    </StackPanel>
-
-                                    <StackPanel
-                                        Grid.Row="2"
-                                        Grid.Column="2"
-                                        Margin="0,36,0,0">
-                                        <TextBlock
-                                            Margin="0,0,0,6"
-                                            FontSize="13"
-                                            Foreground="#777777"
-                                            Text="Answer" />
-                                        <TextBox 
-                                            Style="{StaticResource AddUserOverlayTextBoxStyle}" 
-                                            Tag="Enter your answer" 
-                                            Text="{Binding SecurityAnswer3, UpdateSourceTrigger=PropertyChanged}" />
-                                    </StackPanel>
-                                </Grid>
-                            </Grid>
-
-                            <!--  STEP 3: Confirmation  -->
-                            <Grid Visibility="{Binding IsConfirmationStepVisible, Converter={StaticResource BoolToVisibilityConverter}}">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="110" />
-                                    <RowDefinition Height="*" />
-                                </Grid.RowDefinitions>
+                                <!--  Q2  -->
+                                <StackPanel Grid.Row="1" Grid.Column="0">
+                                    <TextBlock FontSize="22" Foreground="#777777">
+                                        <Run Text="Security question 2:" />
+                                        <Run Foreground="#E53935" Text=" *" />
+                                    </TextBlock>
+                                    <TextBlock
+                                        Margin="0,4,0,6"
+                                        FontSize="12"
+                                        FontStyle="Italic"
+                                        Foreground="#777777"
+                                        Text="Choose a question:" />
+                                    <ComboBox
+                                        DisplayMemberPath="QuestionText"
+                                        ItemsSource="{Binding SecurityQuestions}"
+                                        SelectedItem="{Binding SelectedSecurityQuestion2, Mode=TwoWay}"
+                                        Style="{StaticResource AddUserOverlayComboBoxStyle}"
+                                        Tag="Choose a security question" />
+                                </StackPanel>
 
                                 <StackPanel
-                                    Grid.Row="0"
-                                    Margin="0,8,0,0"
-                                    Orientation="Horizontal">
-
-                                    <Border
-                                        Width="86"
-                                        Height="86"
-                                        Background="#FFF9FD"
-                                        BorderBrush="#F0D7EF"
-                                        BorderThickness="1"
-                                        CornerRadius="43">
-                                        <fa:IconBlock
-                                            HorizontalAlignment="Center"
-                                            VerticalAlignment="Center"
-                                            FontSize="44"
-                                            Foreground="#223357"
-                                            Icon="UserCircle" />
-                                    </Border>
-
-                                    <StackPanel Margin="20,10,0,0">
-                                        <TextBlock
-                                            FontSize="28"
-                                            FontWeight="Bold"
-                                            Foreground="Black"
-                                            Text="Confirmation" />
-
-                                        <TextBlock
-                                            Margin="0,8,0,0"
-                                            FontSize="18"
-                                            Foreground="#6F6F6F"
-                                            Text="Review user information before final submission." />
-                                    </StackPanel>
+                                    Grid.Row="1"
+                                    Grid.Column="2"
+                                    Margin="0,36,0,0">
+                                    <TextBlock
+                                        Margin="0,0,0,6"
+                                        FontSize="13"
+                                        Foreground="#777777"
+                                        Text="Answer" />
+                                    <TextBox
+                                        Style="{StaticResource AddUserOverlayTextBoxStyle}"
+                                        Tag="Enter your answer"
+                                        Text="{Binding SecurityAnswer2, UpdateSourceTrigger=PropertyChanged}" />
                                 </StackPanel>
 
-                                <Grid Grid.Row="1" Margin="0,10,0,0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="1.2*" />
-                                        <ColumnDefinition Width="1" />
-                                        <ColumnDefinition Width="1*" />
-                                    </Grid.ColumnDefinitions>
+                                <!--  Q3  -->
+                                <StackPanel Grid.Row="2" Grid.Column="0">
+                                    <TextBlock FontSize="22" Foreground="#777777">
+                                        <Run Text="Security question 3:" />
+                                        <Run Foreground="#E53935" Text=" *" />
+                                    </TextBlock>
+                                    <TextBlock
+                                        Margin="0,4,0,6"
+                                        FontSize="12"
+                                        FontStyle="Italic"
+                                        Foreground="#777777"
+                                        Text="Choose a question:" />
+                                    <ComboBox
+                                        DisplayMemberPath="QuestionText"
+                                        ItemsSource="{Binding SecurityQuestions}"
+                                        SelectedItem="{Binding SelectedSecurityQuestion3, Mode=TwoWay}"
+                                        Style="{StaticResource AddUserOverlayComboBoxStyle}"
+                                        Tag="Choose a security question" />
+                                </StackPanel>
 
-                                    <Border Grid.Column="1" Background="#D0D0D0" />
-
-                                    <!--  User information confirmation  -->
-                                    <StackPanel Grid.Column="0" Margin="0,0,28,0">
-                                        <TextBlock
-                                            Margin="0,0,0,12"
-                                            FontSize="16"
-                                            Foreground="#2E86DE"
-                                            Text="User Information" />
-
-                                        <UniformGrid Columns="2" Rows="4">
-                                            <StackPanel Margin="0,0,10,14">
-                                                <TextBlock Text="First name" />
-                                                <TextBox Style="{StaticResource ReadOnlyConfirmationBoxStyle}" Text="{Binding NewUserFirstName, Mode=OneWay}" />
-                                            </StackPanel>
-
-                                            <StackPanel Margin="0,0,0,14">
-                                                <TextBlock Text="Role" />
-                                                <TextBox Style="{StaticResource ReadOnlyConfirmationBoxStyle}" Text="{Binding NewUserRole, Mode=OneWay}" />
-                                            </StackPanel>
-
-                                            <StackPanel Margin="0,0,10,14">
-                                                <TextBlock Text="Last name" />
-                                                <TextBox Style="{StaticResource ReadOnlyConfirmationBoxStyle}" Text="{Binding NewUserLastName, Mode=OneWay}" />
-                                            </StackPanel>
-
-                                            <StackPanel Margin="0,0,0,14">
-                                                <TextBlock Text="Contact number" />
-                                                <TextBox Style="{StaticResource ReadOnlyConfirmationBoxStyle}" Text="{Binding NewUserContactNumber, Mode=OneWay}" />
-                                            </StackPanel>
-
-                                            <StackPanel Margin="0,0,10,14">
-                                                <TextBlock Text="Middle name" />
-                                                <TextBox Style="{StaticResource ReadOnlyConfirmationBoxStyle}" Text="{Binding NewUserMiddleName, Mode=OneWay}" />
-                                            </StackPanel>
-
-                                            <StackPanel Margin="0,0,0,14">
-                                                <TextBlock Text="Username" />
-                                                <TextBox Style="{StaticResource ReadOnlyConfirmationBoxStyle}" Text="{Binding GeneratedUsername, Mode=OneWay}" />
-                                            </StackPanel>
-
-                                            <StackPanel Margin="0,0,10,14">
-                                                <TextBlock Text="Password" />
-                                                <Grid>
-                                                    <TextBox Style="{StaticResource ReadOnlyConfirmationBoxStyle}"
-                                                            Text="{Binding ConfirmationPasswordDisplay, Mode=OneWay}" />
-
-                                                    <Button Command="{Binding ToggleConfirmationPasswordVisibilityCommand}"
-                                                            Style="{StaticResource IconButtonStyle}"
-                                                            Width="32"
-                                                            Height="32"
-                                                            HorizontalAlignment="Right"
-                                                            VerticalAlignment="Center"
-                                                            Margin="0,0,6,0">
-                                                        <fa:IconBlock Icon="{Binding ConfirmationPasswordEyeIcon}"
-                                                                    FontSize="16"
-                                                                    Foreground="#666666"/>
-                                                    </Button>
-                                                </Grid>
-                                            </StackPanel>
-                                        </UniformGrid>
-                                    </StackPanel>
-
-                                    <!--  Security question confirmation  -->
-                                    <StackPanel Grid.Column="2" Margin="28,0,0,0">
-                                        <TextBlock
-                                            Margin="0,0,0,12"
-                                            FontSize="16"
-                                            Foreground="#2E86DE"
-                                            Text="Security question" />
-
-                                        <TextBlock
-                                            Foreground="#777777"
-                                            Text="{Binding SelectedQuestionText1, StringFormat=1. {0}}"
-                                            TextWrapping="Wrap" />
-                                        <TextBox
-                                            Width="190"
-                                            Margin="16,6,0,36"
-                                            HorizontalAlignment="Left"
-                                            Style="{StaticResource ReadOnlyConfirmationBoxStyle}"
-                                            Text="{Binding SecurityAnswer1}" />
-
-                                        <TextBlock
-                                            Foreground="#777777"
-                                            Text="{Binding SelectedQuestionText2, StringFormat=2. {0}}"
-                                            TextWrapping="Wrap" />
-                                        <TextBox
-                                            Width="190"
-                                            Margin="16,6,0,36"
-                                            HorizontalAlignment="Left"
-                                            Style="{StaticResource ReadOnlyConfirmationBoxStyle}"
-                                            Text="{Binding SecurityAnswer2}" />
-
-                                        <TextBlock
-                                            Foreground="#777777"
-                                            Text="{Binding SelectedQuestionText3, StringFormat=3. {0}}"
-                                            TextWrapping="Wrap" />
-                                        <TextBox
-                                            Width="190"
-                                            Margin="16,6,0,0"
-                                            HorizontalAlignment="Left"
-                                            Style="{StaticResource ReadOnlyConfirmationBoxStyle}"
-                                            Text="{Binding SecurityAnswer3}" />
-                                    </StackPanel>
-                                </Grid>
+                                <StackPanel
+                                    Grid.Row="2"
+                                    Grid.Column="2"
+                                    Margin="0,36,0,0">
+                                    <TextBlock
+                                        Margin="0,0,0,6"
+                                        FontSize="13"
+                                        Foreground="#777777"
+                                        Text="Answer" />
+                                    <TextBox
+                                        Style="{StaticResource AddUserOverlayTextBoxStyle}"
+                                        Tag="Enter your answer"
+                                        Text="{Binding SecurityAnswer3, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
                             </Grid>
                         </Grid>
+
+                        <!--  STEP 3: Confirmation  -->
+                        <Grid Visibility="{Binding IsConfirmationStepVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="110" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <StackPanel
+                                Grid.Row="0"
+                                Margin="0,8,0,0"
+                                Orientation="Horizontal">
+
+                                <Border
+                                    Width="86"
+                                    Height="86"
+                                    Background="#FFF9FD"
+                                    BorderBrush="#F0D7EF"
+                                    BorderThickness="1"
+                                    CornerRadius="43">
+                                    <fa:IconBlock
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        FontSize="44"
+                                        Foreground="#223357"
+                                        Icon="UserCircle" />
+                                </Border>
+
+                                <StackPanel Margin="20,10,0,0">
+                                    <TextBlock
+                                        FontSize="28"
+                                        FontWeight="Bold"
+                                        Foreground="Black"
+                                        Text="Confirmation" />
+
+                                    <TextBlock
+                                        Margin="0,8,0,0"
+                                        FontSize="18"
+                                        Foreground="#6F6F6F"
+                                        Text="Review user information before final submission." />
+                                </StackPanel>
+                            </StackPanel>
+
+                            <Grid Grid.Row="1" Margin="0,10,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1.2*" />
+                                    <ColumnDefinition Width="1" />
+                                    <ColumnDefinition Width="1*" />
+                                </Grid.ColumnDefinitions>
+
+                                <Border Grid.Column="1" Background="#D0D0D0" />
+
+                                <!--  User information confirmation  -->
+                                <StackPanel Grid.Column="0" Margin="0,0,28,0">
+                                    <TextBlock
+                                        Margin="0,0,0,12"
+                                        FontSize="16"
+                                        Foreground="#2E86DE"
+                                        Text="User Information" />
+
+                                    <UniformGrid Columns="2" Rows="4">
+                                        <StackPanel Margin="0,0,10,14">
+                                            <TextBlock Text="First name" />
+                                            <TextBox Style="{StaticResource ReadOnlyConfirmationBoxStyle}" Text="{Binding NewUserFirstName, Mode=OneWay}" />
+                                        </StackPanel>
+
+                                        <StackPanel Margin="0,0,0,14">
+                                            <TextBlock Text="Role" />
+                                            <TextBox Style="{StaticResource ReadOnlyConfirmationBoxStyle}" Text="{Binding NewUserRole, Mode=OneWay}" />
+                                        </StackPanel>
+
+                                        <StackPanel Margin="0,0,10,14">
+                                            <TextBlock Text="Last name" />
+                                            <TextBox Style="{StaticResource ReadOnlyConfirmationBoxStyle}" Text="{Binding NewUserLastName, Mode=OneWay}" />
+                                        </StackPanel>
+
+                                        <StackPanel Margin="0,0,0,14">
+                                            <TextBlock Text="Contact number" />
+                                            <TextBox Style="{StaticResource ReadOnlyConfirmationBoxStyle}" Text="{Binding NewUserContactNumber, Mode=OneWay}" />
+                                        </StackPanel>
+
+                                        <StackPanel Margin="0,0,10,14">
+                                            <TextBlock Text="Middle name" />
+                                            <TextBox Style="{StaticResource ReadOnlyConfirmationBoxStyle}" Text="{Binding NewUserMiddleName, Mode=OneWay}" />
+                                        </StackPanel>
+
+                                        <StackPanel Margin="0,0,0,14">
+                                            <TextBlock Text="Username" />
+                                            <TextBox Style="{StaticResource ReadOnlyConfirmationBoxStyle}" Text="{Binding GeneratedUsername, Mode=OneWay}" />
+                                        </StackPanel>
+
+                                        <StackPanel Margin="0,0,10,14">
+                                            <TextBlock Text="Password" />
+                                            <Grid>
+                                                <TextBox Style="{StaticResource ReadOnlyConfirmationBoxStyle}" Text="{Binding ConfirmationPasswordDisplay, Mode=OneWay}" />
+
+                                                <Button
+                                                    Width="32"
+                                                    Height="32"
+                                                    Margin="0,0,6,0"
+                                                    HorizontalAlignment="Right"
+                                                    VerticalAlignment="Center"
+                                                    Command="{Binding ToggleConfirmationPasswordVisibilityCommand}"
+                                                    Style="{StaticResource IconButtonStyle}">
+                                                    <fa:IconBlock
+                                                        FontSize="16"
+                                                        Foreground="#666666"
+                                                        Icon="{Binding ConfirmationPasswordEyeIcon}" />
+                                                </Button>
+                                            </Grid>
+                                        </StackPanel>
+                                    </UniformGrid>
+                                </StackPanel>
+
+                                <!--  Security question confirmation  -->
+                                <StackPanel Grid.Column="2" Margin="28,0,0,0">
+                                    <TextBlock
+                                        Margin="0,0,0,12"
+                                        FontSize="16"
+                                        Foreground="#2E86DE"
+                                        Text="Security question" />
+
+                                    <TextBlock
+                                        Foreground="#777777"
+                                        Text="{Binding SelectedQuestionText1, StringFormat=1. {0}}"
+                                        TextWrapping="Wrap" />
+                                    <TextBox
+                                        Width="190"
+                                        Margin="16,6,0,36"
+                                        HorizontalAlignment="Left"
+                                        Style="{StaticResource ReadOnlyConfirmationBoxStyle}"
+                                        Text="{Binding SecurityAnswer1}" />
+
+                                    <TextBlock
+                                        Foreground="#777777"
+                                        Text="{Binding SelectedQuestionText2, StringFormat=2. {0}}"
+                                        TextWrapping="Wrap" />
+                                    <TextBox
+                                        Width="190"
+                                        Margin="16,6,0,36"
+                                        HorizontalAlignment="Left"
+                                        Style="{StaticResource ReadOnlyConfirmationBoxStyle}"
+                                        Text="{Binding SecurityAnswer2}" />
+
+                                    <TextBlock
+                                        Foreground="#777777"
+                                        Text="{Binding SelectedQuestionText3, StringFormat=3. {0}}"
+                                        TextWrapping="Wrap" />
+                                    <TextBox
+                                        Width="190"
+                                        Margin="16,6,0,0"
+                                        HorizontalAlignment="Left"
+                                        Style="{StaticResource ReadOnlyConfirmationBoxStyle}"
+                                        Text="{Binding SecurityAnswer3}" />
+                                </StackPanel>
+                            </Grid>
+                        </Grid>
+                    </Grid>
 
                     <!--  Error and bottom buttons  -->
                     <Grid Grid.Row="3">

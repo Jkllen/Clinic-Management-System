@@ -3,6 +3,8 @@ using CruzNeryClinic.Models;
 using CruzNeryClinic.Models.UserManagement;
 using CruzNeryClinic.Repositories;
 using CruzNeryClinic.Services;
+using System.Collections.Generic;
+using System.Linq;
 using System;
 using System.Text.RegularExpressions;
 using System.Collections.ObjectModel;
@@ -58,6 +60,13 @@ namespace CruzNeryClinic.ViewModels
 
         private string createdUserDisplayName = string.Empty;
 
+        // Filter and Sorting
+        private readonly List<UserListItem> allUserItems = new();
+
+        private string selectedFilterOption = "All Active Users";
+        private string selectedSortOption = "User ID Ascending";
+
+        // Constructor
         public UserManagementViewModel()
         {
             userRepository = new UserRepository();
@@ -71,6 +80,30 @@ namespace CruzNeryClinic.ViewModels
                 "Dentist",
                 "Secretary",
                 "Dental Assistant"
+            };
+
+            FilterOptions = new ObservableCollection<string>
+            {
+                "All Active Users",
+                "All Users",
+                "Archived Users",
+                "Administrators",
+                "Dentists",
+                "Secretaries",
+                "Dental Assistants",
+                "Staff Only"
+            };
+
+            SortOptions = new ObservableCollection<string>
+            {
+                "User ID Ascending",
+                "User ID Descending",
+                "Last Name A-Z",
+                "Last Name Z-A",
+                "First Name A-Z",
+                "First Name Z-A",
+                "Role A-Z",
+                "Role Z-A"
             };
 
             LoadUsersCommand = new RelayCommand(LoadUsers);
@@ -141,7 +174,31 @@ namespace CruzNeryClinic.ViewModels
             set
             {
                 SetProperty(ref searchText, value);
-                SearchUsers();
+                RefreshUsersView();
+            }
+        }
+
+        public ObservableCollection<string> FilterOptions { get; }
+
+        public ObservableCollection<string> SortOptions { get; }
+
+        public string SelectedFilterOption
+        {
+            get => selectedFilterOption;
+            set
+            {
+                SetProperty(ref selectedFilterOption, value);
+                RefreshUsersView();
+            }
+        }
+
+        public string SelectedSortOption
+        {
+            get => selectedSortOption;
+            set
+            {
+                SetProperty(ref selectedSortOption, value);
+                RefreshUsersView();
             }
         }
 
@@ -513,18 +570,85 @@ namespace CruzNeryClinic.ViewModels
                 AdministratorCount = userRepository.CountAdmins();
                 StaffCount = userRepository.CountStaff();
 
-                Users.Clear();
+                allUserItems.Clear();
 
-                foreach (User user in userRepository.GetAllUsers(includeArchived: false))
+                foreach (User user in userRepository.GetAllUsers(includeArchived: true))
                 {
-                    Users.Add(ConvertToUserListItem(user));
+                    allUserItems.Add(ConvertToUserListItem(user));
                 }
+
+                RefreshUsersView();
             }
             catch (Exception ex)
             {
                 ShowError($"Failed to load users: {ex.Message}");
             }
         }
+
+        private void RefreshUsersView()
+        {
+            IEnumerable<UserListItem> query = allUserItems;
+
+            query = SelectedFilterOption switch
+            {
+                "All Active Users" => query.Where(user => user.IsActive),
+                "All Users" => query,
+                "Archived Users" => query.Where(user => !user.IsActive),
+                "Administrators" => query.Where(user => user.IsActive && user.Role == "Admin"),
+                "Dentists" => query.Where(user => user.IsActive && user.Role == "Dentist"),
+                "Secretaries" => query.Where(user => user.IsActive && user.Role == "Secretary"),
+                "Dental Assistants" => query.Where(user => user.IsActive && user.Role == "Dental Assistant"),
+                "Staff Only" => query.Where(user => user.IsActive && user.Role != "Admin"),
+                _ => query.Where(user => user.IsActive)
+            };
+
+            if (!string.IsNullOrWhiteSpace(SearchText))
+            {
+                string keyword = SearchText.Trim().ToLower();
+
+                query = query.Where(user =>
+                    user.UserCode.ToLower().Contains(keyword) ||
+                    user.FirstName.ToLower().Contains(keyword) ||
+                    user.LastName.ToLower().Contains(keyword) ||
+                    user.ContactNumber.ToLower().Contains(keyword) ||
+                    user.Role.ToLower().Contains(keyword) ||
+                    user.AccountStatus.ToLower().Contains(keyword));
+            }
+
+            query = SelectedSortOption switch
+            {
+                "User ID Ascending" => query
+                    .OrderBy(user => GetUserCodePrefixRank(user.UserCode))
+                    .ThenBy(user => GetUserCodeNumber(user.UserCode)),
+
+                "User ID Descending" => query
+                    .OrderByDescending(user => GetUserCodePrefixRank(user.UserCode))
+                    .ThenByDescending(user => GetUserCodeNumber(user.UserCode)),
+
+                "Last Name A-Z" => query.OrderBy(user => user.LastName).ThenBy(user => user.FirstName),
+
+                "Last Name Z-A" => query.OrderByDescending(user => user.LastName).ThenByDescending(user => user.FirstName),
+
+                "First Name A-Z" => query.OrderBy(user => user.FirstName).ThenBy(user => user.LastName),
+
+                "First Name Z-A" => query.OrderByDescending(user => user.FirstName).ThenByDescending(user => user.LastName),
+
+                "Role A-Z" => query.OrderBy(user => user.Role).ThenBy(user => user.LastName),
+
+                "Role Z-A" => query.OrderByDescending(user => user.Role).ThenBy(user => user.LastName),
+
+                _ => query
+                    .OrderBy(user => GetUserCodePrefixRank(user.UserCode))
+                    .ThenBy(user => GetUserCodeNumber(user.UserCode))
+            };
+
+            Users.Clear();
+
+            foreach (UserListItem user in query)
+            {
+                Users.Add(user);
+            }
+        }        
 
         private void SearchUsers()
         {
@@ -699,6 +823,12 @@ namespace CruzNeryClinic.ViewModels
                 return;
             }
 
+            if (!user.IsActive)
+            {
+                ShowError("This user is already archived.");
+                return;
+            }
+
             try
             {
                 userRepository.ArchiveUser(
@@ -716,10 +846,38 @@ namespace CruzNeryClinic.ViewModels
             }
         }
 
+        private int GetUserCodePrefixRank(string userCode)
+        {
+            if (string.IsNullOrWhiteSpace(userCode))
+                return 99;
+
+            // Normal clinic user IDs should appear before dev accounts.
+            if (userCode.StartsWith("2026-", StringComparison.OrdinalIgnoreCase))
+                return 1;
+
+            if (userCode.StartsWith("DEV-", StringComparison.OrdinalIgnoreCase))
+                return 2;
+
+            return 99;
+        }
+
+        private int GetUserCodeNumber(string userCode)
+        {
+            if (string.IsNullOrWhiteSpace(userCode))
+                return 0;
+
+            string[] parts = userCode.Split('-');
+
+            if (parts.Length < 2)
+                return 0;
+
+            return int.TryParse(parts[1], out int number) ? number : 0;
+        }
+
         private void ClearSearch()
         {
             SearchText = string.Empty;
-            LoadUsers();
+            RefreshUsersView();
         }
 
         private bool ValidateBasicStep()

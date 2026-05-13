@@ -17,5 +17,7 @@ namespace CruzNeryClinic.Models.UserManagement
         public string Role { get; set; } = string.Empty;
 
         public bool IsActive { get; set; }
+
+        public string AccountStatus => IsActive ? "Active" : "Archived";
     }
 }
