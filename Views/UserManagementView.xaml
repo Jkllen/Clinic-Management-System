@@ -295,6 +295,41 @@
             <Setter Property="Background" Value="#FFF9FD" />
         </Style>
 
+        <!-- Blue scrollbar style for User Management tables -->
+        <Style x:Key="BlueDataGridScrollBarStyle" TargetType="{x:Type ScrollBar}">
+            <Setter Property="Background" Value="#ffffff"/>
+            <Setter Property="Width" Value="Auto"/>
+            <Setter Property="Height" Value="Auto"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ScrollBar}">
+                        <Grid Background="{TemplateBinding Background}">
+                            <Track x:Name="PART_Track"
+                                IsDirectionReversed="True">
+                                <Track.Thumb>
+                                    <Thumb>
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="Thumb">
+                                                <Border Background="#223357"
+                                                        CornerRadius="6"
+                                                        Margin="2"/>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="Orientation" Value="Horizontal">
+                                <Setter TargetName="PART_Track" Property="IsDirectionReversed" Value="False"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
     </UserControl.Resources>
 
     <Grid Background="{StaticResource ScreenBackgroundBrush}">
@@ -575,14 +610,22 @@
                 </Button>
             </Grid>
 
-            <!--  Table panel  -->
-            <Grid Grid.Row="3" Margin="0,0,0,18">
+            <!--  Table panel and Help Button Area -->
+            <Grid Grid.Row="3" 
+                  Margin="0,0,0,18">
+                
+                <Grid.RowDefinitions>
+                    <!-- Table Area -->
+                    <RowDefinition Height="*"/>
+                    <!-- Help Button Area-->
+                    <RowDefinition Height="76"/>
+                </Grid.RowDefinitions>
 
                 <!--  Main table container  -->
-                <Border
-                    Margin="0,0,0,0"
-                    Padding="20"
-                    Style="{StaticResource LargePanelStyle}">
+                <Border Grid.Row="0"
+                        Margin="0,0,0,0"
+                        Padding="20"
+                        Style="{StaticResource LargePanelStyle}">
 
                     <Grid>
                         <Grid.RowDefinitions>
@@ -610,36 +653,52 @@
                             MinRowHeight="42"
                             RowHeight="46"
                             SelectedItem="{Binding SelectedUser, Mode=TwoWay}"
-                            Style="{StaticResource DashboardDataGridStyle}">
+                            Style="{StaticResource DashboardDataGridStyle}"
+                            ScrollViewer.VerticalScrollBarVisibility="Auto"
+                            ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                            CanUserResizeRows="False">
+                            
+                            <DataGrid.Resources>
+                                <Style 
+                                    TargetType="{x:Type ScrollBar}" BasedOn="{StaticResource BlueDataGridScrollBarStyle}"/>
+                            </DataGrid.Resources>
 
                             <DataGrid.Columns>
 
                                 <DataGridTextColumn
                                     Width="1*"
+                                    MinWidth="110"
                                     Binding="{Binding UserCode}"
                                     Header="User ID" />
 
                                 <DataGridTextColumn
                                     Width="1.3*"
+                                    MinWidth="150"
                                     Binding="{Binding LastName}"
                                     Header="Last Name" />
 
                                 <DataGridTextColumn
                                     Width="1.3*"
+                                    MinWidth="150"
                                     Binding="{Binding FirstName}"
                                     Header="First Name" />
 
                                 <DataGridTextColumn
                                     Width="1.5*"
+                                    MinWidth="170"
                                     Binding="{Binding ContactNumber}"
                                     Header="Contact Number" />
 
                                 <DataGridTextColumn
                                     Width="1*"
+                                    MinWidth="120"
                                     Binding="{Binding Role}"
                                     Header="Role" />
 
-                                <DataGridTemplateColumn Width="1.6*" Header="Actions">
+                                <DataGridTemplateColumn 
+                                    Width="1.6*"
+                                    MinWidth="190" 
+                                    Header="Actions">
 
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
@@ -709,13 +768,13 @@
                     </Grid>
                 </Border>
 
-                <!--  Help button fixed at bottom-right of User Management screen  -->
-                <Button
-                    Margin="0,0,10,10"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Bottom"
-                    Panel.ZIndex="10"
-                    Style="{StaticResource HelpButtonStyle}">
+                <!--  Help button  -->
+                <Button Grid.Row="1"
+                        Margin="0,12,0,0"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Panel.ZIndex="10"
+                        Style="{StaticResource HelpButtonStyle}">
 
                     <StackPanel Orientation="Horizontal">
                         <fa:IconBlock
