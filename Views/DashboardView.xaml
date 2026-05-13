@@ -7,7 +7,44 @@
              mc:Ignorable="d"
              d:DesignWidth="1600"
              d:DesignHeight="900">
+    <UserControl.Resources>
+        <!-- Blue scrollbar style for Dashboard Major Tables -->
+        <Style x:Key="DashboardBlueScrollBarStyle" TargetType="{x:Type ScrollBar}">
+            <Setter Property="Background" Value="#FFFFFF"/>
+            <Setter Property="Width" Value="Auto"/>
+            <Setter Property="Height" Value="Auto"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ScrollBar}">
+                        <Grid Background="{TemplateBinding Background}">
+                            <Track x:Name="PART_Track"
+                                IsDirectionReversed="True">
+                                <Track.Thumb>
+                                    <Thumb>
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="Thumb">
+                                                <Border Background="#223357"
+                                                        CornerRadius="6"
+                                                        Margin="2"/>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
 
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="Orientation" Value="Horizontal">
+                                <Setter TargetName="PART_Track"
+                                        Property="IsDirectionReversed"
+                                        Value="False"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>    
+    </UserControl.Resources>
     <Grid Background="{StaticResource ScreenBackgroundBrush}">
 
         <!-- 
@@ -507,9 +544,14 @@
 
                             <!-- Scroll only inside the activity list -->
                             <ScrollViewer Grid.Row="1"
-                                        VerticalScrollBarVisibility="Hidden"
+                                        VerticalScrollBarVisibility="Visible"
                                         HorizontalScrollBarVisibility="Disabled"
                                         CanContentScroll="False">
+                                
+                                <ScrollViewer.Resources>
+                                    <Style TargetType="{x:Type ScrollBar}"
+                                        BasedOn="{StaticResource DashboardBlueScrollBarStyle}"/>
+                                </ScrollViewer.Resources>
 
                                 <ItemsControl ItemsSource="{Binding RecentActivities}">
                                     <ItemsControl.ItemTemplate>
@@ -627,7 +669,7 @@
                             Margin="0,12,0,0">
                     <ScrollViewer.Resources>
                         <Style TargetType="{x:Type ScrollBar}"
-                            BasedOn="{StaticResource MainScreenScrollBarStyle}"/>
+                               BasedOn="{StaticResource DashboardBlueScrollBarStyle}"/>
                     </ScrollViewer.Resources>
 
                     <Grid>
@@ -636,13 +678,13 @@
                             <RowDefinition Height="60"/>
 
                             <!-- Queue table -->
-                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="100"/>
 
                             <!-- Recent transactions title -->
                             <RowDefinition Height="60"/>
 
                             <!-- Recent transactions table -->
-                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="100"/>
                         </Grid.RowDefinitions>
 
                         <!-- Queue title -->
