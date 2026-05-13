@@ -1,3 +1,4 @@
+using CruzNeryClinic.ViewModels;
 using System.Windows.Controls;
 
 namespace CruzNeryClinic.Views
@@ -13,7 +14,7 @@ namespace CruzNeryClinic.Views
             // Forward sidebar navigation to the shell ViewModel.
             Sidebar.NavigationRequested += moduleName =>
             {
-                if (DataContext is ViewModels.MainShellViewModel viewModel)
+                if (DataContext is MainShellViewModel viewModel)
                 {
                     viewModel.NavigateTo(moduleName);
                 }
@@ -22,7 +23,7 @@ namespace CruzNeryClinic.Views
             // Forward sidebar logout to the shell ViewModel.
             Sidebar.LogoutRequested += () =>
             {
-                if (DataContext is ViewModels.MainShellViewModel viewModel)
+                if (DataContext is MainShellViewModel viewModel)
                 {
                     viewModel.Logout();
                 }

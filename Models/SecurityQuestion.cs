@@ -13,5 +13,9 @@ namespace CruzNeryClinic.Models
         public bool IsActive { get; set; }
 
         public DateTime CreatedAt { get; set; }
+        public override string ToString()
+        {
+            return QuestionText;
+        }
     }
 }

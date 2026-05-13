@@ -127,19 +127,5 @@ namespace CruzNeryClinic
             // Display the Create New Password screen.
             MainContent.Content = createNewPasswordView;
         }
-
-        private void ShowModuleScreen(string moduleName)
-        {
-            // Temporary navigation placeholders.
-            // We will replace these with actual screens one by one.
-            MainContent.Content = new TextBlock
-            {
-                Text = $"{moduleName} Screen Next",
-                FontSize = 40,
-                FontWeight = FontWeights.Bold,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center
-            };
-        }
     }
 }

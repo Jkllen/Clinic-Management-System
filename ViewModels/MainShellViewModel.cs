@@ -42,7 +42,7 @@ namespace CruzNeryClinic.ViewModels
             CurrentModuleView = moduleName switch
             {
                 "Dashboard" => CreateDashboardView(),
-                "ManageUsers" => CreatePlaceholderView("Manage Users Screen Next"),
+                "ManageUsers" => CreateUserManagementView(),
                 "Patients" => CreatePlaceholderView("Patients Screen Next"),
                 "Appointment" => CreatePlaceholderView("Appointment Screen Next"),
                 "Billing" => CreatePlaceholderView("Billing Screen Next"),
@@ -74,6 +74,19 @@ namespace CruzNeryClinic.ViewModels
 
             return dashboardView;
         }
+
+        private UserManagementView CreateUserManagementView()
+        {
+            UserManagementViewModel userManagementViewModel = new UserManagementViewModel();
+
+            UserManagementView userManagementView = new UserManagementView
+            {
+                DataContext = userManagementViewModel
+            };
+
+            return userManagementView;
+        }
+
 
         private UserControl CreatePlaceholderView(string text)
         {
