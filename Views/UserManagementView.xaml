@@ -52,9 +52,10 @@
             </Setter>
         </Style>
 
-        <!--  Search/filter/sort pill button style  -->
+        <!--  Search button style  -->
         <Style x:Key="PillToolButtonStyle" TargetType="Button">
-            <Setter Property="Height" Value="52" />
+            <Setter Property="Height" Value="55" />
+            <Setter Property="Width" Value="Auto" />
             <Setter Property="Background" Value="White" />
             <Setter Property="Foreground" Value="Black" />
             <Setter Property="BorderBrush" Value="#D8D8D8" />
@@ -69,7 +70,7 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="26">
+                            CornerRadius="5">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
 
@@ -498,12 +499,19 @@
             <!--  Search, filter, sort, add user  -->
             <Grid Grid.Row="2" Margin="0,12,0,0">
                 <Grid.ColumnDefinitions>
+                    <!-- Column 0: Search textbox -->
                     <ColumnDefinition Width="300" />
+                    <!-- Column 1: Space between Search and Filter -->
                     <ColumnDefinition Width="28" />
-                    <ColumnDefinition Width="150" />
-                    <ColumnDefinition Width="28" />
-                    <ColumnDefinition Width="180" />
+                    <!-- Column 2: Filter dropdown/button -->
+                    <ColumnDefinition Width="190" />
+                    <!-- Column 3: Space between Filter and Sort -->
+                    <ColumnDefinition Width="10" />
+                    <!-- Column 4: Sort By dropdown/button -->
+                    <ColumnDefinition Width="220" />
+                    <!-- Column 5: Flexible empty space pushing Add button to the right -->
                     <ColumnDefinition Width="*" />
+                    <!-- Column 6: Add New User button -->
                     <ColumnDefinition Width="260" />
                 </Grid.ColumnDefinitions>
 
@@ -513,12 +521,15 @@
                     Height="52"
                     VerticalAlignment="Center">
 
-                    <TextBox Style="{StaticResource SearchTextBoxStyle}" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBox 
+                        Style="{StaticResource SearchTextBoxStyle}" 
+                        Text="{Binding SearchText, 
+                        UpdateSourceTrigger=PropertyChanged}" />
 
                     <TextBlock
                         Margin="64,0,0,0"
                         VerticalAlignment="Center"
-                        FontSize="22"
+                        FontSize="20"
                         Foreground="#8A8A8A"
                         IsHitTestVisible="False"
                         Text="Search User">
@@ -544,7 +555,7 @@
                         Margin="18,0,0,0"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
-                        FontSize="28"
+                        FontSize="20"
                         Foreground="Black"
                         Icon="Search" />
                 </Grid>
@@ -553,10 +564,11 @@
                 <ComboBox
                     Grid.Column="2"
                     Height="52"
+                    Width="Auto"
                     FontSize="16"
                     ItemsSource="{Binding FilterOptions}"
                     SelectedItem="{Binding SelectedFilterOption, Mode=TwoWay}"
-                    Style="{StaticResource AddUserOverlayComboBoxStyle}"
+                    Style="{StaticResource ToolbarComboBoxStyle}"
                     Tag="Filter" />
 
                 <!--  Sort dropdown  -->
@@ -566,32 +578,32 @@
                     FontSize="16"
                     ItemsSource="{Binding SortOptions}"
                     SelectedItem="{Binding SelectedSortOption, Mode=TwoWay}"
-                    Style="{StaticResource AddUserOverlayComboBoxStyle}"
+                    Style="{StaticResource ToolbarComboBoxStyle}"
                     Tag="Sort By" />
 
                 <!--  Add New User button  -->
                 <Button
                     Grid.Column="6"
-                    Height="54"
+                    Height="45"
                     VerticalAlignment="Center"
                     Background="#073C98"
                     Command="{Binding AddNewUserCommand}"
-                    FontSize="22"
+                    FontSize="16"
                     FontWeight="Bold"
                     Foreground="White"
-                    Style="{StaticResource PrimaryButtonStyle}">
+                    Style="{StaticResource SecondaryButtonStyle}">
 
                     <StackPanel Orientation="Horizontal">
                         <fa:IconBlock
                             Margin="0,0,10,0"
                             VerticalAlignment="Center"
-                            FontSize="26"
+                            FontSize="16"
                             Foreground="White"
                             Icon="UserPlus" />
 
                         <TextBlock
                             VerticalAlignment="Center"
-                            FontSize="22"
+                            FontSize="16"
                             FontWeight="Bold"
                             Foreground="White"
                             Text="Add New User" />
@@ -977,7 +989,7 @@
                                         Margin="0,8,0,0"
                                         ItemsSource="{Binding Roles}"
                                         SelectedItem="{Binding NewUserRole, Mode=TwoWay}"
-                                        Style="{StaticResource AddUserOverlayComboBoxStyle}"
+                                        Style="{StaticResource ToolbarComboBoxStyle}"
                                         Tag="Choose a role" />
                                 </StackPanel>
 
@@ -1187,7 +1199,7 @@
                                         DisplayMemberPath="QuestionText"
                                         ItemsSource="{Binding SecurityQuestions}"
                                         SelectedItem="{Binding SelectedSecurityQuestion1, Mode=TwoWay}"
-                                        Style="{StaticResource AddUserOverlayComboBoxStyle}"
+                                        Style="{StaticResource ToolbarComboBoxStyle}"
                                         Tag="Choose a security question" />
                                 </StackPanel>
 
@@ -1222,7 +1234,7 @@
                                         DisplayMemberPath="QuestionText"
                                         ItemsSource="{Binding SecurityQuestions}"
                                         SelectedItem="{Binding SelectedSecurityQuestion2, Mode=TwoWay}"
-                                        Style="{StaticResource AddUserOverlayComboBoxStyle}"
+                                        Style="{StaticResource ToolbarComboBoxStyle}"
                                         Tag="Choose a security question" />
                                 </StackPanel>
 
@@ -1257,7 +1269,7 @@
                                         DisplayMemberPath="QuestionText"
                                         ItemsSource="{Binding SecurityQuestions}"
                                         SelectedItem="{Binding SelectedSecurityQuestion3, Mode=TwoWay}"
-                                        Style="{StaticResource AddUserOverlayComboBoxStyle}"
+                                        Style="{StaticResource ToolbarComboBoxStyle}"
                                         Tag="Choose a security question" />
                                 </StackPanel>
 
