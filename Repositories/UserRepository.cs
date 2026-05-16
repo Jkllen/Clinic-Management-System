@@ -11,6 +11,8 @@ namespace CruzNeryClinic.Repositories
     // Examples: login, forgot password, add user, update user, archive user, and user counts.
     public class UserRepository
     {
+
+        #region Authentication and Login
         // Finds one active user by username.
         // This is mainly used during login.
         public User? GetActiveUserByUsername(string username)
@@ -181,6 +183,9 @@ WHERE UserId = @UserId;";
             command.ExecuteNonQuery();
         }
 
+        #endregion
+
+        #region Password Recovery
         // Checks if all three security answers are correct.
         // Used before allowing the user to reset their password.
         public bool VerifySecurityAnswers(
@@ -226,6 +231,9 @@ WHERE UserId = @UserId;";
             command.ExecuteNonQuery();
         }
 
+        #endregion
+
+        #region User Listing and Search
         // Gets all users for the User Management screen.
         // Archived users can be hidden or shown depending on includeArchived.
         public List<User> GetAllUsers(bool includeArchived = false)
@@ -346,12 +354,14 @@ ORDER BY u.CreatedAt DESC;";
 
             return users;
         }
+
+        #endregion
+
+        #region User Creation
  
         // Adds a new user account.
-        // This will be used later by the Admin in the User Management screen.
-        // Adds a new user account.
-        // This will be used later by the Admin in the User Management screen.
-        // Security questions are now dynamic, so we store the selected SecurityQuestionId values,
+        // This is used by the Admin in the User Management screen.
+        // Security questions are dynamic, so we store the selected SecurityQuestionId values,
         // not the actual question text.
         public void AddUser(
             string userCode,
@@ -506,6 +516,10 @@ ORDER BY u.CreatedAt DESC;";
                 throw;
             }
         }
+
+        #endregion
+
+        #region User Update
         // Updates user profile information.
         // Password is not changed here; password reset has a separate method.
         public void UpdateUser(
@@ -569,6 +583,247 @@ WHERE UserId = @UserId;";
             }
         }
 
+        // Updates only the account information used by the Update User overlay.
+        // This is kept separate from password and security question updates.
+        public void UpdateUserAccountInfo(
+            int userId,
+            string firstName,
+            string middleName,
+            string lastName,
+            string role,
+            string contactNumber,
+            int updatedByUserId,
+            string updatedByUserCode,
+            string updatedByUsername)
+        {
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteTransaction transaction = connection.BeginTransaction();
+
+            try
+            {
+                using SqliteCommand command = connection.CreateCommand();
+                command.Transaction = transaction;
+
+                command.CommandText = @"
+UPDATE Users
+SET FirstName = @FirstName,
+    MiddleName = @MiddleName,
+    LastName = @LastName,
+    Role = @Role,
+    ContactNumber = @ContactNumber,
+    UpdatedAt = @UpdatedAt
+WHERE UserId = @UserId;";
+
+                command.Parameters.AddWithValue("@FirstName", firstName.Trim());
+                command.Parameters.AddWithValue("@MiddleName", middleName.Trim());
+                command.Parameters.AddWithValue("@LastName", lastName.Trim());
+                command.Parameters.AddWithValue("@Role", role.Trim());
+                command.Parameters.AddWithValue("@ContactNumber", contactNumber.Trim());
+                command.Parameters.AddWithValue("@UpdatedAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                command.Parameters.AddWithValue("@UserId", userId);
+
+                command.ExecuteNonQuery();
+
+                AddActivityLogWithinTransaction(
+                    connection,
+                    transaction,
+                    updatedByUserId,
+                    updatedByUserCode,
+                    updatedByUsername,
+                    "Update",
+                    "Users",
+                    $"Updated account information for user ID: {userId}."
+                );
+
+                transaction.Commit();
+            }
+            catch
+            {
+                transaction.Rollback();
+                throw;
+            }
+        }
+
+        // Changes a user password from the User Management Update User overlay.
+        // The old password must match before the new password is saved.
+        public void ChangeUserPasswordFromManagement(
+            int userId,
+            string oldPassword,
+            string newPassword,
+            int updatedByUserId,
+            string updatedByUserCode,
+            string updatedByUsername)
+        {
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteTransaction transaction = connection.BeginTransaction();
+
+            try
+            {
+                string currentPasswordHash;
+                string currentPasswordSalt;
+
+                using (SqliteCommand getPasswordCommand = connection.CreateCommand())
+                {
+                    getPasswordCommand.Transaction = transaction;
+
+                    getPasswordCommand.CommandText = @"
+SELECT PasswordHash, PasswordSalt
+FROM Users
+WHERE UserId = @UserId
+LIMIT 1;";
+
+                    getPasswordCommand.Parameters.AddWithValue("@UserId", userId);
+
+                    using SqliteDataReader reader = getPasswordCommand.ExecuteReader();
+
+                    if (!reader.Read())
+                    {
+                        throw new Exception("User account was not found.");
+                    }
+
+                    currentPasswordHash = reader["PasswordHash"]?.ToString() ?? string.Empty;
+                    currentPasswordSalt = reader["PasswordSalt"]?.ToString() ?? string.Empty;
+                }
+
+                string oldPasswordHash = PasswordService.HashPassword(oldPassword, currentPasswordSalt);
+
+                if (oldPasswordHash != currentPasswordHash)
+                {
+                    throw new Exception("Old password is incorrect.");
+                }
+
+                string newPasswordSalt = PasswordService.GenerateSalt();
+                string newPasswordHash = PasswordService.HashPassword(newPassword, newPasswordSalt);
+
+                using (SqliteCommand updatePasswordCommand = connection.CreateCommand())
+                {
+                    updatePasswordCommand.Transaction = transaction;
+
+                    updatePasswordCommand.CommandText = @"
+UPDATE Users
+SET PasswordHash = @PasswordHash,
+    PasswordSalt = @PasswordSalt,
+    UpdatedAt = @UpdatedAt
+WHERE UserId = @UserId;";
+
+                    updatePasswordCommand.Parameters.AddWithValue("@PasswordHash", newPasswordHash);
+                    updatePasswordCommand.Parameters.AddWithValue("@PasswordSalt", newPasswordSalt);
+                    updatePasswordCommand.Parameters.AddWithValue("@UpdatedAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                    updatePasswordCommand.Parameters.AddWithValue("@UserId", userId);
+
+                    updatePasswordCommand.ExecuteNonQuery();
+                }
+
+                AddActivityLogWithinTransaction(
+                    connection,
+                    transaction,
+                    updatedByUserId,
+                    updatedByUserCode,
+                    updatedByUsername,
+                    "Change Password",
+                    "Users",
+                    $"Changed password for user ID: {userId}."
+                );
+
+                transaction.Commit();
+            }
+            catch
+            {
+                transaction.Rollback();
+                throw;
+            }
+        }
+
+        // Updates the selected security questions and hashed answers for a user.
+        // Plain security answers are never stored in the database.
+        public void UpdateUserSecurityQuestions(
+            int userId,
+            int securityQuestionId1,
+            string securityAnswer1,
+            int securityQuestionId2,
+            string securityAnswer2,
+            int securityQuestionId3,
+            string securityAnswer3,
+            int updatedByUserId,
+            string updatedByUserCode,
+            string updatedByUsername)
+        {
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteTransaction transaction = connection.BeginTransaction();
+
+            try
+            {
+                string answerSalt1 = PasswordService.GenerateSalt();
+                string answerSalt2 = PasswordService.GenerateSalt();
+                string answerSalt3 = PasswordService.GenerateSalt();
+
+                string answerHash1 = PasswordService.HashSecurityAnswer(securityAnswer1, answerSalt1);
+                string answerHash2 = PasswordService.HashSecurityAnswer(securityAnswer2, answerSalt2);
+                string answerHash3 = PasswordService.HashSecurityAnswer(securityAnswer3, answerSalt3);
+
+                using SqliteCommand command = connection.CreateCommand();
+                command.Transaction = transaction;
+
+                command.CommandText = @"
+UPDATE Users
+SET SecurityQuestionId1 = @SecurityQuestionId1,
+    SecurityAnswerHash1 = @SecurityAnswerHash1,
+    SecurityAnswerSalt1 = @SecurityAnswerSalt1,
+    SecurityQuestionId2 = @SecurityQuestionId2,
+    SecurityAnswerHash2 = @SecurityAnswerHash2,
+    SecurityAnswerSalt2 = @SecurityAnswerSalt2,
+    SecurityQuestionId3 = @SecurityQuestionId3,
+    SecurityAnswerHash3 = @SecurityAnswerHash3,
+    SecurityAnswerSalt3 = @SecurityAnswerSalt3,
+    UpdatedAt = @UpdatedAt
+WHERE UserId = @UserId;";
+
+                command.Parameters.AddWithValue("@SecurityQuestionId1", securityQuestionId1);
+                command.Parameters.AddWithValue("@SecurityAnswerHash1", answerHash1);
+                command.Parameters.AddWithValue("@SecurityAnswerSalt1", answerSalt1);
+
+                command.Parameters.AddWithValue("@SecurityQuestionId2", securityQuestionId2);
+                command.Parameters.AddWithValue("@SecurityAnswerHash2", answerHash2);
+                command.Parameters.AddWithValue("@SecurityAnswerSalt2", answerSalt2);
+
+                command.Parameters.AddWithValue("@SecurityQuestionId3", securityQuestionId3);
+                command.Parameters.AddWithValue("@SecurityAnswerHash3", answerHash3);
+                command.Parameters.AddWithValue("@SecurityAnswerSalt3", answerSalt3);
+
+                command.Parameters.AddWithValue("@UpdatedAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                command.Parameters.AddWithValue("@UserId", userId);
+
+                command.ExecuteNonQuery();
+
+                AddActivityLogWithinTransaction(
+                    connection,
+                    transaction,
+                    updatedByUserId,
+                    updatedByUserCode,
+                    updatedByUsername,
+                    "Update Security Questions",
+                    "Users",
+                    $"Updated security questions for user ID: {userId}."
+                );
+
+                transaction.Commit();
+            }
+            catch
+            {
+                transaction.Rollback();
+                throw;
+            }
+        }
+
+        #endregion
+
+        #region Archive and Restore
         // Archives a user instead of deleting them permanently.
         // This protects records and keeps activity history valid.
         public void ArchiveUser(
@@ -665,6 +920,9 @@ WHERE UserId = @UserId;";
             }
         }
 
+        #endregion
+
+        #region Summary Counts
         // Counts all active users.
         // Used by User Management summary card.
         public int CountActiveUsers()
@@ -686,6 +944,9 @@ WHERE UserId = @UserId;";
             return CountByQuery("SELECT COUNT(*) FROM Users WHERE IsActive = 1 AND Role != 'Admin';");
         }
 
+        #endregion
+
+        #region Existence Checks and User Code Generation
         // Checks if a username already exists.
         // Used before adding a new user.
         public bool UsernameExists(string username)
@@ -758,6 +1019,9 @@ LIMIT 1;";
             return $"{year}-{nextNumber:D3}";
         }
 
+        #endregion
+
+        #region Activity Logs
         // Adds a new activity log.
         // This is useful for login, update, archive, backup, restore, and other important actions.
         public void AddActivityLog(
@@ -848,6 +1112,10 @@ VALUES (
 
             command.ExecuteNonQuery();
         }
+
+        #endregion
+
+        #region Security Question Options
         
         // Gets all active security questions.
         // This will be used by the User Registration screen dropdowns later.
@@ -885,6 +1153,9 @@ VALUES (
             return questions;
         }
 
+        #endregion
+
+        #region Private Helpers
         // Helper method for count queries.
         private int CountByQuery(string sql)
         {
@@ -948,5 +1219,7 @@ VALUES (
                     : DateTime.Parse(reader["LastLoginAt"].ToString()!)
             };
         }
+
+        #endregion
     }
 }
