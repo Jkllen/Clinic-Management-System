@@ -5,7 +5,7 @@ using CruzNeryClinic.Repositories;
 using CruzNeryClinic.Services;
 using System.Collections.Generic;
 using System.Linq;
-using System;
+using System.Windows;
 using System.Text.RegularExpressions;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
@@ -110,6 +110,7 @@ namespace CruzNeryClinic.ViewModels
             AddNewUserCommand = new RelayCommand(OpenAddUserOverlay);
             UpdateUserCommand = new RelayCommand<UserListItem>(OpenUpdateUser);
             ArchiveUserCommand = new RelayCommand<UserListItem>(ArchiveUser);
+            RestoreUserCommand = new RelayCommand<UserListItem>(RestoreUser);
             ClearSearchCommand = new RelayCommand(ClearSearch);
 
             CloseAddUserOverlayCommand = new RelayCommand(CloseAddUserOverlay);
@@ -559,6 +560,7 @@ namespace CruzNeryClinic.ViewModels
 
         public ICommand CloseSuccessPromptCommand { get; }
 
+        public ICommand RestoreUserCommand { get; }
         private void LoadUsers()
         {
             try
@@ -829,6 +831,16 @@ namespace CruzNeryClinic.ViewModels
                 return;
             }
 
+            MessageBoxResult result = MessageBox.Show(
+                $"Are you sure you want to archive {user.FirstName} {user.LastName}?\n\nThis user will no longer appear in the active user list.",
+                "Confirm Archive",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning
+            );
+
+            if (result != MessageBoxResult.Yes)
+                return;
+
             try
             {
                 userRepository.ArchiveUser(
@@ -843,6 +855,53 @@ namespace CruzNeryClinic.ViewModels
             catch (Exception ex)
             {
                 ShowError($"Archive failed: {ex.Message}");
+            }
+        }
+
+        private void RestoreUser(UserListItem? user)
+        {
+            if (user == null)
+            {
+                ShowError("Please select a user to restore.");
+                return;
+            }
+
+            if (SessionService.CurrentUser == null)
+            {
+                ShowError("No logged-in user was found.");
+                return;
+            }
+
+            if (user.IsActive)
+            {
+                ShowError("This user is already active.");
+                return;
+            }
+
+            MessageBoxResult result = MessageBox.Show(
+                $"Are you sure you want to restore {user.FirstName} {user.LastName}?\n\nThis user will become active again.",
+                "Confirm Restore",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question
+            );
+
+            if (result != MessageBoxResult.Yes)
+                return;
+
+            try
+            {
+                userRepository.RestoreUser(
+                    user.UserId,
+                    SessionService.CurrentUser.UserId,
+                    SessionService.CurrentUser.UserCode,
+                    SessionService.CurrentUser.Username
+                );
+
+                LoadUsers();
+            }
+            catch (Exception ex)
+            {
+                ShowError($"Restore failed: {ex.Message}");
             }
         }
 

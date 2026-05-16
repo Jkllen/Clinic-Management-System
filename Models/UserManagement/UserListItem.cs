@@ -19,5 +19,7 @@ namespace CruzNeryClinic.Models.UserManagement
         public bool IsActive { get; set; }
 
         public string AccountStatus => IsActive ? "Active" : "Archived";
+
+        public bool IsArchived => !IsActive;
     }
 }

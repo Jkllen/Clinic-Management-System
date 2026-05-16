@@ -618,6 +618,53 @@ WHERE UserId = @UserId;";
             }
         }
 
+        public void RestoreUser(
+            int userId,
+            int restoredByUserId,
+            string restoredByUserCode,
+            string restoredByUsername)
+        {
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteTransaction transaction = connection.BeginTransaction();
+
+            try
+            {
+                using SqliteCommand command = connection.CreateCommand();
+                command.Transaction = transaction;
+
+                command.CommandText = @"
+        UPDATE Users
+        SET IsActive = 1,
+            UpdatedAt = @UpdatedAt
+        WHERE UserId = @UserId;";
+
+                command.Parameters.AddWithValue("@UpdatedAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                command.Parameters.AddWithValue("@UserId", userId);
+
+                command.ExecuteNonQuery();
+
+                AddActivityLogWithinTransaction(
+                    connection,
+                    transaction,
+                    restoredByUserId,
+                    restoredByUserCode,
+                    restoredByUsername,
+                    "Restore",
+                    "Users",
+                    $"Restored user account with ID: {userId}."
+                );
+
+                transaction.Commit();
+            }
+            catch
+            {
+                transaction.Rollback();
+                throw;
+            }
+        }
+
         // Counts all active users.
         // Used by User Management summary card.
         public int CountActiveUsers()
