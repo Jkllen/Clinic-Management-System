@@ -1,0 +1,297 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp">
+
+    <!--  Summary card number style  -->
+    <Style x:Key="SummaryNumberStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="28" />
+        <Setter Property="Foreground" Value="#50C878" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <!--  Small rounded action button style  -->
+    <Style x:Key="SmallActionButtonStyle" TargetType="Button">
+        <Setter Property="Height" Value="36" />
+        <Setter Property="Padding" Value="12,0" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border
+                        x:Name="ButtonBorder"
+                        Background="{TemplateBinding Background}"
+                        CornerRadius="18">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.82" />
+                        </Trigger>
+
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.65" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="AddUserOverlayTextBoxStyle" TargetType="TextBox">
+        <Setter Property="Height" Value="46" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Foreground" Value="#111111" />
+        <Setter Property="Background" Value="#FFFDFD" />
+        <Setter Property="BorderBrush" Value="#F0D7EF" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="7.5,0,16,0" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Border
+                        x:Name="TextBoxBorder"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="14">
+
+                        <Grid>
+                            <ScrollViewer
+                                x:Name="PART_ContentHost"
+                                Margin="{TemplateBinding Padding}"
+                                VerticalAlignment="Center" />
+
+                            <!--  Placeholder text. Uses TextBox.Tag.  -->
+                            <TextBlock
+                                Margin="16,0,16,0"
+                                VerticalAlignment="Center"
+                                FontSize="{TemplateBinding FontSize}"
+                                Foreground="#A0A0A0"
+                                IsHitTestVisible="False"
+                                Text="{TemplateBinding Tag}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value="">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                    </Border>
+
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="TextBoxBorder" Property="BorderBrush" Value="#223357" />
+                            <Setter TargetName="TextBoxBorder" Property="BorderThickness" Value="2" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!--  Add User overlay PasswordBox style  -->
+    <Style x:Key="AddUserOverlayPasswordBoxStyle" TargetType="PasswordBox">
+        <Setter Property="Height" Value="46" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Foreground" Value="#111111" />
+        <Setter Property="Background" Value="#FFFDFD" />
+        <Setter Property="BorderBrush" Value="#F0D7EF" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="6.5,0,16,0" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="PasswordBox">
+                    <Border
+                        x:Name="PasswordBoxBorder"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="14">
+                        <ScrollViewer
+                            x:Name="PART_ContentHost"
+                            Margin="{TemplateBinding Padding}"
+                            VerticalAlignment="Center" />
+                    </Border>
+
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="PasswordBoxBorder" Property="BorderBrush" Value="#223357" />
+                            <Setter TargetName="PasswordBoxBorder" Property="BorderThickness" Value="2" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!--  Add User overlay ComboBox style  -->
+    <Style x:Key="AddUserOverlayComboBoxStyle" TargetType="ComboBox">
+        <Setter Property="Height" Value="46" />
+        <Setter Property="MinHeight" Value="46" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Foreground" Value="#111111" />
+        <Setter Property="Background" Value="#FFFDFD" />
+        <Setter Property="BorderBrush" Value="#F0D7EF" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="16,0,46,0" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ComboBox">
+                    <Grid>
+                        <ToggleButton
+                            x:Name="ToggleButton"
+                            Width="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
+                            HorizontalAlignment="Stretch"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            ClickMode="Press"
+                            Focusable="False"
+                            IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+
+                            <Border
+                                x:Name="ComboBorder"
+                                HorizontalAlignment="Stretch"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="14">
+
+                                <Grid>
+                                    <ContentPresenter
+                                        x:Name="ContentSite"
+                                        Margin="16,0,46,0"
+                                        HorizontalAlignment="Left"
+                                        VerticalAlignment="Center"
+                                        Content="{TemplateBinding SelectionBoxItem}"
+                                        ContentStringFormat="{TemplateBinding SelectionBoxItemStringFormat}"
+                                        ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" />
+
+                                    <TextBlock
+                                        x:Name="PlaceholderText"
+                                        Margin="16,0,46,0"
+                                        VerticalAlignment="Center"
+                                        Foreground="#A0A0A0"
+                                        IsHitTestVisible="False"
+                                        Text="{TemplateBinding Tag}">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding SelectedItem, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Null}">
+                                                        <Setter Property="Visibility" Value="Visible" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+
+                                    <fa:IconBlock
+                                        Margin="0,0,16,0"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Center"
+                                        FontSize="16"
+                                        Foreground="Black"
+                                        Icon="AngleDown" />
+                                </Grid>
+                            </Border>
+                        </ToggleButton>
+
+                        <Popup
+                            x:Name="PART_Popup"
+                            AllowsTransparency="True"
+                            Focusable="False"
+                            IsOpen="{TemplateBinding IsDropDownOpen}"
+                            Placement="Bottom"
+                            PopupAnimation="Slide">
+
+                            <Border
+                                Width="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
+                                MaxHeight="220"
+                                Background="White"
+                                BorderBrush="#DADADA"
+                                BorderThickness="1"
+                                CornerRadius="8">
+
+                                <ScrollViewer Margin="2">
+                                    <ItemsPresenter />
+                                </ScrollViewer>
+                            </Border>
+                        </Popup>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                            <Setter TargetName="ComboBorder" Property="BorderBrush" Value="#223357" />
+                            <Setter TargetName="ComboBorder" Property="BorderThickness" Value="2" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!--  Read-only confirmation textbox look  -->
+    <Style
+        x:Key="ReadOnlyConfirmationBoxStyle"
+        BasedOn="{StaticResource AddUserOverlayTextBoxStyle}"
+        TargetType="TextBox">
+        <Setter Property="IsReadOnly" Value="True" />
+        <Setter Property="Foreground" Value="#8A8A8A" />
+        <Setter Property="Background" Value="#FFF9FD" />
+    </Style>
+
+    <!--  Blue scrollbar style for User Management tables  -->
+    <Style x:Key="BlueDataGridScrollBarStyle" TargetType="{x:Type ScrollBar}">
+        <Setter Property="Background" Value="#ffffff" />
+        <Setter Property="Width" Value="Auto" />
+        <Setter Property="Height" Value="Auto" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ScrollBar}">
+                    <Grid Background="{TemplateBinding Background}">
+                        <Track x:Name="PART_Track" IsDirectionReversed="True">
+                            <Track.Thumb>
+                                <Thumb>
+                                    <Thumb.Template>
+                                        <ControlTemplate TargetType="Thumb">
+                                            <Border
+                                                Margin="2"
+                                                Background="#223357"
+                                                CornerRadius="6" />
+                                        </ControlTemplate>
+                                    </Thumb.Template>
+                                </Thumb>
+                            </Track.Thumb>
+                        </Track>
+                    </Grid>
+
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Orientation" Value="Horizontal">
+                            <Setter TargetName="PART_Track" Property="IsDirectionReversed" Value="False" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+
+</ResourceDictionary>
