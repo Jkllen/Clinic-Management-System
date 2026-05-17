@@ -5,6 +5,7 @@ using CruzNeryClinic.Repositories;
 using CruzNeryClinic.Services;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Media;
 using System.Windows;
 using System.Text.RegularExpressions;
 using System.Collections.ObjectModel;
@@ -17,17 +18,25 @@ namespace CruzNeryClinic.ViewModels
     // and the Add New User overlay form.
     public class UserManagementViewModel : BaseViewModel
     {
+        #region Dependencies and Backing Fields
+
+        // Repository used by this ViewModel.
         private readonly UserRepository userRepository;
 
+
+        // Summary card values.
         private int totalUsers;
         private int activeAccounts;
         private int administratorCount;
         private int staffCount;
 
+
+        // Main table state.
         private string searchText = string.Empty;
         private UserListItem? selectedUser;
         private string errorMessage = string.Empty;
         private bool hasError;
+
 
         // Add User overlay state.
         private bool isAddUserOverlayOpen;
@@ -60,13 +69,56 @@ namespace CruzNeryClinic.ViewModels
 
         private string createdUserDisplayName = string.Empty;
 
-        // Filter and Sorting
+
+        // Filter and sorting state.
         private readonly List<UserListItem> allUserItems = new();
 
         private string selectedFilterOption = "All Active Users";
         private string selectedSortOption = "User ID Ascending";
 
-        // Constructor
+
+        // Update User overlay state.
+        private bool isUpdateUserOverlayOpen;
+        private int updateUserCurrentTab = 1;
+        private bool isUpdateSuccessPromptVisible;
+
+        private UserListItem? userBeingUpdated;
+
+        // Update account information fields.
+        private string updateUserFirstName = string.Empty;
+        private string updateUserMiddleName = string.Empty;
+        private string updateUserLastName = string.Empty;
+        private string updateUserRole = string.Empty;
+        private string updateUserContactNumber = string.Empty;
+
+        // Update password fields.
+        private string updateOldPassword = string.Empty;
+        private string updateNewPassword = string.Empty;
+        private string updateConfirmNewPassword = string.Empty;
+
+        private bool isUpdateOldPasswordVisible;
+        private bool isUpdateNewPasswordVisible;
+        private bool isUpdateConfirmNewPasswordVisible;
+
+        // Update security question fields.
+        private SecurityQuestion? updateSelectedSecurityQuestion1;
+        private SecurityQuestion? updateSelectedSecurityQuestion2;
+        private SecurityQuestion? updateSelectedSecurityQuestion3;
+
+        private string updateSecurityAnswer1 = string.Empty;
+        private string updateSecurityAnswer2 = string.Empty;
+        private string updateSecurityAnswer3 = string.Empty;
+
+        private string updateUserErrorMessage = string.Empty;
+        private bool hasUpdateUserError;
+
+        private string updateSuccessTitle = string.Empty;
+        private string updateSuccessMessage = string.Empty;
+
+        #endregion
+
+        #region Constructor
+
         public UserManagementViewModel()
         {
             userRepository = new UserRepository();
@@ -135,15 +187,53 @@ namespace CruzNeryClinic.ViewModels
                 IsConfirmationPasswordVisible = !IsConfirmationPasswordVisible;
             });
 
+            CloseUpdateUserOverlayCommand = new RelayCommand(CloseUpdateUserOverlay);
+
+            ShowUpdateAccountInfoTabCommand = new RelayCommand(() => UpdateUserCurrentTab = 1);
+            ShowUpdatePasswordTabCommand = new RelayCommand(() => UpdateUserCurrentTab = 2);
+            ShowUpdateSecurityTabCommand = new RelayCommand(() => UpdateUserCurrentTab = 3);
+
+            SaveUpdateAccountInfoCommand = new RelayCommand(SaveUpdateAccountInfo);
+            SaveUpdatePasswordCommand = new RelayCommand(SaveUpdatePassword);
+            SaveUpdateSecurityCommand = new RelayCommand(SaveUpdateSecurity);
+
+            CloseUpdateSuccessPromptCommand = new RelayCommand(() =>
+            {
+                IsUpdateSuccessPromptVisible = false;
+            });
+
+            ToggleUpdateOldPasswordVisibilityCommand = new RelayCommand(() =>
+            {
+                IsUpdateOldPasswordVisible = !IsUpdateOldPasswordVisible;
+            });
+
+            ToggleUpdateNewPasswordVisibilityCommand = new RelayCommand(() =>
+            {
+                IsUpdateNewPasswordVisible = !IsUpdateNewPasswordVisible;
+            });
+
+            ToggleUpdateConfirmNewPasswordVisibilityCommand = new RelayCommand(() =>
+            {
+                IsUpdateConfirmNewPasswordVisible = !IsUpdateConfirmNewPasswordVisible;
+            });
+
             LoadUsers();
             LoadSecurityQuestions();
         }
+
+        #endregion
+
+        #region Public Collections
 
         public ObservableCollection<UserListItem> Users { get; }
 
         public ObservableCollection<SecurityQuestion> SecurityQuestions { get; }
 
         public ObservableCollection<string> Roles { get; }
+
+        #endregion
+
+        #region Summary Card Properties
 
         public int TotalUsers
         {
@@ -168,6 +258,10 @@ namespace CruzNeryClinic.ViewModels
             get => staffCount;
             set => SetProperty(ref staffCount, value);
         }
+
+        #endregion
+
+        #region Search, Filter, and Sort Properties
 
         public string SearchText
         {
@@ -203,6 +297,10 @@ namespace CruzNeryClinic.ViewModels
             }
         }
 
+        #endregion
+
+        #region Selection and Screen Error Properties
+
         public UserListItem? SelectedUser
         {
             get => selectedUser;
@@ -221,10 +319,310 @@ namespace CruzNeryClinic.ViewModels
             set => SetProperty(ref hasError, value);
         }
 
+        #endregion
+
+        #region Add and Update Overlay Properties
+
         public bool IsAddUserOverlayOpen
         {
             get => isAddUserOverlayOpen;
             set => SetProperty(ref isAddUserOverlayOpen, value);
+        }
+
+        public bool IsUpdateUserOverlayOpen
+        {
+            get => isUpdateUserOverlayOpen;
+            set => SetProperty(ref isUpdateUserOverlayOpen, value);
+        }
+
+        public int UpdateUserCurrentTab
+        {
+            get => updateUserCurrentTab;
+            set
+            {
+                SetProperty(ref updateUserCurrentTab, value);
+
+                OnPropertyChanged(nameof(IsUpdateAccountInfoTabVisible));
+                OnPropertyChanged(nameof(IsUpdatePasswordTabVisible));
+                OnPropertyChanged(nameof(IsUpdateSecurityTabVisible));
+
+                OnPropertyChanged(nameof(UpdateAccountTabBrush));
+                OnPropertyChanged(nameof(UpdatePasswordTabBrush));
+                OnPropertyChanged(nameof(UpdateSecurityTabBrush));
+
+                OnPropertyChanged(nameof(UpdateAccountTabForeground));
+                OnPropertyChanged(nameof(UpdatePasswordTabForeground));
+                OnPropertyChanged(nameof(UpdateSecurityTabForeground));
+            }
+        }
+
+        public bool IsUpdateAccountInfoTabVisible => UpdateUserCurrentTab == 1;
+
+        public bool IsUpdatePasswordTabVisible => UpdateUserCurrentTab == 2;
+
+        public bool IsUpdateSecurityTabVisible => UpdateUserCurrentTab == 3;
+
+        public string UpdateAccountTabBrush => UpdateUserCurrentTab == 1 ? "#2E86DE" : "Transparent";
+        public string UpdatePasswordTabBrush => UpdateUserCurrentTab == 2 ? "#2E86DE" : "Transparent";
+        public string UpdateSecurityTabBrush => UpdateUserCurrentTab == 3 ? "#2E86DE" : "Transparent";
+
+        public string UpdateAccountTabForeground => UpdateUserCurrentTab == 1 ? "White" : "Black";
+        public string UpdatePasswordTabForeground => UpdateUserCurrentTab == 2 ? "White" : "Black";
+        public string UpdateSecurityTabForeground => UpdateUserCurrentTab == 3 ? "White" : "Black";
+
+        public bool IsUpdateSuccessPromptVisible
+        {
+            get => isUpdateSuccessPromptVisible;
+            set => SetProperty(ref isUpdateSuccessPromptVisible, value);
+        }
+
+        public string UpdateUserFirstName
+        {
+            get => updateUserFirstName;
+            set
+            {
+                SetProperty(ref updateUserFirstName, value);
+                ClearUpdateUserError();
+            }
+        }
+
+        public string UpdateUserMiddleName
+        {
+            get => updateUserMiddleName;
+            set => SetProperty(ref updateUserMiddleName, value);
+        }
+
+        public string UpdateUserLastName
+        {
+            get => updateUserLastName;
+            set
+            {
+                SetProperty(ref updateUserLastName, value);
+                ClearUpdateUserError();
+            }
+        }
+
+        public string UpdateUserRole
+        {
+            get => updateUserRole;
+            set
+            {
+                SetProperty(ref updateUserRole, value);
+                ClearUpdateUserError();
+            }
+        }
+
+        public string UpdateUserContactNumber
+        {
+            get => updateUserContactNumber;
+            set
+            {
+                SetProperty(ref updateUserContactNumber, value);
+                ClearUpdateUserError();
+            }
+        }
+
+        public string UpdateOldPassword
+        {
+            get => updateOldPassword;
+            set
+            {
+                SetProperty(ref updateOldPassword, value);
+                ClearUpdateUserError();
+                OnPropertyChanged(nameof(IsUpdateOldPasswordEmpty));
+            }
+        }
+
+        public string UpdateNewPassword
+        {
+            get => updateNewPassword;
+            set
+            {
+                SetProperty(ref updateNewPassword, value);
+                ClearUpdateUserError();
+                OnPropertyChanged(nameof(IsUpdateNewPasswordEmpty));
+
+                // Refresh live password rule colors.
+                OnPropertyChanged(nameof(UpdateMinLengthRuleBrush));
+                OnPropertyChanged(nameof(UpdateUppercaseRuleBrush));
+                OnPropertyChanged(nameof(UpdateLowercaseRuleBrush));
+                OnPropertyChanged(nameof(UpdateNumberRuleBrush));
+                OnPropertyChanged(nameof(UpdateSpecialCharRuleBrush));
+            }
+        }
+
+        public string UpdateConfirmNewPassword
+        {
+            get => updateConfirmNewPassword;
+            set
+            {
+                SetProperty(ref updateConfirmNewPassword, value);
+                ClearUpdateUserError();
+                OnPropertyChanged(nameof(IsUpdateConfirmNewPasswordEmpty));
+            }
+        }
+
+        public bool IsUpdateOldPasswordEmpty => string.IsNullOrEmpty(UpdateOldPassword);
+        public bool IsUpdateNewPasswordEmpty => string.IsNullOrEmpty(UpdateNewPassword);
+        public bool IsUpdateConfirmNewPasswordEmpty => string.IsNullOrEmpty(UpdateConfirmNewPassword);
+
+        public bool IsUpdateOldPasswordVisible
+        {
+            get => isUpdateOldPasswordVisible;
+            set
+            {
+                SetProperty(ref isUpdateOldPasswordVisible, value);
+                OnPropertyChanged(nameof(IsUpdateOldPasswordHidden));
+                OnPropertyChanged(nameof(UpdateOldPasswordEyeIcon));
+            }
+        }
+
+        public bool IsUpdateOldPasswordHidden => !IsUpdateOldPasswordVisible;
+
+        public bool IsUpdateNewPasswordVisible
+        {
+            get => isUpdateNewPasswordVisible;
+            set
+            {
+                SetProperty(ref isUpdateNewPasswordVisible, value);
+                OnPropertyChanged(nameof(IsUpdateNewPasswordHidden));
+                OnPropertyChanged(nameof(UpdateNewPasswordEyeIcon));
+            }
+        }
+
+        public bool IsUpdateNewPasswordHidden => !IsUpdateNewPasswordVisible;
+
+        public bool IsUpdateConfirmNewPasswordVisible
+        {
+            get => isUpdateConfirmNewPasswordVisible;
+            set
+            {
+                SetProperty(ref isUpdateConfirmNewPasswordVisible, value);
+                
+                OnPropertyChanged(nameof(IsUpdateConfirmNewPasswordHidden));
+                OnPropertyChanged(nameof(UpdateConfirmNewPasswordEyeIcon));
+            
+                // Refresh compatibility aliases.
+                OnPropertyChanged(nameof(IsUpdateConfirmPasswordVisible));
+                OnPropertyChanged(nameof(IsUpdateConfirmPasswordHidden));
+                OnPropertyChanged(nameof(UpdateConfirmPasswordEyeIcon));
+            }
+        }
+
+        public bool IsUpdateConfirmNewPasswordHidden => !IsUpdateConfirmNewPasswordVisible;
+
+        public string UpdateOldPasswordEyeIcon => IsUpdateOldPasswordVisible ? "Eye" : "EyeSlash";
+        public string UpdateNewPasswordEyeIcon => IsUpdateNewPasswordVisible ? "Eye" : "EyeSlash";
+        public string UpdateConfirmNewPasswordEyeIcon => IsUpdateConfirmNewPasswordVisible ? "Eye" : "EyeSlash";
+
+        // Compatibility aliases for the Update Password XAML.
+        // These exist because some XAML bindings use the shorter "ConfirmPassword" name.
+        public bool IsUpdateConfirmPasswordVisible => IsUpdateConfirmNewPasswordVisible;
+
+        public bool IsUpdateConfirmPasswordHidden => IsUpdateConfirmNewPasswordHidden;
+
+        public string UpdateConfirmPasswordEyeIcon => UpdateConfirmNewPasswordEyeIcon;
+
+        // Live password requirement colors for the Change Password tab.
+        // Red means the new password has not met that requirement yet.
+        // Gray means the requirement is already satisfied.
+        public Brush UpdateMinLengthRuleBrush =>
+            !HasMinimumPasswordLength(UpdateNewPassword) ? Brushes.Red : Brushes.Gray;
+
+        public Brush UpdateUppercaseRuleBrush =>
+            !HasUppercaseCharacter(UpdateNewPassword) ? Brushes.Red : Brushes.Gray;
+
+        public Brush UpdateLowercaseRuleBrush =>
+            !HasLowercaseCharacter(UpdateNewPassword) ? Brushes.Red : Brushes.Gray;
+
+        public Brush UpdateNumberRuleBrush =>
+            !HasNumberCharacter(UpdateNewPassword) ? Brushes.Red : Brushes.Gray;
+
+        public Brush UpdateSpecialCharRuleBrush =>
+            !HasSpecialCharacter(UpdateNewPassword) ? Brushes.Red : Brushes.Gray;
+
+        public SecurityQuestion? UpdateSelectedSecurityQuestion1
+        {
+            get => updateSelectedSecurityQuestion1;
+            set
+            {
+                SetProperty(ref updateSelectedSecurityQuestion1, value);
+                ClearUpdateUserError();
+            }
+        }
+
+        public SecurityQuestion? UpdateSelectedSecurityQuestion2
+        {
+            get => updateSelectedSecurityQuestion2;
+            set
+            {
+                SetProperty(ref updateSelectedSecurityQuestion2, value);
+                ClearUpdateUserError();
+            }
+        }
+
+        public SecurityQuestion? UpdateSelectedSecurityQuestion3
+        {
+            get => updateSelectedSecurityQuestion3;
+            set
+            {
+                SetProperty(ref updateSelectedSecurityQuestion3, value);
+                ClearUpdateUserError();
+            }
+        }
+
+        public string UpdateSecurityAnswer1
+        {
+            get => updateSecurityAnswer1;
+            set
+            {
+                SetProperty(ref updateSecurityAnswer1, value);
+                ClearUpdateUserError();
+            }
+        }
+
+        public string UpdateSecurityAnswer2
+        {
+            get => updateSecurityAnswer2;
+            set
+            {
+                SetProperty(ref updateSecurityAnswer2, value);
+                ClearUpdateUserError();
+            }
+        }
+
+        public string UpdateSecurityAnswer3
+        {
+            get => updateSecurityAnswer3;
+            set
+            {
+                SetProperty(ref updateSecurityAnswer3, value);
+                ClearUpdateUserError();
+            }
+        }
+
+        public string UpdateUserErrorMessage
+        {
+            get => updateUserErrorMessage;
+            set => SetProperty(ref updateUserErrorMessage, value);
+        }
+
+        public bool HasUpdateUserError
+        {
+            get => hasUpdateUserError;
+            set => SetProperty(ref hasUpdateUserError, value);
+        }
+
+        public string UpdateSuccessTitle
+        {
+            get => updateSuccessTitle;
+            set => SetProperty(ref updateSuccessTitle, value);
+        }
+
+        public string UpdateSuccessMessage
+        {
+            get => updateSuccessMessage;
+            set => SetProperty(ref updateSuccessMessage, value);
         }
 
         public bool IsSuccessPromptVisible
@@ -538,6 +936,10 @@ namespace CruzNeryClinic.ViewModels
 
         public string SelectedQuestionText3 => SelectedSecurityQuestion3?.QuestionText ?? string.Empty;
 
+        #endregion
+
+        #region Commands
+
         public ICommand LoadUsersCommand { get; }
 
         public ICommand AddNewUserCommand { get; }
@@ -561,6 +963,35 @@ namespace CruzNeryClinic.ViewModels
         public ICommand CloseSuccessPromptCommand { get; }
 
         public ICommand RestoreUserCommand { get; }
+
+        public ICommand CloseUpdateUserOverlayCommand { get; }
+
+        public ICommand ShowUpdateAccountInfoTabCommand { get; }
+
+        public ICommand ShowUpdatePasswordTabCommand { get; }
+
+        public ICommand ShowUpdateSecurityTabCommand { get; }
+
+        public ICommand SaveUpdateAccountInfoCommand { get; }
+
+        public ICommand SaveUpdatePasswordCommand { get; }
+
+        public ICommand SaveUpdateSecurityCommand { get; }
+
+        public ICommand CloseUpdateSuccessPromptCommand { get; }
+
+        public ICommand ToggleUpdateOldPasswordVisibilityCommand { get; }
+
+        public ICommand ToggleUpdateNewPasswordVisibilityCommand { get; }
+        public ICommand ToggleUpdateConfirmNewPasswordVisibilityCommand { get; }
+        // Compatibility alias for XAML that uses the shorter command name.
+        public ICommand ToggleUpdateConfirmPasswordVisibilityCommand =>
+            ToggleUpdateConfirmNewPasswordVisibilityCommand;
+
+        #endregion
+
+        #region Main User List Methods
+
         private void LoadUsers()
         {
             try
@@ -692,6 +1123,10 @@ namespace CruzNeryClinic.ViewModels
             }
         }
 
+        #endregion
+
+        #region Add User Methods
+
         private void OpenAddUserOverlay()
         {
             ResetAddUserForm();
@@ -794,6 +1229,10 @@ namespace CruzNeryClinic.ViewModels
             CurrentStep = 1;
         }
 
+        #endregion
+
+        #region Update User Methods
+
         private void OpenUpdateUser(UserListItem? user)
         {
             if (user == null)
@@ -802,8 +1241,248 @@ namespace CruzNeryClinic.ViewModels
                 return;
             }
 
-            ShowError($"Update form for {user.UserCode} will be added next.");
+            userBeingUpdated = user;
+
+            UpdateUserFirstName = user.FirstName;
+            UpdateUserMiddleName = user.MiddleName;
+            UpdateUserLastName = user.LastName;
+            UpdateUserRole = user.Role;
+            UpdateUserContactNumber = user.ContactNumber;
+
+            ResetUpdatePasswordFields();
+            ResetUpdateSecurityFields();
+
+            UpdateUserCurrentTab = 1;
+            IsUpdateSuccessPromptVisible = false;
+            IsUpdateUserOverlayOpen = true;
+            ClearUpdateUserError();
         }
+
+        private void CloseUpdateUserOverlay()
+        {
+            IsUpdateUserOverlayOpen = false;
+            IsUpdateSuccessPromptVisible = false;
+            userBeingUpdated = null;
+            ClearUpdateUserError();
+        }
+
+        private void SaveUpdateAccountInfo()
+        {
+            if (userBeingUpdated == null)
+            {
+                ShowUpdateUserError("No user was selected.");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(UpdateUserFirstName))
+            {
+                ShowUpdateUserError("First name is required.");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(UpdateUserLastName))
+            {
+                ShowUpdateUserError("Last name is required.");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(UpdateUserRole))
+            {
+                ShowUpdateUserError("Role is required.");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(UpdateUserContactNumber))
+            {
+                ShowUpdateUserError("Contact number is required.");
+                return;
+            }
+
+            if (!IsValidContactNumber(UpdateUserContactNumber))
+            {
+                ShowUpdateUserError("Contact number must be a valid Philippine mobile number, such as 09123456789 or +639123456789.");
+                return;
+            }
+
+            if (SessionService.CurrentUser == null)
+            {
+                ShowUpdateUserError("No logged-in user was found.");
+                return;
+            }
+
+            bool confirmed = ConfirmUpdateAction(
+                "Confirm Update",
+                $"Are you sure you want to update {UpdateUserFirstName} {UpdateUserLastName}'s account information?"
+            );
+
+            if (!confirmed)
+                return;
+
+            try
+            {
+                userRepository.UpdateUserAccountInfo(
+                    userBeingUpdated.UserId,
+                    UpdateUserFirstName,
+                    UpdateUserMiddleName,
+                    UpdateUserLastName,
+                    UpdateUserRole,
+                    UpdateUserContactNumber,
+                    SessionService.CurrentUser.UserId,
+                    SessionService.CurrentUser.UserCode,
+                    SessionService.CurrentUser.Username
+                );
+
+                UpdateSuccessTitle = "User info updated successfully";
+                UpdateSuccessMessage = $"{UpdateUserFirstName} {UpdateUserLastName}'s information has been updated.";
+                IsUpdateSuccessPromptVisible = true;
+
+                LoadUsers();
+            }
+            catch (Exception ex)
+            {
+                ShowUpdateUserError($"Failed to update user information: {ex.Message}");
+            }
+        }
+
+        private void SaveUpdatePassword()
+        {
+            if (userBeingUpdated == null)
+            {
+                ShowUpdateUserError("No user was selected.");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(UpdateOldPassword))
+            {
+                ShowUpdateUserError("Old password is required.");
+                return;
+            }
+
+            if (!IsStrongPassword(UpdateNewPassword))
+            {
+                ShowUpdateUserError("Password must contain at least 12 characters, uppercase, lowercase, number, and special character.");
+                return;
+            }
+
+            if (UpdateNewPassword != UpdateConfirmNewPassword)
+            {
+                ShowUpdateUserError("New password and confirm password must match.");
+                return;
+            }
+
+            if (SessionService.CurrentUser == null)
+            {
+                ShowUpdateUserError("No logged-in user was found.");
+                return;
+            }
+
+            bool confirmed = ConfirmUpdateAction(
+                "Confirm Password Change",
+                $"Are you sure you want to change {userBeingUpdated.FirstName} {userBeingUpdated.LastName}'s password?"
+            );
+
+            if (!confirmed)
+                return;
+
+            try
+            {
+                userRepository.ChangeUserPasswordFromManagement(
+                    userBeingUpdated.UserId,
+                    UpdateOldPassword,
+                    UpdateNewPassword,
+                    SessionService.CurrentUser.UserId,
+                    SessionService.CurrentUser.UserCode,
+                    SessionService.CurrentUser.Username
+                );
+
+                UpdateSuccessTitle = "User info updated successfully";
+                UpdateSuccessMessage = $"{userBeingUpdated.FirstName} {userBeingUpdated.LastName}'s password has been updated.";
+                IsUpdateSuccessPromptVisible = true;
+
+                ResetUpdatePasswordFields();
+            }
+            catch (Exception ex)
+            {
+                ShowUpdateUserError($"Failed to change password: {ex.Message}");
+            }
+        }
+
+        private void SaveUpdateSecurity()
+        {
+            if (userBeingUpdated == null)
+            {
+                ShowUpdateUserError("No user was selected.");
+                return;
+            }
+
+            if (UpdateSelectedSecurityQuestion1 == null ||
+                UpdateSelectedSecurityQuestion2 == null ||
+                UpdateSelectedSecurityQuestion3 == null)
+            {
+                ShowUpdateUserError("Please select all three security questions.");
+                return;
+            }
+
+            if (UpdateSelectedSecurityQuestion1.SecurityQuestionId == UpdateSelectedSecurityQuestion2.SecurityQuestionId ||
+                UpdateSelectedSecurityQuestion1.SecurityQuestionId == UpdateSelectedSecurityQuestion3.SecurityQuestionId ||
+                UpdateSelectedSecurityQuestion2.SecurityQuestionId == UpdateSelectedSecurityQuestion3.SecurityQuestionId)
+            {
+                ShowUpdateUserError("Please select three different security questions.");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(UpdateSecurityAnswer1) ||
+                string.IsNullOrWhiteSpace(UpdateSecurityAnswer2) ||
+                string.IsNullOrWhiteSpace(UpdateSecurityAnswer3))
+            {
+                ShowUpdateUserError("Please answer all security questions.");
+                return;
+            }
+
+            if (SessionService.CurrentUser == null)
+            {
+                ShowUpdateUserError("No logged-in user was found.");
+                return;
+            }
+
+            bool confirmed = ConfirmUpdateAction(
+                "Confirm Security Update",
+                $"Are you sure you want to update {userBeingUpdated.FirstName} {userBeingUpdated.LastName}'s security questions?"
+            );
+
+            if (!confirmed)
+                return;
+
+            try
+            {
+                userRepository.UpdateUserSecurityQuestions(
+                    userBeingUpdated.UserId,
+                    UpdateSelectedSecurityQuestion1.SecurityQuestionId,
+                    UpdateSecurityAnswer1,
+                    UpdateSelectedSecurityQuestion2.SecurityQuestionId,
+                    UpdateSecurityAnswer2,
+                    UpdateSelectedSecurityQuestion3.SecurityQuestionId,
+                    UpdateSecurityAnswer3,
+                    SessionService.CurrentUser.UserId,
+                    SessionService.CurrentUser.UserCode,
+                    SessionService.CurrentUser.Username
+                );
+
+                UpdateSuccessTitle = "User info updated successfully";
+                UpdateSuccessMessage = $"{userBeingUpdated.FirstName} {userBeingUpdated.LastName}'s security questions have been updated.";
+                IsUpdateSuccessPromptVisible = true;
+
+                ResetUpdateSecurityFields();
+            }
+            catch (Exception ex)
+            {
+                ShowUpdateUserError($"Failed to update security questions: {ex.Message}");
+            }
+        }
+
+        #endregion
+
+        #region Archive and Restore Methods
 
         private void ArchiveUser(UserListItem? user)
         {
@@ -939,6 +1618,10 @@ namespace CruzNeryClinic.ViewModels
             RefreshUsersView();
         }
 
+        #endregion
+
+        #region Validation Helpers
+
         private bool ValidateBasicStep()
         {
             if (string.IsNullOrWhiteSpace(NewUserFirstName))
@@ -1034,23 +1717,55 @@ namespace CruzNeryClinic.ViewModels
             return Regex.IsMatch(cleanedNumber, @"^(09\d{9}|\+639\d{9}|639\d{9})$");
         }
 
+        private bool HasMinimumPasswordLength(string password)
+        {
+            return !string.IsNullOrWhiteSpace(password) && password.Length >= 12;
+        }
+
+        private bool HasUppercaseCharacter(string password)
+        {
+            return !string.IsNullOrWhiteSpace(password) && Regex.IsMatch(password, @"[A-Z]");
+        }
+
+        private bool HasLowercaseCharacter(string password)
+        {
+            return !string.IsNullOrWhiteSpace(password) && Regex.IsMatch(password, @"[a-z]");
+        }
+
+        private bool HasNumberCharacter(string password)
+        {
+            return !string.IsNullOrWhiteSpace(password) && Regex.IsMatch(password, @"[0-9]");
+        }
+
+        private bool HasSpecialCharacter(string password)
+        {
+            return !string.IsNullOrWhiteSpace(password) && Regex.IsMatch(password, @"[^a-zA-Z0-9]");
+        }
+
         private bool IsStrongPassword(string password)
         {
-            if (string.IsNullOrWhiteSpace(password))
-                return false;
-
-            bool hasMinimumLength = password.Length >= 12;
-            bool hasUppercase = Regex.IsMatch(password, @"[A-Z]");
-            bool hasLowercase = Regex.IsMatch(password, @"[a-z]");
-            bool hasNumber = Regex.IsMatch(password, @"[0-9]");
-            bool hasSpecialCharacter = Regex.IsMatch(password, @"[^a-zA-Z0-9]");
-
-            return hasMinimumLength &&
-                hasUppercase &&
-                hasLowercase &&
-                hasNumber &&
-                hasSpecialCharacter;
+            return HasMinimumPasswordLength(password) &&
+                HasUppercaseCharacter(password) &&
+                HasLowercaseCharacter(password) &&
+                HasNumberCharacter(password) &&
+                HasSpecialCharacter(password);
         }
+
+        private bool ConfirmUpdateAction(string title, string message)
+        {
+            MessageBoxResult result = MessageBox.Show(
+                message,
+                title,
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question
+            );
+
+            return result == MessageBoxResult.Yes;
+        }
+
+        #endregion
+
+        #region Utility, Reset, and Error Helpers
 
         private string GenerateUniqueUsername()
         {
@@ -1111,6 +1826,7 @@ namespace CruzNeryClinic.ViewModels
                 UserId = user.UserId,
                 UserCode = user.UserCode,
                 LastName = user.LastName,
+                MiddleName = user.MiddleName,
                 FirstName = user.FirstName,
                 ContactNumber = user.ContactNumber,
                 Role = user.Role,
@@ -1141,5 +1857,43 @@ namespace CruzNeryClinic.ViewModels
             AddUserErrorMessage = string.Empty;
             HasAddUserError = false;
         }
+
+        private void ResetUpdatePasswordFields()
+        {
+            UpdateOldPassword = string.Empty;
+            UpdateNewPassword = string.Empty;
+            UpdateConfirmNewPassword = string.Empty;
+
+            IsUpdateOldPasswordVisible = false;
+            IsUpdateNewPasswordVisible = false;
+            IsUpdateConfirmNewPasswordVisible = false;
+        }
+
+        private void ResetUpdateSecurityFields()
+        {
+            UpdateSelectedSecurityQuestion1 = null;
+            UpdateSelectedSecurityQuestion2 = null;
+            UpdateSelectedSecurityQuestion3 = null;
+
+            UpdateSecurityAnswer1 = string.Empty;
+            UpdateSecurityAnswer2 = string.Empty;
+            UpdateSecurityAnswer3 = string.Empty;
+        }
+
+        private void ShowUpdateUserError(string message)
+        {
+            UpdateUserErrorMessage = message;
+            HasUpdateUserError = true;
+        }
+
+        private void ClearUpdateUserError()
+        {
+            UpdateUserErrorMessage = string.Empty;
+            HasUpdateUserError = false;
+        }
+
+        #endregion
+
+
     }
 }

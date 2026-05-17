@@ -510,9 +510,16 @@
                 </Button>
             </Grid>
         </Grid>
+        
+        <!-- Add User Overlay Component -->
         <userManagement:AddUserOverlayView 
             Panel.ZIndex="50" 
             Visibility = "{Binding IsAddUserOverlayOpen, 
                           Converter={StaticResource BoolToVisibilityConverter}}" />
+        
+        <!-- Update User Overlay Component -->
+        <userManagement:UpdateUserOverlayView
+            Visibility="{Binding IsUpdateUserOverlayOpen, Converter={StaticResource BoolToVisibilityConverter}}"
+            Panel.ZIndex="60"/>
     </Grid>
 </UserControl>

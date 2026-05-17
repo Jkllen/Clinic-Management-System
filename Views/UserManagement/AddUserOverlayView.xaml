@@ -723,7 +723,7 @@
                             Visibility="{Binding IsAddUserButtonVisible, Converter={StaticResource BoolToVisibilityConverter}}" />
                     </Grid>
 
-                    <!--  Success prompt  -->
+                    <!--  Success prompt in Add User Overlay -->
                     <Grid
                         Grid.RowSpan="4"
                         Panel.ZIndex="20"
