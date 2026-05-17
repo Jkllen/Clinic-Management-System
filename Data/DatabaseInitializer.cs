@@ -101,9 +101,9 @@ CREATE TABLE IF NOT EXISTS Patients (
     MiddleName TEXT,
     LastName TEXT NOT NULL,
 
-    PhoneNumber TEXT,
-    BirthDate TEXT,
-    Gender TEXT CHECK(Gender IN ('Male', 'Female', 'Other')),
+    PhoneNumber TEXT NOT NULL,
+    BirthDate TEXT NOT NULL,
+    Gender TEXT NOT NULL CHECK(Gender IN ('Male', 'Female', 'Other')),
 
     Address TEXT,
 
@@ -111,15 +111,29 @@ CREATE TABLE IF NOT EXISTS Patients (
     IsPWD INTEGER NOT NULL DEFAULT 0,
     IsSeniorCitizen INTEGER NOT NULL DEFAULT 0,
 
-    -- These fields can be encrypted later using AES-GCM.
-    MedicalHistoryEncrypted TEXT,
-    DentalHistoryEncrypted TEXT,
-    NotesEncrypted TEXT,
+    -- Initial service/treatment shown in Patient Management list.
+    InitialTreatment TEXT,
 
     IsActive INTEGER NOT NULL DEFAULT 1,
 
     CreatedAt TEXT NOT NULL,
     UpdatedAt TEXT
+);
+
+CREATE TABLE IF NOT EXISTS PatientHistories (
+    PatientHistoryId INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    PatientId INTEGER NOT NULL UNIQUE,
+
+    -- Text areas for now. These can be encrypted later using AES-GCM.
+    DentalHistory TEXT,
+    MedicalHistory TEXT,
+    AllergyMedicationNotes TEXT,
+
+    CreatedAt TEXT NOT NULL,
+    UpdatedAt TEXT,
+
+    FOREIGN KEY (PatientId) REFERENCES Patients(PatientId)
 );
 
 CREATE TABLE IF NOT EXISTS Services (
@@ -341,6 +355,10 @@ CREATE INDEX IF NOT EXISTS idx_security_questions_active ON SecurityQuestions(Is
 CREATE INDEX IF NOT EXISTS idx_patients_code ON Patients(PatientCode);
 CREATE INDEX IF NOT EXISTS idx_patients_name ON Patients(LastName, FirstName);
 CREATE INDEX IF NOT EXISTS idx_patients_pwd_senior ON Patients(IsPWD, IsSeniorCitizen);
+CREATE INDEX IF NOT EXISTS idx_patients_created_active ON Patients(CreatedAt, IsActive);
+CREATE INDEX IF NOT EXISTS idx_patients_contact ON Patients(PhoneNumber);
+CREATE INDEX IF NOT EXISTS idx_patient_histories_patient ON PatientHistories(PatientId);
+
 
 CREATE INDEX IF NOT EXISTS idx_appointments_date ON Appointments(AppointmentDate);
 CREATE INDEX IF NOT EXISTS idx_appointments_status ON Appointments(Status);

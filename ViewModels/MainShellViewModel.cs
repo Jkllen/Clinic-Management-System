@@ -43,7 +43,7 @@ namespace CruzNeryClinic.ViewModels
             {
                 "Dashboard" => CreateDashboardView(),
                 "ManageUsers" => CreateUserManagementView(),
-                "Patients" => CreatePlaceholderView("Patients Screen Next"),
+                "Patients" => CreatePatientManagementView(),
                 "Appointment" => CreatePlaceholderView("Appointment Screen Next"),
                 "Billing" => CreatePlaceholderView("Billing Screen Next"),
                 "Inventory" => CreatePlaceholderView("Inventory Screen Next"),
@@ -64,7 +64,7 @@ namespace CruzNeryClinic.ViewModels
             DashboardViewModel dashboardViewModel = new DashboardViewModel();
 
             // This makes Dashboard "View All" buttons navigate through the shell.
-            // Because it uses NavigateTo(), the sidebar selected item also updates.
+            // It uses NavigateTo(), the sidebar selected item also updates.
             dashboardViewModel.NavigationRequested += NavigateTo;
 
             DashboardView dashboardView = new DashboardView
@@ -87,6 +87,13 @@ namespace CruzNeryClinic.ViewModels
             return userManagementView;
         }
 
+        private PatientManagementView CreatePatientManagementView()
+        {
+            return new PatientManagementView
+            {
+                DataContext = new PatientManagementViewModel()
+            };
+        }
 
         private UserControl CreatePlaceholderView(string text)
         {

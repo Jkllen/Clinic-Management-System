@@ -8,7 +8,7 @@
     <Application.Resources>
         <!-- Main application font -->
         <FontFamily x:Key="AppFont">Open Sans</FontFamily>
-
+        
         <!-- Default TextBlock font -->
         <Style TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
