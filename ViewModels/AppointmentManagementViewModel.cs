@@ -30,6 +30,17 @@ namespace CruzNeryClinic.ViewModels
         private bool isScheduledOverlayOpen;
         private bool isPatientSearchPopupOpen;
 
+        // Reschedule
+        private bool isRescheduleOverlayOpen;
+        private AppointmentListItem? appointmentBeingRescheduled;
+        private DateTime? rescheduleDate;
+        private string rescheduleTimeText = string.Empty;
+        private AppointmentServiceOption? selectedRescheduleService;
+        private AppointmentDentistOption? selectedRescheduleDentist;
+        private string rescheduleNotes = string.Empty;
+        private string rescheduleErrorMessage = string.Empty;
+        private bool hasRescheduleError;
+
         public bool IsWalkInPatientSearchPopupOpen =>
             IsPatientSearchPopupOpen && IsWalkInOverlayOpen;
 
@@ -108,6 +119,10 @@ namespace CruzNeryClinic.ViewModels
 
             OpenWalkInOverlayCommand = new RelayCommand(OpenWalkInOverlay);
             OpenScheduledOverlayCommand = new RelayCommand(OpenScheduledOverlay);
+
+            OpenRescheduleOverlayCommand = new RelayCommand<AppointmentListItem>(OpenRescheduleOverlay);
+            SaveRescheduleCommand = new RelayCommand(SaveRescheduleAppointment);
+            CloseRescheduleOverlayCommand = new RelayCommand(CloseRescheduleOverlay);
 
             ShowAddPatientInstructionCommand = new RelayCommand(ShowAddPatientInstruction);
             SelectPatientCommand = new RelayCommand<AppointmentPatientSearchItem>(SelectPatientFromSearch);
@@ -270,6 +285,81 @@ namespace CruzNeryClinic.ViewModels
                     OnPropertyChanged(nameof(IsScheduledPatientSearchPopupOpen));
                 }
             }
+        }
+
+        public bool IsRescheduleOverlayOpen
+        {
+            get => isRescheduleOverlayOpen;
+            set => SetProperty(ref isRescheduleOverlayOpen, value);
+        }
+
+        public AppointmentListItem? AppointmentBeingRescheduled
+        {
+            get => appointmentBeingRescheduled;
+            set
+            {
+                if (SetProperty(ref appointmentBeingRescheduled, value))
+                {
+                    OnPropertyChanged(nameof(ReschedulePatientCode));
+                    OnPropertyChanged(nameof(ReschedulePatientName));
+                    OnPropertyChanged(nameof(RescheduleCategory));
+                    OnPropertyChanged(nameof(RescheduleAppointmentType));
+                }
+            }
+        }
+
+        public string ReschedulePatientCode =>
+            AppointmentBeingRescheduled?.PatientCode ?? string.Empty;
+
+        public string ReschedulePatientName =>
+            AppointmentBeingRescheduled?.PatientName ?? string.Empty;
+
+        public string RescheduleCategory =>
+            AppointmentBeingRescheduled?.Category ?? string.Empty;
+
+        public string RescheduleAppointmentType =>
+            AppointmentBeingRescheduled?.AppointmentType ?? string.Empty;
+
+        public DateTime? RescheduleDate
+        {
+            get => rescheduleDate;
+            set => SetProperty(ref rescheduleDate, value);
+        }
+
+        public string RescheduleTimeText
+        {
+            get => rescheduleTimeText;
+            set => SetProperty(ref rescheduleTimeText, value);
+        }
+
+        public AppointmentServiceOption? SelectedRescheduleService
+        {
+            get => selectedRescheduleService;
+            set => SetProperty(ref selectedRescheduleService, value);
+        }
+
+        public AppointmentDentistOption? SelectedRescheduleDentist
+        {
+            get => selectedRescheduleDentist;
+            set => SetProperty(ref selectedRescheduleDentist, value);
+        }
+
+        public string RescheduleNotes
+        {
+            get => rescheduleNotes;
+            set => SetProperty(ref rescheduleNotes, value);
+        }
+
+        public string RescheduleErrorMessage
+        {
+            get => rescheduleErrorMessage;
+            set => SetProperty(ref rescheduleErrorMessage, value);
+        }
+
+        public bool HasRescheduleError
+        {
+            get => hasRescheduleError;
+            set => SetProperty(ref hasRescheduleError, value);
         }
 
         #endregion
@@ -449,6 +539,12 @@ namespace CruzNeryClinic.ViewModels
         public ICommand ToggleUrgentCommand { get; }
 
         public ICommand ShowAddPatientInstructionCommand { get; }
+
+        public ICommand OpenRescheduleOverlayCommand { get; }
+
+        public ICommand SaveRescheduleCommand { get; }
+
+        public ICommand CloseRescheduleOverlayCommand { get; }
 
         #endregion
 
@@ -988,6 +1084,253 @@ namespace CruzNeryClinic.ViewModels
             {
                 ShowFormError($"Failed to save scheduled appointment: {ex.Message}");
             }
+        }
+
+        #endregion
+
+        #region Reschedule Methods
+
+        private void OpenRescheduleOverlay(AppointmentListItem? appointment)
+        {
+            if (appointment == null)
+                return;
+
+            if (appointment.Status != "Scheduled")
+            {
+                MessageBox.Show(
+                    "Only scheduled appointments can be rescheduled.",
+                    "Reschedule Not Allowed",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning
+                );
+                return;
+            }
+
+            AppointmentListItem? latestAppointment =
+                appointmentRepository.GetAppointmentListItemById(appointment.AppointmentId);
+
+            if (latestAppointment == null)
+            {
+                ShowError("Unable to load appointment details.");
+                return;
+            }
+
+            AppointmentBeingRescheduled = latestAppointment;
+            RescheduleDate = latestAppointment.AppointmentDate;
+            RescheduleTimeText = DateTime.Today.Add(latestAppointment.AppointmentTime).ToString("hh:mm tt");
+            RescheduleNotes = latestAppointment.Notes;
+
+            SelectedRescheduleService = ServiceOptions.FirstOrDefault(s =>
+                s.ServiceId == latestAppointment.ServiceId);
+
+            SelectedRescheduleDentist = DentistOptions.FirstOrDefault(d =>
+                d.DentistUserId == latestAppointment.DentistUserId);
+
+            if (SelectedRescheduleDentist == null)
+                SelectedRescheduleDentist = DentistOptions.FirstOrDefault();
+
+            ClearRescheduleError();
+            IsRescheduleOverlayOpen = true;
+        }
+
+        private void SaveRescheduleAppointment()
+        {
+            if (AppointmentBeingRescheduled == null)
+            {
+                CloseRescheduleOverlay();
+                return;
+            }
+
+            ClearRescheduleError();
+
+            if (!ValidateRescheduleForm())
+                return;
+
+            DateTime appointmentDate = RescheduleDate!.Value.Date;
+            TimeSpan appointmentTime = ParseRescheduleTime();
+
+            if (!ValidateRescheduleConflict(
+                    appointmentDate,
+                    appointmentTime,
+                    AppointmentBeingRescheduled.AppointmentId,
+                    AppointmentBeingRescheduled.PatientId))
+            {
+                return;
+            }
+
+            MessageBoxResult result = MessageBox.Show(
+                $"Save rescheduled appointment for {AppointmentBeingRescheduled.PatientName}?",
+                "Confirm Reschedule",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question
+            );
+
+            if (result != MessageBoxResult.Yes)
+                return;
+
+            try
+            {
+                Appointment updatedAppointment = new()
+                {
+                    AppointmentId = AppointmentBeingRescheduled.AppointmentId,
+                    PatientId = AppointmentBeingRescheduled.PatientId,
+                    AppointmentType = "Scheduled",
+                    Category = AppointmentBeingRescheduled.Category,
+                    ServiceId = SelectedRescheduleService!.ServiceId,
+                    ServiceName = SelectedRescheduleService.ServiceName,
+                    DentistUserId = SelectedRescheduleDentist!.DentistUserId,
+                    DentistName = SelectedRescheduleDentist.DentistName,
+                    AppointmentDate = appointmentDate,
+                    AppointmentTime = appointmentTime,
+                    ArrivalTime = null,
+                    IsUrgent = false,
+                    Priority = "Scheduled",
+                    Status = "Scheduled",
+                    Notes = RescheduleNotes.Trim()
+                };
+
+                appointmentRepository.RescheduleAppointment(updatedAppointment);
+
+                CloseRescheduleOverlay();
+                LoadAppointments();
+
+                SelectedCalendarDate = appointmentDate;
+                SelectedFilterOption = "Selected Date Appointments";
+
+                MessageBox.Show(
+                    "Appointment was rescheduled successfully.",
+                    "Reschedule Complete",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information
+                );
+            }
+            catch (Exception ex)
+            {
+                ShowRescheduleError($"Failed to reschedule appointment: {ex.Message}");
+            }
+        }
+
+        private bool ValidateRescheduleForm()
+        {
+            if (!RescheduleDate.HasValue)
+            {
+                ShowRescheduleError("Please select an appointment date.");
+                return false;
+            }
+
+            if (RescheduleDate.Value.Date < DateTime.Today)
+            {
+                ShowRescheduleError("Rescheduled appointment date cannot be in the past.");
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(RescheduleTimeText))
+            {
+                ShowRescheduleError("Please enter appointment time.");
+                return false;
+            }
+
+            if (!TryParseTime(RescheduleTimeText, out TimeSpan appointmentTime))
+            {
+                ShowRescheduleError("Please enter a valid time. Example: 02:30 PM or 14:30.");
+                return false;
+            }
+
+            DateTime appointmentDate = RescheduleDate.Value.Date;
+            TimeSpan clinicClosingTime = GetClinicClosingTime(appointmentDate);
+
+            if (appointmentTime < ClinicOpeningTime || appointmentTime > clinicClosingTime)
+            {
+                ShowRescheduleError($"Appointment time must be within clinic hours: {GetClinicHoursText(appointmentDate)}.");
+                return false;
+            }
+
+            if (SelectedRescheduleService == null)
+            {
+                ShowRescheduleError("Please select a service or treatment.");
+                return false;
+            }
+
+            if (SelectedRescheduleDentist == null)
+            {
+                ShowRescheduleError("Please select a dentist or choose Unassigned.");
+                return false;
+            }
+
+            return true;
+        }
+
+        private TimeSpan ParseRescheduleTime()
+        {
+            TryParseTime(RescheduleTimeText, out TimeSpan time);
+            return time;
+        }
+
+        private bool ValidateRescheduleConflict(
+            DateTime appointmentDate,
+            TimeSpan appointmentTime,
+            int appointmentId,
+            int patientId)
+        {
+            bool scheduledSlotTaken =
+                appointmentRepository.HasActiveScheduledAppointmentAtExactTime(
+                    appointmentDate,
+                    appointmentTime,
+                    ignoredAppointmentId: appointmentId
+                );
+
+            if (scheduledSlotTaken)
+            {
+                ShowRescheduleError("The selected schedule time is already taken. Please choose a different appointment time.");
+                return false;
+            }
+
+            bool hasSameDateAppointment =
+                appointmentRepository.HasSamePatientActiveAppointmentOnSameDate(
+                    patientId,
+                    appointmentDate,
+                    appointmentTime,
+                    ignoredAppointmentId: appointmentId
+                );
+
+            if (hasSameDateAppointment)
+            {
+                MessageBoxResult result = MessageBox.Show(
+                    "This patient already has another active appointment or walk-in visit on the selected date.\n\nThis may be intentional if the patient has separate morning and afternoon visits.\n\nDo you still want to continue?",
+                    "Same-Day Visit Warning",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning
+                );
+
+                if (result != MessageBoxResult.Yes)
+                    return false;
+            }
+
+            return true;
+        }
+
+        private void CloseRescheduleOverlay()
+        {
+            IsRescheduleOverlayOpen = false;
+            AppointmentBeingRescheduled = null;
+            RescheduleDate = null;
+            RescheduleTimeText = string.Empty;
+            SelectedRescheduleService = null;
+            SelectedRescheduleDentist = null;
+            RescheduleNotes = string.Empty;
+            ClearRescheduleError();
+        }
+
+        private void ShowRescheduleError(string message)
+        {
+            RescheduleErrorMessage = message;
+            HasRescheduleError = true;
+        }
+
+        private void ClearRescheduleError()
+        {
+            RescheduleErrorMessage = string.Empty;
+            HasRescheduleError = false;
         }
 
         #endregion

@@ -53,7 +53,7 @@
                     <ColumnDefinition Width="1*" />
                 </Grid.ColumnDefinitions>
 
-                <!-- Summary cards area -->
+                <!--  Summary cards area  -->
                 <Grid Grid.Column="0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -63,10 +63,22 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <Border Grid.Column="0" Padding="18" Style="{StaticResource DashboardCardStyle}">
+                    <Border
+                        Grid.Column="0"
+                        Padding="18"
+                        Style="{StaticResource DashboardCardStyle}">
                         <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
-                            <Border Width="60" Height="60" Background="#2F98D0" CornerRadius="14">
-                                <fa:IconBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="32" Foreground="White" Icon="CalendarDay" />
+                            <Border
+                                Width="60"
+                                Height="60"
+                                Background="#2F98D0"
+                                CornerRadius="14">
+                                <fa:IconBlock
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="32"
+                                    Foreground="White"
+                                    Icon="CalendarDay" />
                             </Border>
 
                             <StackPanel Margin="18,0,0,0" VerticalAlignment="Center">
@@ -76,10 +88,22 @@
                         </StackPanel>
                     </Border>
 
-                    <Border Grid.Column="2" Padding="18" Style="{StaticResource DashboardCardStyle}">
+                    <Border
+                        Grid.Column="2"
+                        Padding="18"
+                        Style="{StaticResource DashboardCardStyle}">
                         <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
-                            <Border Width="60" Height="60" Background="#2F98D0" CornerRadius="14">
-                                <fa:IconBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="32" Foreground="White" Icon="CheckCircle" />
+                            <Border
+                                Width="60"
+                                Height="60"
+                                Background="#2F98D0"
+                                CornerRadius="14">
+                                <fa:IconBlock
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="32"
+                                    Foreground="White"
+                                    Icon="CheckCircle" />
                             </Border>
 
                             <StackPanel Margin="18,0,0,0" VerticalAlignment="Center">
@@ -89,10 +113,22 @@
                         </StackPanel>
                     </Border>
 
-                    <Border Grid.Column="4" Padding="18" Style="{StaticResource DashboardCardStyle}">
+                    <Border
+                        Grid.Column="4"
+                        Padding="18"
+                        Style="{StaticResource DashboardCardStyle}">
                         <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
-                            <Border Width="60" Height="60" Background="#2F98D0" CornerRadius="14">
-                                <fa:IconBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="32" Foreground="White" Icon="TimesCircle" />
+                            <Border
+                                Width="60"
+                                Height="60"
+                                Background="#2F98D0"
+                                CornerRadius="14">
+                                <fa:IconBlock
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="32"
+                                    Foreground="White"
+                                    Icon="TimesCircle" />
                             </Border>
 
                             <StackPanel Margin="18,0,0,0" VerticalAlignment="Center">
@@ -103,8 +139,11 @@
                     </Border>
                 </Grid>
 
-                <!-- Mini Appointment Calendar -->
-                <Border Grid.Column="2" Padding="14" Style="{StaticResource DashboardCardStyle}">
+                <!--  Mini Appointment Calendar  -->
+                <Border
+                    Grid.Column="2"
+                    Padding="14"
+                    Style="{StaticResource DashboardCardStyle}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="34" />
@@ -112,7 +151,7 @@
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
 
-                        <!-- Calendar header -->
+                        <!--  Calendar header  -->
                         <Grid Grid.Row="0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="34" />
@@ -158,18 +197,46 @@
                             </Button>
                         </Grid>
 
-                        <!-- Day names -->
+                        <!--  Day names  -->
                         <UniformGrid Grid.Row="1" Columns="7">
-                            <TextBlock HorizontalAlignment="Center" FontSize="11" FontWeight="Bold" Text="S" />
-                            <TextBlock HorizontalAlignment="Center" FontSize="11" FontWeight="Bold" Text="M" />
-                            <TextBlock HorizontalAlignment="Center" FontSize="11" FontWeight="Bold" Text="T" />
-                            <TextBlock HorizontalAlignment="Center" FontSize="11" FontWeight="Bold" Text="W" />
-                            <TextBlock HorizontalAlignment="Center" FontSize="11" FontWeight="Bold" Text="T" />
-                            <TextBlock HorizontalAlignment="Center" FontSize="11" FontWeight="Bold" Text="F" />
-                            <TextBlock HorizontalAlignment="Center" FontSize="11" FontWeight="Bold" Text="S" />
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                FontSize="11"
+                                FontWeight="Bold"
+                                Text="S" />
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                FontSize="11"
+                                FontWeight="Bold"
+                                Text="M" />
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                FontSize="11"
+                                FontWeight="Bold"
+                                Text="T" />
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                FontSize="11"
+                                FontWeight="Bold"
+                                Text="W" />
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                FontSize="11"
+                                FontWeight="Bold"
+                                Text="T" />
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                FontSize="11"
+                                FontWeight="Bold"
+                                Text="F" />
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                FontSize="11"
+                                FontWeight="Bold"
+                                Text="S" />
                         </UniformGrid>
 
-                        <!-- Calendar days -->
+                        <!--  Calendar days  -->
                         <ItemsControl Grid.Row="2" ItemsSource="{Binding CalendarDays}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -344,7 +411,7 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
-                        
+
                         <TextBlock
                             Grid.Row="0"
                             Margin="0,0,0,10"
@@ -430,7 +497,7 @@
                                     MinWidth="115"
                                     Binding="{Binding WaitingDurationDisplay}"
                                     Header="Waiting Time" />
-                                
+
                                 <DataGridTemplateColumn
                                     Width="1*"
                                     MinWidth="110"
@@ -462,8 +529,8 @@
                                 </DataGridTemplateColumn>
 
                                 <DataGridTemplateColumn
-                                    Width="2.8*"
-                                    MinWidth="330"
+                                    Width="3.8*"
+                                    MinWidth="470"
                                     Header="Actions">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
@@ -484,7 +551,23 @@
                                                         Foreground="White"
                                                         Text="Arrived" />
                                                 </Button>
-        
+
+                                                <Button
+                                                    Width="95"
+                                                    Height="32"
+                                                    Margin="0,0,6,0"
+                                                    Background="#073C98"
+                                                    Command="{Binding DataContext.OpenRescheduleOverlayCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                    CommandParameter="{Binding}"
+                                                    Style="{StaticResource SmallActionButtonStyle}"
+                                                    Visibility="{Binding RescheduleButtonVisibility}">
+                                                    <TextBlock
+                                                        FontSize="11"
+                                                        FontWeight="Bold"
+                                                        Foreground="White"
+                                                        Text="Reschedule" />
+                                                </Button>
+
                                                 <Button
                                                     Width="80"
                                                     Height="32"
@@ -494,7 +577,11 @@
                                                     CommandParameter="{Binding}"
                                                     Style="{StaticResource SmallActionButtonStyle}"
                                                     Visibility="{Binding NoShowButtonVisibility}">
-                                                    <TextBlock FontSize="11" FontWeight="Bold" Foreground="White" Text="No Show" />
+                                                    <TextBlock
+                                                        FontSize="11"
+                                                        FontWeight="Bold"
+                                                        Foreground="White"
+                                                        Text="No Show" />
                                                 </Button>
 
                                                 <Button
@@ -581,5 +668,168 @@
             <appointmentViews:AddScheduledAppointmentOverlayView HorizontalAlignment="Center" VerticalAlignment="Center" />
         </Grid>
 
+        <!-- Reschedule Appointment Overlay -->
+        <Grid
+            Background="#99000000"
+            Visibility="{Binding IsRescheduleOverlayOpen, Converter={StaticResource BoolToVisibilityConverter}}">
+
+            <Border
+                Width="720"
+                MaxHeight="720"
+                Padding="32"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Background="White"
+                CornerRadius="24">
+
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock
+                            FontSize="26"
+                            FontWeight="Bold"
+                            Foreground="#111111"
+                            Text="Reschedule Appointment" />
+
+                        <TextBlock
+                            Margin="0,4,0,20"
+                            FontSize="15"
+                            Foreground="#777777"
+                            Text="Update the date, time, service, dentist, or notes for this scheduled appointment."
+                            TextWrapping="Wrap" />
+
+                        <TextBlock
+                            Margin="0,0,0,14"
+                            FontSize="14"
+                            FontWeight="SemiBold"
+                            Foreground="#C62828"
+                            Text="{Binding RescheduleErrorMessage}"
+                            TextWrapping="Wrap"
+                            Visibility="{Binding HasRescheduleError, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+                        <TextBlock
+                            Margin="0,0,0,12"
+                            FontSize="18"
+                            FontWeight="Bold"
+                            Text="Patient Information" />
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="14" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Patient ID" />
+                                <TextBox Style="{StaticResource AppointmentReadOnlyTextBoxStyle}" Text="{Binding ReschedulePatientCode, Mode=OneWay}" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Patient Name" />
+                                <TextBox Style="{StaticResource AppointmentReadOnlyTextBoxStyle}" Text="{Binding ReschedulePatientName, Mode=OneWay}" />
+                            </StackPanel>
+                        </Grid>
+
+                        <Grid Margin="0,14,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="14" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Appointment Type" />
+                                <TextBox Style="{StaticResource AppointmentReadOnlyTextBoxStyle}" Text="{Binding RescheduleAppointmentType, Mode=OneWay}" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Category" />
+                                <TextBox Style="{StaticResource AppointmentReadOnlyTextBoxStyle}" Text="{Binding RescheduleCategory, Mode=OneWay}" />
+                            </StackPanel>
+                        </Grid>
+
+                        <TextBlock
+                            Margin="0,26,0,12"
+                            FontSize="18"
+                            FontWeight="Bold"
+                            Text="Reschedule Details" />
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="14" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="14" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <StackPanel Grid.Row="0" Grid.Column="0">
+                                <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Appointment Date *" />
+                                <DatePicker Height="46" SelectedDate="{Binding RescheduleDate, Mode=TwoWay}" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="0" Grid.Column="2">
+                                <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Appointment Time *" />
+                                <TextBox Style="{StaticResource AppointmentOverlayTextBoxStyle}" Text="{Binding RescheduleTimeText, UpdateSourceTrigger=PropertyChanged}" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="2" Grid.Column="0">
+                                <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Service / Treatment *" />
+                                <ComboBox
+                                    ItemsSource="{Binding ServiceOptions}"
+                                    SelectedItem="{Binding SelectedRescheduleService, Mode=TwoWay}"
+                                    DisplayMemberPath="DisplayText"
+                                    Style="{StaticResource AppointmentOverlayComboBoxStyle}" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="2" Grid.Column="2">
+                                <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Dentist *" />
+                                <ComboBox
+                                    ItemsSource="{Binding DentistOptions}"
+                                    SelectedItem="{Binding SelectedRescheduleDentist, Mode=TwoWay}"
+                                    DisplayMemberPath="DisplayText"
+                                    Style="{StaticResource AppointmentOverlayComboBoxStyle}" />
+                            </StackPanel>
+                        </Grid>
+
+                        <StackPanel Margin="0,14,0,0">
+                            <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Notes / Remarks" />
+                            <TextBox
+                                Style="{StaticResource AppointmentOverlayTextAreaStyle}"
+                                Text="{Binding RescheduleNotes, UpdateSourceTrigger=PropertyChanged}" />
+                        </StackPanel>
+
+                        <StackPanel
+                            Margin="0,28,0,0"
+                            HorizontalAlignment="Right"
+                            Orientation="Horizontal">
+
+                            <Button
+                                Width="120"
+                                Height="44"
+                                Margin="0,0,12,0"
+                                Background="#777777"
+                                Command="{Binding CloseRescheduleOverlayCommand}"
+                                Content="Cancel"
+                                Foreground="White"
+                                Style="{StaticResource SecondaryButtonStyle}" />
+
+                            <Button
+                                Width="170"
+                                Height="44"
+                                Background="#073C98"
+                                Command="{Binding SaveRescheduleCommand}"
+                                Content="Save Changes"
+                                Foreground="White"
+                                Style="{StaticResource SecondaryButtonStyle}" />
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
     </Grid>
 </UserControl>

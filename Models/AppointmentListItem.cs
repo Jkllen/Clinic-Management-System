@@ -102,6 +102,9 @@ namespace CruzNeryClinic.Models
         public Visibility NoShowButtonVisibility =>
             Status == "Scheduled" ? Visibility.Visible : Visibility.Collapsed;
 
+        public Visibility RescheduleButtonVisibility =>
+            Status == "Scheduled" ? Visibility.Visible : Visibility.Collapsed;
+
         public Visibility StartTreatmentButtonVisibility =>
             Status == "Waiting" ? Visibility.Visible : Visibility.Collapsed;
 

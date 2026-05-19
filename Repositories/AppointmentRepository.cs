@@ -482,6 +482,94 @@ SELECT last_insert_rowid();";
 
         #endregion
 
+        #region Appointment Details
+
+        public AppointmentListItem? GetAppointmentListItemById(int appointmentId)
+        {
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+        SELECT
+            a.AppointmentId,
+            a.PatientId,
+            p.PatientCode,
+            p.FirstName,
+            p.MiddleName,
+            p.LastName,
+            a.AppointmentType,
+            a.Category,
+            a.ServiceId,
+            a.ServiceName,
+            a.DentistUserId,
+            a.DentistName,
+            a.AppointmentDate,
+            a.AppointmentTime,
+            a.ArrivalTime,
+            a.QueueNumber,
+            a.IsUrgent,
+            a.Priority,
+            a.Status,
+            a.Notes
+        FROM Appointments a
+        INNER JOIN Patients p
+            ON a.PatientId = p.PatientId
+        WHERE a.AppointmentId = @AppointmentId
+        LIMIT 1;";
+
+            command.Parameters.AddWithValue("@AppointmentId", appointmentId);
+
+            using SqliteDataReader reader = command.ExecuteReader();
+
+            if (!reader.Read())
+                return null;
+
+            return MapReaderToAppointmentListItem(reader);
+        }
+
+        #endregion
+
+        #region Reschedule Appointment
+
+        public void RescheduleAppointment(Appointment appointment)
+        {
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+        UPDATE Appointments
+        SET
+            ServiceId = @ServiceId,
+            ServiceName = @ServiceName,
+            DentistUserId = @DentistUserId,
+            DentistName = @DentistName,
+            AppointmentDate = @AppointmentDate,
+            AppointmentTime = @AppointmentTime,
+            Notes = @Notes,
+            Status = 'Scheduled',
+            Priority = 'Scheduled',
+            ArrivalTime = NULL,
+            IsUrgent = 0,
+            UpdatedAt = @UpdatedAt
+        WHERE AppointmentId = @AppointmentId;";
+
+            command.Parameters.AddWithValue("@ServiceId", appointment.ServiceId.HasValue ? appointment.ServiceId.Value : DBNull.Value);
+            command.Parameters.AddWithValue("@ServiceName", appointment.ServiceName);
+            command.Parameters.AddWithValue("@DentistUserId", appointment.DentistUserId.HasValue ? appointment.DentistUserId.Value : DBNull.Value);
+            command.Parameters.AddWithValue("@DentistName", appointment.DentistName);
+            command.Parameters.AddWithValue("@AppointmentDate", appointment.AppointmentDate.ToString("yyyy-MM-dd"));
+            command.Parameters.AddWithValue("@AppointmentTime", appointment.AppointmentTime.ToString(@"hh\:mm"));
+            command.Parameters.AddWithValue("@Notes", appointment.Notes.Trim());
+            command.Parameters.AddWithValue("@UpdatedAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            command.Parameters.AddWithValue("@AppointmentId", appointment.AppointmentId);
+
+            command.ExecuteNonQuery();
+        }
+
+        #endregion
+
         #region Status Actions
 
         public void MarkArrived(int appointmentId)
