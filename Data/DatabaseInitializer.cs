@@ -125,10 +125,13 @@ CREATE TABLE IF NOT EXISTS PatientHistories (
 
     PatientId INTEGER NOT NULL UNIQUE,
 
-    -- Text areas for now. These can be encrypted later using AES-GCM.
-    DentalHistory TEXT,
-    MedicalHistory TEXT,
-    AllergyMedicationNotes TEXT,
+    HasMedicalCondition INTEGER NOT NULL DEFAULT 0,
+    MedicalConditionNotes TEXT,
+    AllergyNotes TEXT,
+    CurrentMedication TEXT,
+    RequiresMedicalClearance INTEGER NOT NULL DEFAULT 0,
+    ClearanceNotes TEXT,
+    InitialTreatmentNotes TEXT,
 
     CreatedAt TEXT NOT NULL,
     UpdatedAt TEXT,
@@ -154,11 +157,12 @@ CREATE TABLE IF NOT EXISTS Appointments (
 
     PatientId INTEGER NOT NULL,
 
-    -- Walk-In or Scheduled based on your appointment UI.
+    -- Walk-In or Scheduled.
     AppointmentType TEXT NOT NULL CHECK(AppointmentType IN ('Walk-In', 'Scheduled')),
 
-    -- Regular, PWD, or Senior.
-    Category TEXT NOT NULL DEFAULT 'Regular' CHECK(Category IN ('Regular', 'PWD', 'Senior')),
+    -- Auto-filled from patient record.
+    Category TEXT NOT NULL DEFAULT 'Regular'
+        CHECK(Category IN ('Regular', 'PWD', 'Senior')),
 
     ServiceId INTEGER,
     ServiceName TEXT NOT NULL,
@@ -167,20 +171,33 @@ CREATE TABLE IF NOT EXISTS Appointments (
     DentistUserId INTEGER,
     DentistName TEXT DEFAULT 'Unassigned',
 
+    -- For scheduled patients: reserved date/time.
+    -- For walk-ins: today's date and current time.
     AppointmentDate TEXT NOT NULL,
-    AppointmentTime TEXT,
+    AppointmentTime TEXT NOT NULL,
 
-    -- Used for queue display.
+    -- Actual arrival time. For walk-ins, this is usually the same as AppointmentTime.
+    ArrivalTime TEXT,
+
     QueueNumber INTEGER,
 
-    -- High is usually for PWD/Senior or scheduled priority.
-    Priority TEXT NOT NULL DEFAULT 'Normal' CHECK(Priority IN ('Normal', 'High')),
+    -- Urgent is a table action, not part of the add forms.
+    IsUrgent INTEGER NOT NULL DEFAULT 0,
 
-    -- Used by appointment table and billing flow.
-    Status TEXT NOT NULL DEFAULT 'Waiting'
-        CHECK(Status IN ('Waiting', 'In Treatment', 'Completed', 'Cancelled', 'No Show')),
+    -- Scheduled = scheduled priority, Urgent = emergency/priority override, Normal = regular queue.
+    Priority TEXT NOT NULL DEFAULT 'Normal'
+        CHECK(Priority IN ('Normal', 'Scheduled', 'Urgent')),
+
+    -- Scheduled appointments stay Scheduled until staff marks them arrived.
+    Status TEXT NOT NULL DEFAULT 'Scheduled'
+        CHECK(Status IN ('Scheduled', 'Waiting', 'In Treatment', 'Completed', 'Cancelled', 'No Show')),
 
     Notes TEXT,
+
+    StartedAt TEXT,
+    CompletedAt TEXT,
+    CancelledAt TEXT,
+    CancellationReason TEXT,
 
     CreatedByUserId INTEGER,
     CreatedAt TEXT NOT NULL,
@@ -363,6 +380,9 @@ CREATE INDEX IF NOT EXISTS idx_patient_histories_patient ON PatientHistories(Pat
 CREATE INDEX IF NOT EXISTS idx_appointments_date ON Appointments(AppointmentDate);
 CREATE INDEX IF NOT EXISTS idx_appointments_status ON Appointments(Status);
 CREATE INDEX IF NOT EXISTS idx_appointments_patient ON Appointments(PatientId);
+CREATE INDEX IF NOT EXISTS idx_appointments_type ON Appointments(AppointmentType);
+CREATE INDEX IF NOT EXISTS idx_appointments_datetime ON Appointments(AppointmentDate, AppointmentTime);
+CREATE INDEX IF NOT EXISTS idx_appointments_queue ON Appointments(AppointmentDate, Status, IsUrgent, AppointmentType, AppointmentTime);
 
 CREATE INDEX IF NOT EXISTS idx_billing_patient ON BillingTransactions(PatientId);
 CREATE INDEX IF NOT EXISTS idx_billing_status ON BillingTransactions(PaymentStatus);

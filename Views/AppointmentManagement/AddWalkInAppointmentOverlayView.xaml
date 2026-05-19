@@ -1,0 +1,258 @@
+<UserControl
+    x:Class="CruzNeryClinic.Views.AppointmentManagement.AddWalkInAppointmentOverlayView"
+    x:Name="Root"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="AppointmentManagementStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Border
+        Width="920"
+        MaxHeight="760"
+        Padding="34,34,16,34"
+        Background="White"
+        CornerRadius="26">
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled">
+
+            <ScrollViewer.Resources>
+                <Style BasedOn="{StaticResource BlueDataGridScrollBarStyle}"
+                       TargetType="{x:Type ScrollBar}" />
+            </ScrollViewer.Resources>
+
+            <StackPanel Margin="0,0,18,0">
+                <TextBlock
+                    FontSize="28"
+                    FontWeight="Bold"
+                    Foreground="#111111"
+                    Text="{Binding FormTitle}" />
+
+                <TextBlock
+                    Margin="0,4,0,22"
+                    FontSize="15"
+                    Foreground="#777777"
+                    Text="Search an existing patient and add them to today's walk-in queue." />
+
+                <TextBlock
+                    Margin="0,0,0,14"
+                    FontSize="14"
+                    FontWeight="SemiBold"
+                    Foreground="#C62828"
+                    Text="{Binding FormErrorMessage}"
+                    TextWrapping="Wrap"
+                    Visibility="{Binding HasFormError, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+                <TextBlock
+                    Margin="0,0,0,12"
+                    FontSize="18"
+                    FontWeight="Bold"
+                    Text="Patient Lookup" />
+
+                <StackPanel Margin="0,0,0,18">
+                    <TextBlock
+                        Style="{StaticResource AppointmentOverlayFieldLabelStyle}"
+                        Text="Search Patient ID or Name *" />
+
+                    <Grid>
+                        <TextBox
+                            Height="46"
+                            Style="{StaticResource AppointmentOverlayTextBoxStyle}"
+                            Text="{Binding FormPatientSearchText, UpdateSourceTrigger=PropertyChanged}" />
+
+                        <Popup
+                            Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Grid}}"
+                            AllowsTransparency="True"
+                            IsOpen="{Binding IsWalkInPatientSearchPopupOpen, Mode=OneWay}"
+                            Placement="Bottom"
+                            PlacementTarget="{Binding RelativeSource={RelativeSource AncestorType=Grid}}"
+                            StaysOpen="False">
+
+                            <Border
+                                MaxHeight="220"
+                                Background="White"
+                                BorderBrush="#D8D8D8"
+                                BorderThickness="1"
+                                CornerRadius="10">
+
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <ListBox
+                                        BorderThickness="0"
+                                        ItemsSource="{Binding PatientSearchResults}"
+                                        SelectedItem="{Binding SelectedPatient, Mode=TwoWay}">
+
+                                        <ListBox.ItemContainerStyle>
+                                            <Style TargetType="ListBoxItem">
+                                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                                <Setter Property="Padding" Value="0" />
+                                                <Setter Property="Cursor" Value="Hand" />
+                                            </Style>
+                                        </ListBox.ItemContainerStyle>
+
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border
+                                                    Padding="12,8"
+                                                    Background="Transparent">
+
+                                                    <StackPanel>
+                                                        <TextBlock
+                                                            FontSize="14"
+                                                            FontWeight="SemiBold"
+                                                            Foreground="#111111"
+                                                            Text="{Binding DisplayText}" />
+
+                                                        <TextBlock
+                                                            Margin="0,2,0,0"
+                                                            FontSize="12"
+                                                            Foreground="#777777"
+                                                            Text="{Binding Category}" />
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </ScrollViewer>
+                            </Border>
+                        </Popup>
+                    </Grid>
+
+                    <TextBlock
+                        Margin="2,6,0,0"
+                        FontSize="12"
+                        Foreground="#777777"
+                        Text="Type at least 2 characters to search existing patients." />
+                </StackPanel>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Patient ID" />
+                        <TextBox Style="{StaticResource AppointmentReadOnlyTextBoxStyle}" Text="{Binding FormPatientCode, Mode=OneWay}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="First Name" />
+                        <TextBox Style="{StaticResource AppointmentReadOnlyTextBoxStyle}" Text="{Binding FormPatientFirstName, Mode=OneWay}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="4">
+                        <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Last Name" />
+                        <TextBox Style="{StaticResource AppointmentReadOnlyTextBoxStyle}" Text="{Binding FormPatientLastName, Mode=OneWay}" />
+                    </StackPanel>
+                </Grid>
+
+                <TextBlock
+                    Margin="0,28,0,12"
+                    FontSize="18"
+                    FontWeight="Bold"
+                    Text="Walk-in Visit Details" />
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="14" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="14" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Grid.Column="0">
+                        <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Appointment Type" />
+                        <TextBox Style="{StaticResource AppointmentReadOnlyTextBoxStyle}" Text="Walk-In Visit" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="0" Grid.Column="2">
+                        <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Category" />
+                        <TextBox Style="{StaticResource AppointmentReadOnlyTextBoxStyle}" Text="{Binding FormPatientCategory, Mode=OneWay}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="2" Grid.Column="0">
+                        <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Date" />
+                        <DatePicker Height="46" IsEnabled="False" SelectedDate="{Binding FormAppointmentDate}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="2" Grid.Column="2">
+                        <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Arrival Time *" />
+                        <TextBox Style="{StaticResource AppointmentOverlayTextBoxStyle}" Text="{Binding FormAppointmentTimeText, UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="4" Grid.Column="0">
+                        <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Service / Treatment *" />
+                        <ComboBox
+                            ItemsSource="{Binding ServiceOptions}"
+                            SelectedItem="{Binding SelectedService, Mode=TwoWay}"
+                            DisplayMemberPath="DisplayText"
+                            Style="{StaticResource AppointmentOverlayComboBoxStyle}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="4" Grid.Column="2">
+                        <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Dentist *" />
+                        <ComboBox
+                            ItemsSource="{Binding DentistOptions}"
+                            SelectedItem="{Binding SelectedDentist, Mode=TwoWay}"
+                            DisplayMemberPath="DisplayText"
+                            Style="{StaticResource AppointmentOverlayComboBoxStyle}" />
+                    </StackPanel>
+                </Grid>
+
+                <StackPanel Margin="0,14,0,0">
+                    <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Notes / Remarks" />
+                    <TextBox
+                        Style="{StaticResource AppointmentOverlayTextAreaStyle}"
+                        Text="{Binding FormNotes, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+
+                <StackPanel
+                    Margin="0,28,0,0"
+                    HorizontalAlignment="Right"
+                    Orientation="Horizontal">
+
+                    <Button
+                        Width="120"
+                        Height="44"
+                        Margin="0,0,12,0"
+                        Background="#777777"
+                        Command="{Binding CancelWalkInCommand}"
+                        Content="Cancel"
+                        Foreground="White"
+                        Style="{StaticResource SecondaryButtonStyle}" />
+
+                    <Button
+                        Width="160"
+                        Height="44"
+                        Background="#073C98"
+                        Command="{Binding SaveWalkInCommand}"
+                        Foreground="White"
+                        Style="{StaticResource SecondaryButtonStyle}">
+
+                        <StackPanel Orientation="Horizontal">
+                            <fa:IconBlock Margin="0,0,8,0" Icon="PlusCircle" Foreground="White" />
+                            <TextBlock FontWeight="Bold" Text="Add to Queue" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </Border>
+</UserControl>

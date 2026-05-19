@@ -1,4 +1,5 @@
 using System;
+using System.Windows;
 
 namespace CruzNeryClinic.Models
 {
@@ -51,5 +52,11 @@ namespace CruzNeryClinic.Models
 
         public string ArchiveButtonIcon =>
             IsActive ? "Archive" : "Undo";
+        
+        public Visibility UpdateButtonVisibility =>
+            IsActive ? Visibility.Visible : Visibility.Collapsed;
+
+        public Visibility ArchiveRestoreButtonVisibility =>
+            Visibility.Visible;
     }
 }

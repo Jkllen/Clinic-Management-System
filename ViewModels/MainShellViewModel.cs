@@ -44,7 +44,7 @@ namespace CruzNeryClinic.ViewModels
                 "Dashboard" => CreateDashboardView(),
                 "ManageUsers" => CreateUserManagementView(),
                 "Patients" => CreatePatientManagementView(),
-                "Appointment" => CreatePlaceholderView("Appointment Screen Next"),
+                "Appointment" => CreateAppointmentManagementView(),
                 "Billing" => CreatePlaceholderView("Billing Screen Next"),
                 "Inventory" => CreatePlaceholderView("Inventory Screen Next"),
                 "Maintenance" => CreatePlaceholderView("Maintenance Screen Next"),
@@ -92,6 +92,14 @@ namespace CruzNeryClinic.ViewModels
             return new PatientManagementView
             {
                 DataContext = new PatientManagementViewModel()
+            };
+        }
+
+        private AppointmentManagementView CreateAppointmentManagementView()
+        {
+            return new AppointmentManagementView
+            {
+                DataContext = new AppointmentManagementViewModel()
             };
         }
 

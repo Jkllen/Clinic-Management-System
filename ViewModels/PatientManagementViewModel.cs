@@ -48,9 +48,15 @@ namespace CruzNeryClinic.ViewModels
         private string formGender = string.Empty;
         private bool formIsPwd;
         private bool formIsSeniorCitizen;
-        private string formDentalHistory = string.Empty;
-        private string formMedicalHistory = string.Empty;
-        private string formAllergyMedicationNotes = string.Empty;
+
+        private bool formHasMedicalCondition;
+        private string formMedicalConditionNotes = string.Empty;
+        private string formAllergyNotes = string.Empty;
+        private string formCurrentMedication = string.Empty;
+        private bool formRequiresMedicalClearance;
+        private string formClearanceNotes = string.Empty;
+        private string formInitialTreatmentNotes = string.Empty;
+
         private string formInitialTreatment = string.Empty;
         private string formAddress = string.Empty;
 
@@ -58,9 +64,12 @@ namespace CruzNeryClinic.ViewModels
         private bool hasPatientFormError;
 
         private string historyPatientName = string.Empty;
-        private string historyDentalHistory = string.Empty;
-        private string historyMedicalHistory = string.Empty;
-        private string historyAllergyMedicationNotes = string.Empty;
+        private string historyMedicalBackground = string.Empty;
+        private string historyInitialVisit = string.Empty;
+        private string historyTreatmentHistory = string.Empty;
+        private ServiceItem? selectedService;
+        private string otherServiceName = string.Empty;
+        private bool isOtherServiceSelected;    
 
         #endregion
 
@@ -98,6 +107,8 @@ namespace CruzNeryClinic.ViewModels
                 "Other"
             };
 
+            LoadServiceOptions();
+
             AddNewPatientCommand = new RelayCommand(OpenAddPatientOverlay);
             SaveNewPatientCommand = new RelayCommand(SaveNewPatient);
             CancelAddPatientCommand = new RelayCommand(CloseAddPatientOverlay);
@@ -126,6 +137,8 @@ namespace CruzNeryClinic.ViewModels
 
         public ObservableCollection<string> GenderOptions { get; }
 
+        public ObservableCollection<ServiceItem> ServiceOptions { get; } = new();
+        
         #endregion
 
         #region Summary Card Properties
@@ -290,28 +303,101 @@ namespace CruzNeryClinic.ViewModels
             set => SetProperty(ref formIsSeniorCitizen, value);
         }
 
-        public string FormDentalHistory
+        public bool FormHasMedicalCondition
         {
-            get => formDentalHistory;
-            set => SetProperty(ref formDentalHistory, value);
+            get => formHasMedicalCondition;
+            set
+            {
+                if (SetProperty(ref formHasMedicalCondition, value))
+                {
+                    OnPropertyChanged(nameof(MedicalConditionNotesVisibility));
+
+                    if (!value)
+                        FormMedicalConditionNotes = string.Empty;
+                }
+            }
+        }
+        public Visibility MedicalConditionNotesVisibility =>
+            FormHasMedicalCondition ? Visibility.Visible : Visibility.Collapsed;
+
+        public Visibility ClearanceNotesVisibility =>
+            FormRequiresMedicalClearance ? Visibility.Visible : Visibility.Collapsed;
+
+        public string FormMedicalConditionNotes
+        {
+            get => formMedicalConditionNotes;
+            set => SetProperty(ref formMedicalConditionNotes, value);
         }
 
-        public string FormMedicalHistory
+        public string FormAllergyNotes
         {
-            get => formMedicalHistory;
-            set => SetProperty(ref formMedicalHistory, value);
+            get => formAllergyNotes;
+            set => SetProperty(ref formAllergyNotes, value);
         }
 
-        public string FormAllergyMedicationNotes
+        public string FormCurrentMedication
         {
-            get => formAllergyMedicationNotes;
-            set => SetProperty(ref formAllergyMedicationNotes, value);
+            get => formCurrentMedication;
+            set => SetProperty(ref formCurrentMedication, value);
+        }
+
+        public bool FormRequiresMedicalClearance
+        {
+            get => formRequiresMedicalClearance;
+            set
+            {
+                if (SetProperty(ref formRequiresMedicalClearance, value))
+                {
+                    OnPropertyChanged(nameof(ClearanceNotesVisibility));
+
+                    if (!value)
+                        FormClearanceNotes = string.Empty;
+                }
+            }
+        }
+
+        public string FormClearanceNotes
+        {
+            get => formClearanceNotes;
+            set => SetProperty(ref formClearanceNotes, value);
+        }
+
+        public string FormInitialTreatmentNotes
+        {
+            get => formInitialTreatmentNotes;
+            set => SetProperty(ref formInitialTreatmentNotes, value);
         }
 
         public string FormInitialTreatment
         {
             get => formInitialTreatment;
             set => SetProperty(ref formInitialTreatment, value);
+        }
+
+        public ServiceItem? SelectedService
+        {
+            get => selectedService;
+            set
+            {
+                SetProperty(ref selectedService, value);
+
+                IsOtherServiceSelected = selectedService?.ServiceName == "Other";
+
+                if (!IsOtherServiceSelected)
+                    OtherServiceName = string.Empty;
+            }
+        }
+
+        public string OtherServiceName
+        {
+            get => otherServiceName;
+            set => SetProperty(ref otherServiceName, value);
+        }
+
+        public bool IsOtherServiceSelected
+        {
+            get => isOtherServiceSelected;
+            set => SetProperty(ref isOtherServiceSelected, value);
         }
 
         public string FormAddress
@@ -342,22 +428,22 @@ namespace CruzNeryClinic.ViewModels
             set => SetProperty(ref historyPatientName, value);
         }
 
-        public string HistoryDentalHistory
+        public string HistoryMedicalBackground
         {
-            get => historyDentalHistory;
-            set => SetProperty(ref historyDentalHistory, value);
+            get => historyMedicalBackground;
+            set => SetProperty(ref historyMedicalBackground, value);
         }
 
-        public string HistoryMedicalHistory
+        public string HistoryInitialVisit
         {
-            get => historyMedicalHistory;
-            set => SetProperty(ref historyMedicalHistory, value);
+            get => historyInitialVisit;
+            set => SetProperty(ref historyInitialVisit, value);
         }
 
-        public string HistoryAllergyMedicationNotes
+        public string HistoryTreatmentHistory
         {
-            get => historyAllergyMedicationNotes;
-            set => SetProperty(ref historyAllergyMedicationNotes, value);
+            get => historyTreatmentHistory;
+            set => SetProperty(ref historyTreatmentHistory, value);
         }
 
         #endregion
@@ -405,6 +491,31 @@ namespace CruzNeryClinic.ViewModels
             catch (Exception ex)
             {
                 ShowError($"Failed to load patients: {ex.Message}");
+            }
+        }
+
+        private void LoadServiceOptions()
+        {
+            try
+            {
+                ServiceOptions.Clear();
+
+                List<ServiceItem> servicesFromDatabase = patientRepository.GetActiveServices();
+
+                foreach (ServiceItem service in servicesFromDatabase)
+                    ServiceOptions.Add(service);
+
+                ServiceOptions.Add(new ServiceItem
+                {
+                    ServiceId = 0,
+                    ServiceName = "Other",
+                    DefaultPrice = 0,
+                    IsActive = true
+                });
+            }
+            catch (Exception ex)
+            {
+                ShowError($"Failed to load services: {ex.Message}");
             }
         }
 
@@ -481,21 +592,21 @@ namespace CruzNeryClinic.ViewModels
             {
                 ClearPatientFormError();
 
-                if (!ValidatePatientForm())
+                if (!ValidatePatientForm(requireInitialTreatment: true))
                     return;
 
-                PatientListItem? duplicate = patientRepository.FindDuplicatePatient(
+                PatientListItem? duplicateByIdentity = patientRepository.FindDuplicatePatientByIdentity(
                     FormFirstName,
                     FormMiddleName,
                     FormLastName,
-                    FormDateOfBirth!.Value,
-                    FormPhoneNumber
+                    FormDateOfBirth!.Value
                 );
 
-                if (duplicate != null)
+                if (duplicateByIdentity != null)
                 {
                     ShowPatientFormError(
-                        $"Possible duplicate patient found: {duplicate.PatientCode} - {duplicate.FirstName} {duplicate.LastName}. " +
+                        $"Duplicate patient found: {duplicateByIdentity.PatientCode} - " +
+                        $"{duplicateByIdentity.FirstName} {duplicateByIdentity.LastName} has the same full name and date of birth. " +
                         "Saving was stopped to prevent duplicate records."
                     );
                     return;
@@ -580,22 +691,22 @@ namespace CruzNeryClinic.ViewModels
                     return;
                 }
 
-                if (!ValidatePatientForm())
+                if (!ValidatePatientForm(requireInitialTreatment: false))
                     return;
 
-                PatientListItem? duplicate = patientRepository.FindDuplicatePatient(
+                PatientListItem? duplicateByIdentity = patientRepository.FindDuplicatePatientByIdentity(
                     FormFirstName,
                     FormMiddleName,
                     FormLastName,
                     FormDateOfBirth!.Value,
-                    FormPhoneNumber,
                     selectedPatientDetails.PatientId
                 );
 
-                if (duplicate != null)
+                if (duplicateByIdentity != null)
                 {
                     ShowPatientFormError(
-                        $"Possible duplicate patient found: {duplicate.PatientCode} - {duplicate.FirstName} {duplicate.LastName}. " +
+                        $"Duplicate patient found: {duplicateByIdentity.PatientCode} - " +
+                        $"{duplicateByIdentity.FirstName} {duplicateByIdentity.LastName} has the same full name and date of birth. " +
                         "Updating was stopped to prevent duplicate records."
                     );
                     return;
@@ -605,8 +716,13 @@ namespace CruzNeryClinic.ViewModels
                 updatedPatient.PatientId = selectedPatientDetails.PatientId;
                 updatedPatient.PatientCode = selectedPatientDetails.PatientCode;
 
-                patientRepository.UpdatePatient(updatedPatient);
+                // Preserve initial visit details.
+                // Update Patient should not overwrite treatment data.
+                // New treatments will later be recorded through Appointment/Treatment Records.
+                updatedPatient.InitialTreatment = selectedPatientDetails.InitialTreatment;
+                updatedPatient.InitialTreatmentNotes = selectedPatientDetails.InitialTreatmentNotes;
 
+                patientRepository.UpdatePatient(updatedPatient);
                 IsUpdatePatientOverlayOpen = false;
 
                 MessageBox.Show(
@@ -690,17 +806,11 @@ namespace CruzNeryClinic.ViewModels
                 }
 
                 HistoryPatientName = $"{patientDetails.PatientCode} - {patientDetails.FullName}";
-                HistoryDentalHistory = string.IsNullOrWhiteSpace(patientDetails.DentalHistory)
-                    ? "No dental history recorded."
-                    : patientDetails.DentalHistory;
+                HistoryMedicalBackground = BuildMedicalBackgroundSummary(patientDetails);
+                HistoryInitialVisit = BuildInitialVisitSummary(patientDetails);
 
-                HistoryMedicalHistory = string.IsNullOrWhiteSpace(patientDetails.MedicalHistory)
-                    ? "No medical history recorded."
-                    : patientDetails.MedicalHistory;
-
-                HistoryAllergyMedicationNotes = string.IsNullOrWhiteSpace(patientDetails.AllergyMedicationNotes)
-                    ? "No allergy or medication notes recorded."
-                    : patientDetails.AllergyMedicationNotes;
+                // Real dental/treatment history should come from completed appointments or TreatmentRecords later.
+                HistoryTreatmentHistory = "No treatment history recorded yet. Treatment records will be added after completed appointments or future treatment entries.";
 
                 IsPatientHistoryOverlayOpen = true;
             }
@@ -710,16 +820,67 @@ namespace CruzNeryClinic.ViewModels
             }
         }
 
+        private string BuildMedicalBackgroundSummary(Patient patient)
+        {
+            List<string> lines = new();
+
+            lines.Add($"Has Medical Condition: {(patient.HasMedicalCondition ? "Yes" : "No")}");
+
+            if (!string.IsNullOrWhiteSpace(patient.MedicalConditionNotes))
+                lines.Add($"Medical Conditions / Health Notes: {patient.MedicalConditionNotes}");
+
+            if (!string.IsNullOrWhiteSpace(patient.AllergyNotes))
+                lines.Add($"Allergy Notes: {patient.AllergyNotes}");
+
+            if (!string.IsNullOrWhiteSpace(patient.CurrentMedication))
+                lines.Add($"Current Medication: {patient.CurrentMedication}");
+
+            lines.Add($"Requires Medical Clearance: {(patient.RequiresMedicalClearance ? "Yes" : "No")}");
+
+            if (!string.IsNullOrWhiteSpace(patient.ClearanceNotes))
+                lines.Add($"Clearance Notes: {patient.ClearanceNotes}");
+
+            if (lines.Count == 2 &&
+                !patient.HasMedicalCondition &&
+                !patient.RequiresMedicalClearance &&
+                string.IsNullOrWhiteSpace(patient.MedicalConditionNotes) &&
+                string.IsNullOrWhiteSpace(patient.AllergyNotes) &&
+                string.IsNullOrWhiteSpace(patient.CurrentMedication) &&
+                string.IsNullOrWhiteSpace(patient.ClearanceNotes))
+            {
+                return "No medical background notes recorded.";
+            }
+
+            return string.Join(Environment.NewLine, lines);
+        }
+
+        private string BuildInitialVisitSummary(Patient patient)
+        {
+            List<string> lines = new();
+
+            if (!string.IsNullOrWhiteSpace(patient.InitialTreatment))
+                lines.Add($"Initial Treatment / Service: {patient.InitialTreatment}");
+
+            if (!string.IsNullOrWhiteSpace(patient.InitialTreatmentNotes))
+                lines.Add($"Initial Treatment Notes: {patient.InitialTreatmentNotes}");
+
+            if (lines.Count == 0)
+                return "No initial visit notes recorded.";
+
+            return string.Join(Environment.NewLine, lines);
+        }
         private void ClosePatientHistoryOverlay()
         {
             IsPatientHistoryOverlayOpen = false;
         }
 
+
+
         #endregion
 
         #region Form Helpers
 
-        private bool ValidatePatientForm()
+        private bool ValidatePatientForm(bool requireInitialTreatment)
         {
             if (string.IsNullOrWhiteSpace(FormFirstName))
             {
@@ -757,9 +918,35 @@ namespace CruzNeryClinic.ViewModels
                 return false;
             }
 
+            if (FormHasMedicalCondition && string.IsNullOrWhiteSpace(FormMedicalConditionNotes))
+            {
+                ShowPatientFormError("Please enter the patient's medical condition notes.");
+                return false;
+            }
+
+            if (FormRequiresMedicalClearance && string.IsNullOrWhiteSpace(FormClearanceNotes))
+            {
+                ShowPatientFormError("Please enter the medical clearance notes.");
+                return false;
+            }
+
+            if (requireInitialTreatment)
+            {
+                if (SelectedService == null)
+                {
+                    ShowPatientFormError("Initial treatment/service is required.");
+                    return false;
+                }
+
+                if (IsOtherServiceSelected && string.IsNullOrWhiteSpace(OtherServiceName))
+                {
+                    ShowPatientFormError("Please type the other treatment/service.");
+                    return false;
+                }
+            }
+
             return true;
         }
-
         private Patient BuildPatientFromForm()
         {
             return new Patient
@@ -773,10 +960,16 @@ namespace CruzNeryClinic.ViewModels
                 Address = FormAddress.Trim(),
                 IsPwd = FormIsPwd,
                 IsSeniorCitizen = FormIsSeniorCitizen,
-                DentalHistory = FormDentalHistory.Trim(),
-                MedicalHistory = FormMedicalHistory.Trim(),
-                AllergyMedicationNotes = FormAllergyMedicationNotes.Trim(),
-                InitialTreatment = FormInitialTreatment.Trim()
+                
+                HasMedicalCondition = FormHasMedicalCondition,
+                MedicalConditionNotes = FormMedicalConditionNotes.Trim(),
+                AllergyNotes = FormAllergyNotes.Trim(),
+                CurrentMedication = FormCurrentMedication.Trim(),
+                RequiresMedicalClearance = FormRequiresMedicalClearance,
+                ClearanceNotes = FormClearanceNotes.Trim(),
+                
+                InitialTreatmentNotes = FormInitialTreatmentNotes.Trim(),
+                InitialTreatment = GetSelectedServiceName()
             };
         }
 
@@ -790,11 +983,36 @@ namespace CruzNeryClinic.ViewModels
             FormGender = patient.Gender;
             FormIsPwd = patient.IsPwd;
             FormIsSeniorCitizen = patient.IsSeniorCitizen;
-            FormDentalHistory = patient.DentalHistory;
-            FormMedicalHistory = patient.MedicalHistory;
-            FormAllergyMedicationNotes = patient.AllergyMedicationNotes;
-            FormInitialTreatment = patient.InitialTreatment;
             FormAddress = patient.Address;
+            
+            // Medical Background
+            FormHasMedicalCondition = patient.HasMedicalCondition;
+            FormMedicalConditionNotes = patient.MedicalConditionNotes;
+            FormAllergyNotes = patient.AllergyNotes;
+            FormCurrentMedication = patient.CurrentMedication;
+            FormRequiresMedicalClearance = patient.RequiresMedicalClearance;
+            FormClearanceNotes = patient.ClearanceNotes;
+
+            // Initial Visit
+            FormInitialTreatment = patient.InitialTreatment;
+            FormInitialTreatmentNotes = patient.InitialTreatmentNotes;
+
+            // These are only used by Add Patient now.
+            // Clear them so Update Patient does not depend on service dropdown state.
+            SelectedService = null;
+            OtherServiceName = string.Empty;
+            IsOtherServiceSelected = false;
+        }
+
+        private string GetSelectedServiceName()
+        {
+            if (SelectedService == null)
+                return string.Empty;
+
+            if (SelectedService.ServiceName == "Other")
+                return OtherServiceName.Trim();
+
+            return SelectedService.ServiceName.Trim();
         }
 
         private void ClearPatientForm()
@@ -807,11 +1025,48 @@ namespace CruzNeryClinic.ViewModels
             FormGender = string.Empty;
             FormIsPwd = false;
             FormIsSeniorCitizen = false;
-            FormDentalHistory = string.Empty;
-            FormMedicalHistory = string.Empty;
-            FormAllergyMedicationNotes = string.Empty;
+            FormHasMedicalCondition = false;
+            FormMedicalConditionNotes = string.Empty;
+            FormAllergyNotes = string.Empty;
+            FormCurrentMedication = string.Empty;
+            FormRequiresMedicalClearance = false;
+            FormClearanceNotes = string.Empty;
+            FormInitialTreatmentNotes = string.Empty;
             FormInitialTreatment = string.Empty;
+            SelectedService = null;
+            OtherServiceName = string.Empty;
+            IsOtherServiceSelected = false;
             FormAddress = string.Empty;
+        }
+
+        private void ApplySelectedServiceFromExistingTreatment(string treatment)
+        {
+            if (string.IsNullOrWhiteSpace(treatment))
+            {
+                SelectedService = null;
+                OtherServiceName = string.Empty;
+                IsOtherServiceSelected = false;
+                return;
+            }
+
+            ServiceItem? matchedService = ServiceOptions
+                .FirstOrDefault(service =>
+                    service.ServiceName.Equals(treatment.Trim(), StringComparison.OrdinalIgnoreCase));
+
+            if (matchedService != null)
+            {
+                SelectedService = matchedService;
+                OtherServiceName = string.Empty;
+                IsOtherServiceSelected = false;
+                return;
+            }
+
+            ServiceItem? otherService = ServiceOptions
+                .FirstOrDefault(service => service.ServiceName == "Other");
+
+            SelectedService = otherService;
+            OtherServiceName = treatment.Trim();
+            IsOtherServiceSelected = true;
         }
 
         private void ShowPatientFormError(string message)

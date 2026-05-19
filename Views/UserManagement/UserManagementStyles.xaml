@@ -258,40 +258,5 @@
         <Setter Property="Background" Value="#FFF9FD" />
     </Style>
 
-    <!--  Blue scrollbar style for User Management tables  -->
-    <Style x:Key="BlueDataGridScrollBarStyle" TargetType="{x:Type ScrollBar}">
-        <Setter Property="Background" Value="#ffffff" />
-        <Setter Property="Width" Value="Auto" />
-        <Setter Property="Height" Value="Auto" />
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="{x:Type ScrollBar}">
-                    <Grid Background="{TemplateBinding Background}">
-                        <Track x:Name="PART_Track" IsDirectionReversed="True">
-                            <Track.Thumb>
-                                <Thumb>
-                                    <Thumb.Template>
-                                        <ControlTemplate TargetType="Thumb">
-                                            <Border
-                                                Margin="2"
-                                                Background="#223357"
-                                                CornerRadius="6" />
-                                        </ControlTemplate>
-                                    </Thumb.Template>
-                                </Thumb>
-                            </Track.Thumb>
-                        </Track>
-                    </Grid>
-
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="Orientation" Value="Horizontal">
-                            <Setter TargetName="PART_Track" Property="IsDirectionReversed" Value="False" />
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
 
 </ResourceDictionary>

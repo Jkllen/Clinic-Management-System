@@ -28,12 +28,19 @@ namespace CruzNeryClinic.Models
 
         public string InitialTreatment { get; set; } = string.Empty;
 
-        public string DentalHistory { get; set; } = string.Empty;
+        public bool HasMedicalCondition { get; set; }
 
-        public string MedicalHistory { get; set; } = string.Empty;
+        public string MedicalConditionNotes { get; set; } = string.Empty;
 
-        public string AllergyMedicationNotes { get; set; } = string.Empty;
+        public string AllergyNotes { get; set; } = string.Empty;
 
+        public string CurrentMedication { get; set; } = string.Empty;
+
+        public bool RequiresMedicalClearance { get; set; }
+
+        public string ClearanceNotes { get; set; } = string.Empty;
+
+        public string InitialTreatmentNotes { get; set; } = string.Empty;
         public bool IsActive { get; set; } = true;
 
         public DateTime CreatedAt { get; set; }

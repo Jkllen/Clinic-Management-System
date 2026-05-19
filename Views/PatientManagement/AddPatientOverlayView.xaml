@@ -72,47 +72,71 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
-                    <TextBox
-                        Grid.Row="0"
-                        Grid.Column="0"
-                        Style="{StaticResource PatientOverlayTextBoxStyle}"
-                        Tag="First name *"
-                        Text="{Binding FormFirstName, UpdateSourceTrigger=PropertyChanged}" />
+                    <StackPanel Grid.Row="0" Grid.Column="0">
+                        <TextBlock
+                            Style="{StaticResource PatientOverlayFieldLabelStyle}"
+                            Text="First Name *" />
 
-                    <TextBox
-                        Grid.Row="0"
-                        Grid.Column="2"
-                        Style="{StaticResource PatientOverlayTextBoxStyle}"
-                        Tag="Middle name"
-                        Text="{Binding FormMiddleName, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBox
+                            Style="{StaticResource PatientOverlayTextBoxStyle}"
+                            Tag="Enter your first name"
+                            Text="{Binding FormFirstName, UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
 
-                    <TextBox
-                        Grid.Row="2"
-                        Grid.Column="0"
-                        Style="{StaticResource PatientOverlayTextBoxStyle}"
-                        Tag="Last name *"
-                        Text="{Binding FormLastName, UpdateSourceTrigger=PropertyChanged}" />
+                    <StackPanel Grid.Row="0" Grid.Column="2">
+                        <TextBlock
+                            Style="{StaticResource PatientOverlayFieldLabelStyle}"
+                            Text="Middle Name" />
 
-                    <TextBox
-                        Grid.Row="2"
-                        Grid.Column="2"
-                        Style="{StaticResource PatientOverlayTextBoxStyle}"
-                        Tag="Contact number *"
-                        Text="{Binding FormPhoneNumber, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBox
+                            Style="{StaticResource PatientOverlayTextBoxStyle}"
+                            Tag="Enter your middle name"
+                            Text="{Binding FormMiddleName, UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
 
-                    <DatePicker
-                        Grid.Row="4"
-                        Grid.Column="0"
-                        Height="46"
-                        SelectedDate="{Binding FormDateOfBirth, Mode=TwoWay}" />
+                    <StackPanel Grid.Row="2" Grid.Column="0">
+                        <TextBlock
+                            Style="{StaticResource PatientOverlayFieldLabelStyle}"
+                            Text="Last Name *" />
 
-                    <ComboBox
-                        Grid.Row="4"
-                        Grid.Column="2"
-                        ItemsSource="{Binding GenderOptions}"
-                        SelectedItem="{Binding FormGender, Mode=TwoWay}"
-                        Style="{StaticResource PatientOverlayComboBoxStyle}"
-                        Tag="Gender *" />
+                        <TextBox
+                            Style="{StaticResource PatientOverlayTextBoxStyle}"
+                            Tag="Enter your last name"
+                            Text="{Binding FormLastName, UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="2" Grid.Column="2">
+                        <TextBlock
+                            Style="{StaticResource PatientOverlayFieldLabelStyle}"
+                            Text="Contact Number *" />
+
+                        <TextBox
+                            Style="{StaticResource PatientOverlayTextBoxStyle}"
+                            Tag="Enter your contact number"
+                            Text="{Binding FormPhoneNumber, UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="4" Grid.Column="0">
+                        <TextBlock
+                            Style="{StaticResource PatientOverlayFieldLabelStyle}"
+                            Text="Date of Birth *" />
+
+                        <DatePicker
+                            Height="46"
+                            SelectedDate="{Binding FormDateOfBirth, Mode=TwoWay}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="4" Grid.Column="2">
+                        <TextBlock
+                            Style="{StaticResource PatientOverlayFieldLabelStyle}"
+                            Text="Gender *" />
+
+                        <ComboBox
+                            ItemsSource="{Binding GenderOptions}"
+                            SelectedItem="{Binding FormGender, Mode=TwoWay}"
+                            Style="{StaticResource PatientOverlayComboBoxStyle}"
+                            Tag="Select gender" />
+                    </StackPanel>
 
                     <StackPanel
                         Grid.Row="6"
@@ -133,59 +157,119 @@
                             IsChecked="{Binding FormIsSeniorCitizen}" />
                     </StackPanel>
 
-                    <TextBox
-                        Grid.Row="6"
-                        Grid.Column="2"
-                        Style="{StaticResource PatientOverlayTextBoxStyle}"
-                        Tag="Address"
-                        Text="{Binding FormAddress, UpdateSourceTrigger=PropertyChanged}" />
+                    <StackPanel Grid.Row="6" Grid.Column="2">
+                        <TextBlock
+                            Style="{StaticResource PatientOverlayFieldLabelStyle}"
+                            Text="Address" />
+
+                        <TextBox
+                            Style="{StaticResource PatientOverlayTextBoxStyle}"
+                            Tag="Enter your address"
+                            Text="{Binding FormAddress, UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
                 </Grid>
 
                 <TextBlock
                     Margin="0,28,0,12"
                     FontSize="18"
                     FontWeight="Bold"
-                    Text="Patient History" />
+                    Text="Medical Background" />
 
-                <TextBox
-                    Height="90"
-                    AcceptsReturn="True"
-                    TextWrapping="Wrap"
-                    VerticalScrollBarVisibility="Auto"
-                    Style="{StaticResource PatientOverlayTextAreaStyle}"
-                    Tag="Dental History / Treatment Notes"
-                    Text="{Binding FormDentalHistory, UpdateSourceTrigger=PropertyChanged}" />
+                <StackPanel Margin="0,0,0,14">
+                    <CheckBox
+                        Content="Patient has medical condition"
+                        FontSize="15"
+                        IsChecked="{Binding FormHasMedicalCondition}" />
+                </StackPanel>
 
-                <TextBox
-                    Height="90"
+                <StackPanel Visibility="{Binding MedicalConditionNotesVisibility}">
+                    <TextBlock
+                        Style="{StaticResource PatientOverlayFieldLabelStyle}"
+                        Text="Medical Conditions / Health Notes" />
+
+                    <TextBox
+                        Style="{StaticResource PatientOverlayTextAreaStyle}"
+                        Tag="Example: diabetes, heart condition, hypertension, asthma, etc."
+                        Text="{Binding FormMedicalConditionNotes, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+
+                <StackPanel Margin="0,14,0,0">
+                    <TextBlock
+                        Style="{StaticResource PatientOverlayFieldLabelStyle}"
+                        Text="Allergy Notes" />
+
+                    <TextBox
+                        Style="{StaticResource PatientOverlayTextAreaStyle}"
+                        Tag="Example: medicine allergy, latex allergy, anesthesia reaction, etc."
+                        Text="{Binding FormAllergyNotes, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+
+                <StackPanel Margin="0,14,0,0">
+                    <TextBlock
+                        Style="{StaticResource PatientOverlayFieldLabelStyle}"
+                        Text="Current Medication" />
+
+                    <TextBox
+                        Style="{StaticResource PatientOverlayTextAreaStyle}"
+                        Tag="Enter current medication if any"
+                        Text="{Binding FormCurrentMedication, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+
+                <StackPanel Margin="0,14,0,14">
+                    <CheckBox
+                        Content="Requires medical clearance"
+                        FontSize="15"
+                        IsChecked="{Binding FormRequiresMedicalClearance}" />
+                </StackPanel>
+
+                <StackPanel Visibility="{Binding ClearanceNotesVisibility}">
+                    <TextBlock
+                        Style="{StaticResource PatientOverlayFieldLabelStyle}"
+                        Text="Clearance Notes" />
+
+                    <TextBox
+                        Style="{StaticResource PatientOverlayTextAreaStyle}"
+                        Tag="Enter clearance details or reminder"
+                        Text="{Binding FormClearanceNotes, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+                
+                <StackPanel>
+                    <TextBlock
+                        Style="{StaticResource PatientOverlayFieldLabelStyle}"
+                        Text="Initial Treatment / Service *" />
+
+                    <ComboBox
+                        ItemsSource="{Binding ServiceOptions}"
+                        SelectedItem="{Binding SelectedService, Mode=TwoWay}"
+                        DisplayMemberPath="ServiceName"
+                        Style="{StaticResource PatientOverlayComboBoxStyle}"
+                        Tag="Select treatment or service" />
+                </StackPanel>
+
+                <StackPanel
                     Margin="0,14,0,0"
-                    AcceptsReturn="True"
-                    TextWrapping="Wrap"
-                    VerticalScrollBarVisibility="Auto"
-                    Style="{StaticResource PatientOverlayTextAreaStyle}"
-                    Tag="Medical History / Health Conditions"
-                    Text="{Binding FormMedicalHistory, UpdateSourceTrigger=PropertyChanged}" />
+                    Visibility="{Binding IsOtherServiceSelected, Converter={StaticResource BoolToVisibilityConverter}}">
 
-                <TextBox
-                    Height="90"
-                    Margin="0,14,0,0"
-                    AcceptsReturn="True"
-                    TextWrapping="Wrap"
-                    VerticalScrollBarVisibility="Auto"
-                    Style="{StaticResource PatientOverlayTextAreaStyle}"
-                    Tag="Allergy / Medication Notes"
-                    Text="{Binding FormAllergyMedicationNotes, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock
+                        Style="{StaticResource PatientOverlayFieldLabelStyle}"
+                        Text="Other Treatment / Service *" />
 
-                <TextBlock
-                    Margin="0,28,0,12"
-                    FontSize="18"
-                    FontWeight="Bold"
-                    Text="Initial Visit" />
+                    <TextBox
+                        Style="{StaticResource PatientOverlayTextBoxStyle}"
+                        Tag="Type other treatment or service"
+                        Text="{Binding OtherServiceName, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
 
-                <TextBox
-                    Style="{StaticResource PatientOverlayTextBoxStyle}"
-                    Tag="Initial Treatment / Service"
-                    Text="{Binding FormInitialTreatment, UpdateSourceTrigger=PropertyChanged}" />
+                <StackPanel Margin="0,14,0,0">
+                    <TextBlock
+                        Style="{StaticResource PatientOverlayFieldLabelStyle}"
+                        Text="Details/Remarks" />
+
+                    <TextBox
+                        Style="{StaticResource PatientOverlayTextAreaStyle}"
+                        Tag="Enter notes about what was observed"
+                        Text="{Binding FormInitialTreatmentNotes, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
 
                 <StackPanel
                     Margin="0,28,0,0"
@@ -211,15 +295,10 @@
                         Style="{StaticResource SecondaryButtonStyle}">
 
                         <StackPanel Orientation="Horizontal">
-                            <fa:IconBlock
-                                Margin="0,0,8,0"
-                                VerticalAlignment="Center"
-                                Foreground="White"
-                                Icon="Save" />
                             <TextBlock
                                 VerticalAlignment="Center"
                                 FontWeight="Bold"
-                                Text="Save Patient" />
+                                Text="Add Patient" />
                         </StackPanel>
                     </Button>
                 </StackPanel>

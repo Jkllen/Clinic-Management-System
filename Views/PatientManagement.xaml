@@ -477,11 +477,12 @@
                                     Binding="{Binding Treatment}"
                                     Header="Treatment" />
 
-                                <!-- Patient History column
-                                    Opens the Patient History view/modal.
-                                    Future sections inside:
-                                    1. Dental History
-                                    2. Medical History -->
+                            <!-- Patient History column
+                                Opens the Patient History modal.
+                                Current sections:
+                                1. Medical Background
+                                2. Initial Visit
+                                3. Treatment History -->
                                 <DataGridTemplateColumn
                                     Width="1.1*"
                                     MinWidth="135"
@@ -543,7 +544,8 @@
                                                     Background="#22C84A"
                                                     Command="{Binding DataContext.UpdatePatientCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                     CommandParameter="{Binding}"
-                                                    Style="{StaticResource SmallActionButtonStyle}">
+                                                    Style="{StaticResource SmallActionButtonStyle}"
+                                                    Visibility="{Binding UpdateButtonVisibility}">
 
                                                     <StackPanel Orientation="Horizontal">
                                                         <fa:IconBlock
@@ -562,7 +564,7 @@
                                                     </StackPanel>
                                                 </Button>
 
-                                                <!-- Archive button -->
+                                                <!-- Archive & Restore button -->
                                                 <Button
                                                     Width="82"
                                                     Height="32"
@@ -629,14 +631,23 @@
             <Border
                 Width="760"
                 MaxHeight="620"
-                Padding="34"
+                Padding="34,34,18,34"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 Background="White"
                 CornerRadius="26">
 
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <StackPanel>
+                <ScrollViewer
+                    VerticalScrollBarVisibility="Auto"
+                    HorizontalScrollBarVisibility="Disabled">
+
+                    <ScrollViewer.Resources>
+                        <Style
+                            BasedOn="{StaticResource BlueDataGridScrollBarStyle}"
+                            TargetType="{x:Type ScrollBar}" />
+                    </ScrollViewer.Resources>
+
+                    <StackPanel Margin="0,0,14,0">
                         <TextBlock
                             FontSize="26"
                             FontWeight="Bold"
@@ -649,43 +660,46 @@
                             Foreground="#777777"
                             Text="{Binding HistoryPatientName}" />
 
+                        <!-- Medical Background -->
                         <TextBlock
                             FontSize="18"
                             FontWeight="Bold"
                             Foreground="#223357"
-                            Text="Dental History" />
+                            Text="Medical Background" />
 
                         <TextBlock
                             Margin="0,8,0,24"
                             FontSize="15"
                             Foreground="#333333"
-                            Text="{Binding HistoryDentalHistory}"
+                            Text="{Binding HistoryMedicalBackground}"
                             TextWrapping="Wrap" />
 
+                        <!-- Initial Visit -->
                         <TextBlock
                             FontSize="18"
                             FontWeight="Bold"
                             Foreground="#223357"
-                            Text="Medical History" />
+                            Text="Initial Visit" />
 
                         <TextBlock
                             Margin="0,8,0,24"
                             FontSize="15"
                             Foreground="#333333"
-                            Text="{Binding HistoryMedicalHistory}"
+                            Text="{Binding HistoryInitialVisit}"
                             TextWrapping="Wrap" />
 
+                        <!-- Treatment History -->
                         <TextBlock
                             FontSize="18"
                             FontWeight="Bold"
                             Foreground="#223357"
-                            Text="Allergy / Medication Notes" />
+                            Text="Treatment History" />
 
                         <TextBlock
                             Margin="0,8,0,28"
                             FontSize="15"
                             Foreground="#333333"
-                            Text="{Binding HistoryAllergyMedicationNotes}"
+                            Text="{Binding HistoryTreatmentHistory}"
                             TextWrapping="Wrap" />
 
                         <Button

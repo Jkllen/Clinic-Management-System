@@ -1,0 +1,530 @@
+using CruzNeryClinic.Data;
+using CruzNeryClinic.Models;
+using Microsoft.Data.Sqlite;
+using System;
+using System.Collections.Generic;
+
+namespace CruzNeryClinic.Repositories
+{
+    public class AppointmentRepository
+    {
+        #region Appointment List
+
+        public List<AppointmentListItem> GetAppointmentListItems()
+        {
+            List<AppointmentListItem> appointments = new();
+
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+SELECT
+    a.AppointmentId,
+    a.PatientId,
+    p.PatientCode,
+    p.FirstName,
+    p.MiddleName,
+    p.LastName,
+    a.AppointmentType,
+    a.Category,
+    a.ServiceId,
+    a.ServiceName,
+    a.DentistUserId,
+    a.DentistName,
+    a.AppointmentDate,
+    a.AppointmentTime,
+    a.ArrivalTime,
+    a.QueueNumber,
+    a.IsUrgent,
+    a.Priority,
+    a.Status,
+    a.Notes
+FROM Appointments a
+INNER JOIN Patients p
+    ON a.PatientId = p.PatientId
+ORDER BY
+    a.AppointmentDate ASC,
+    CASE
+        WHEN a.IsUrgent = 1 THEN 0
+        WHEN a.AppointmentType = 'Scheduled' THEN 1
+        ELSE 2
+    END ASC,
+    a.AppointmentTime ASC,
+    a.AppointmentId ASC;";
+
+            using SqliteDataReader reader = command.ExecuteReader();
+
+            while (reader.Read())
+                appointments.Add(MapReaderToAppointmentListItem(reader));
+
+            return appointments;
+        }
+
+        #endregion
+
+        #region Summary Counts
+
+        public int GetTodayAppointmentCount()
+        {
+            return CountByQuery(@"
+SELECT COUNT(*)
+FROM Appointments
+WHERE AppointmentDate = @Today
+  AND Status <> 'Cancelled';");
+        }
+
+        public int GetCompletedTodayCount()
+        {
+            return CountByQuery(@"
+SELECT COUNT(*)
+FROM Appointments
+WHERE AppointmentDate = @Today
+  AND Status = 'Completed';");
+        }
+
+        public int GetCancelledTodayCount()
+        {
+            return CountByQuery(@"
+SELECT COUNT(*)
+FROM Appointments
+WHERE AppointmentDate = @Today
+  AND Status = 'Cancelled';");
+        }
+
+        private int CountByQuery(string sql)
+        {
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = sql;
+            command.Parameters.AddWithValue("@Today", DateTime.Today.ToString("yyyy-MM-dd"));
+
+            return Convert.ToInt32(command.ExecuteScalar());
+        }
+
+        #endregion
+
+        #region Patient Search
+
+        public List<AppointmentPatientSearchItem> SearchActivePatients(string searchText)
+        {
+            List<AppointmentPatientSearchItem> patients = new();
+
+            if (string.IsNullOrWhiteSpace(searchText))
+                return patients;
+
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+SELECT
+    PatientId,
+    PatientCode,
+    FirstName,
+    MiddleName,
+    LastName,
+    BirthDate,
+    IsPWD,
+    IsSeniorCitizen
+FROM Patients
+WHERE IsActive = 1
+  AND (
+        PatientCode LIKE @SearchText
+        OR FirstName LIKE @SearchText
+        OR MiddleName LIKE @SearchText
+        OR LastName LIKE @SearchText
+        OR (FirstName || ' ' || LastName) LIKE @SearchText
+        OR (FirstName || ' ' || MiddleName || ' ' || LastName) LIKE @SearchText
+  )
+ORDER BY LastName ASC, FirstName ASC
+LIMIT 10;";
+
+            command.Parameters.AddWithValue("@SearchText", $"%{searchText.Trim()}%");
+
+            using SqliteDataReader reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                patients.Add(new AppointmentPatientSearchItem
+                {
+                    PatientId = Convert.ToInt32(reader["PatientId"]),
+                    PatientCode = reader["PatientCode"]?.ToString() ?? string.Empty,
+                    FirstName = reader["FirstName"]?.ToString() ?? string.Empty,
+                    MiddleName = reader["MiddleName"]?.ToString() ?? string.Empty,
+                    LastName = reader["LastName"]?.ToString() ?? string.Empty,
+                    BirthDate = ParseDate(reader["BirthDate"]?.ToString()),
+                    IsPwd = Convert.ToInt32(reader["IsPWD"]) == 1,
+                    IsSeniorCitizen = Convert.ToInt32(reader["IsSeniorCitizen"]) == 1
+                });
+            }
+
+            return patients;
+        }
+
+        #endregion
+
+        #region Dropdown Options
+
+        public List<AppointmentServiceOption> GetActiveServices()
+        {
+            List<AppointmentServiceOption> services = new();
+
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+SELECT
+    ServiceId,
+    ServiceName,
+    DefaultPrice
+FROM Services
+WHERE IsActive = 1
+ORDER BY ServiceName ASC;";
+
+            using SqliteDataReader reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                services.Add(new AppointmentServiceOption
+                {
+                    ServiceId = Convert.ToInt32(reader["ServiceId"]),
+                    ServiceName = reader["ServiceName"]?.ToString() ?? string.Empty,
+                    DefaultPrice = Convert.ToDouble(reader["DefaultPrice"])
+                });
+            }
+
+            return services;
+        }
+
+        public List<AppointmentDentistOption> GetActiveDentists()
+        {
+            List<AppointmentDentistOption> dentists = new();
+
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+SELECT
+    UserId,
+    FirstName,
+    MiddleName,
+    LastName
+FROM Users
+WHERE IsActive = 1
+  AND Role = 'Dentist'
+ORDER BY LastName ASC, FirstName ASC;";
+
+            using SqliteDataReader reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                string firstName = reader["FirstName"]?.ToString() ?? string.Empty;
+                string middleName = reader["MiddleName"]?.ToString() ?? string.Empty;
+                string lastName = reader["LastName"]?.ToString() ?? string.Empty;
+
+                string fullName = string.IsNullOrWhiteSpace(middleName)
+                    ? $"{firstName} {lastName}".Trim()
+                    : $"{firstName} {middleName} {lastName}".Trim();
+
+                dentists.Add(new AppointmentDentistOption
+                {
+                    DentistUserId = Convert.ToInt32(reader["UserId"]),
+                    DentistName = fullName
+                });
+            }
+
+            return dentists;
+        }
+
+        #endregion
+
+        #region Add Appointment
+
+        public int AddAppointment(Appointment appointment)
+        {
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+INSERT INTO Appointments (
+    PatientId,
+    AppointmentType,
+    Category,
+    ServiceId,
+    ServiceName,
+    DentistUserId,
+    DentistName,
+    AppointmentDate,
+    AppointmentTime,
+    ArrivalTime,
+    IsUrgent,
+    Priority,
+    Status,
+    Notes,
+    CreatedByUserId,
+    CreatedAt
+)
+VALUES (
+    @PatientId,
+    @AppointmentType,
+    @Category,
+    @ServiceId,
+    @ServiceName,
+    @DentistUserId,
+    @DentistName,
+    @AppointmentDate,
+    @AppointmentTime,
+    @ArrivalTime,
+    @IsUrgent,
+    @Priority,
+    @Status,
+    @Notes,
+    @CreatedByUserId,
+    @CreatedAt
+);
+
+SELECT last_insert_rowid();";
+
+            command.Parameters.AddWithValue("@PatientId", appointment.PatientId);
+            command.Parameters.AddWithValue("@AppointmentType", appointment.AppointmentType);
+            command.Parameters.AddWithValue("@Category", appointment.Category);
+            command.Parameters.AddWithValue("@ServiceId", appointment.ServiceId.HasValue ? appointment.ServiceId.Value : DBNull.Value);
+            command.Parameters.AddWithValue("@ServiceName", appointment.ServiceName);
+            command.Parameters.AddWithValue("@DentistUserId", appointment.DentistUserId.HasValue ? appointment.DentistUserId.Value : DBNull.Value);
+            command.Parameters.AddWithValue("@DentistName", appointment.DentistName);
+            command.Parameters.AddWithValue("@AppointmentDate", appointment.AppointmentDate.ToString("yyyy-MM-dd"));
+            command.Parameters.AddWithValue("@AppointmentTime", appointment.AppointmentTime.ToString(@"hh\:mm"));
+            command.Parameters.AddWithValue("@ArrivalTime", appointment.ArrivalTime.HasValue ? appointment.ArrivalTime.Value.ToString(@"hh\:mm") : DBNull.Value);
+            command.Parameters.AddWithValue("@IsUrgent", appointment.IsUrgent ? 1 : 0);
+            command.Parameters.AddWithValue("@Priority", appointment.Priority);
+            command.Parameters.AddWithValue("@Status", appointment.Status);
+            command.Parameters.AddWithValue("@Notes", appointment.Notes.Trim());
+            command.Parameters.AddWithValue("@CreatedByUserId", appointment.CreatedByUserId.HasValue ? appointment.CreatedByUserId.Value : DBNull.Value);
+            command.Parameters.AddWithValue("@CreatedAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+
+            return Convert.ToInt32(command.ExecuteScalar());
+        }
+
+        #endregion
+
+        #region Status Actions
+
+        public void MarkArrived(int appointmentId)
+        {
+            UpdateStatus(
+                appointmentId,
+                status: "Waiting",
+                extraSetSql: "ArrivalTime = @ArrivalTime, UpdatedAt = @UpdatedAt",
+                configureParameters: command =>
+                {
+                    command.Parameters.AddWithValue("@ArrivalTime", DateTime.Now.ToString("HH:mm"));
+                });
+        }
+
+        public bool StartTreatment(int appointmentId)
+        {
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteTransaction transaction = connection.BeginTransaction();
+
+            try
+            {
+                using SqliteCommand checkCommand = connection.CreateCommand();
+                checkCommand.Transaction = transaction;
+                checkCommand.CommandText = @"
+SELECT COUNT(*)
+FROM Appointments
+WHERE AppointmentDate = @Today
+  AND Status = 'In Treatment'
+  AND AppointmentId <> @AppointmentId;";
+
+                checkCommand.Parameters.AddWithValue("@Today", DateTime.Today.ToString("yyyy-MM-dd"));
+                checkCommand.Parameters.AddWithValue("@AppointmentId", appointmentId);
+
+                int inTreatmentCount = Convert.ToInt32(checkCommand.ExecuteScalar());
+
+                if (inTreatmentCount > 0)
+                {
+                    transaction.Rollback();
+                    return false;
+                }
+
+                using SqliteCommand updateCommand = connection.CreateCommand();
+                updateCommand.Transaction = transaction;
+                updateCommand.CommandText = @"
+UPDATE Appointments
+SET
+    Status = 'In Treatment',
+    StartedAt = @StartedAt,
+    UpdatedAt = @UpdatedAt
+WHERE AppointmentId = @AppointmentId;";
+
+                string now = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+                updateCommand.Parameters.AddWithValue("@StartedAt", now);
+                updateCommand.Parameters.AddWithValue("@UpdatedAt", now);
+                updateCommand.Parameters.AddWithValue("@AppointmentId", appointmentId);
+
+                updateCommand.ExecuteNonQuery();
+
+                transaction.Commit();
+                return true;
+            }
+            catch
+            {
+                transaction.Rollback();
+                throw;
+            }
+        }
+
+        public void CompleteAppointment(int appointmentId)
+        {
+            UpdateStatus(
+                appointmentId,
+                status: "Completed",
+                extraSetSql: "CompletedAt = @CompletedAt, UpdatedAt = @UpdatedAt",
+                configureParameters: command =>
+                {
+                    command.Parameters.AddWithValue("@CompletedAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                });
+        }
+
+        public void CancelAppointment(int appointmentId, string cancellationReason = "")
+        {
+            UpdateStatus(
+                appointmentId,
+                status: "Cancelled",
+                extraSetSql: "CancelledAt = @CancelledAt, CancellationReason = @CancellationReason, UpdatedAt = @UpdatedAt",
+                configureParameters: command =>
+                {
+                    command.Parameters.AddWithValue("@CancelledAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                    command.Parameters.AddWithValue("@CancellationReason", cancellationReason.Trim());
+                });
+        }
+
+        public void ToggleUrgent(int appointmentId, bool isUrgent)
+        {
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+UPDATE Appointments
+SET
+    IsUrgent = @IsUrgent,
+    Priority = @Priority,
+    UpdatedAt = @UpdatedAt
+WHERE AppointmentId = @AppointmentId;";
+
+            command.Parameters.AddWithValue("@IsUrgent", isUrgent ? 1 : 0);
+            command.Parameters.AddWithValue("@Priority", isUrgent ? "Urgent" : "Normal");
+            command.Parameters.AddWithValue("@UpdatedAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            command.Parameters.AddWithValue("@AppointmentId", appointmentId);
+
+            command.ExecuteNonQuery();
+        }
+
+        private void UpdateStatus(
+            int appointmentId,
+            string status,
+            string extraSetSql,
+            Action<SqliteCommand> configureParameters)
+        {
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = $@"
+UPDATE Appointments
+SET
+    Status = @Status,
+    {extraSetSql}
+WHERE AppointmentId = @AppointmentId;";
+
+            command.Parameters.AddWithValue("@Status", status);
+            command.Parameters.AddWithValue("@UpdatedAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            command.Parameters.AddWithValue("@AppointmentId", appointmentId);
+
+            configureParameters(command);
+
+            command.ExecuteNonQuery();
+        }
+
+        #endregion
+
+        #region Helpers
+
+        private AppointmentListItem MapReaderToAppointmentListItem(SqliteDataReader reader)
+        {
+            string firstName = reader["FirstName"]?.ToString() ?? string.Empty;
+            string middleName = reader["MiddleName"]?.ToString() ?? string.Empty;
+            string lastName = reader["LastName"]?.ToString() ?? string.Empty;
+
+            string patientName = string.IsNullOrWhiteSpace(middleName)
+                ? $"{firstName} {lastName}".Trim()
+                : $"{firstName} {middleName} {lastName}".Trim();
+
+            return new AppointmentListItem
+            {
+                AppointmentId = Convert.ToInt32(reader["AppointmentId"]),
+                PatientId = Convert.ToInt32(reader["PatientId"]),
+                PatientCode = reader["PatientCode"]?.ToString() ?? string.Empty,
+                PatientName = patientName,
+                AppointmentType = reader["AppointmentType"]?.ToString() ?? string.Empty,
+                Category = reader["Category"]?.ToString() ?? "Regular",
+                ServiceId = SafeGetNullableInt(reader, "ServiceId"),
+                ServiceName = reader["ServiceName"]?.ToString() ?? string.Empty,
+                DentistUserId = SafeGetNullableInt(reader, "DentistUserId"),
+                DentistName = reader["DentistName"]?.ToString() ?? "Unassigned",
+                AppointmentDate = ParseDate(reader["AppointmentDate"]?.ToString()),
+                AppointmentTime = ParseTime(reader["AppointmentTime"]?.ToString()),
+                ArrivalTime = ParseNullableTime(reader["ArrivalTime"]?.ToString()),
+                QueueNumber = SafeGetNullableInt(reader, "QueueNumber"),
+                IsUrgent = Convert.ToInt32(reader["IsUrgent"]) == 1,
+                Priority = reader["Priority"]?.ToString() ?? "Normal",
+                Status = reader["Status"]?.ToString() ?? "Scheduled",
+                Notes = reader["Notes"]?.ToString() ?? string.Empty
+            };
+        }
+
+        private int? SafeGetNullableInt(SqliteDataReader reader, string columnName)
+        {
+            int ordinal = reader.GetOrdinal(columnName);
+
+            if (reader.IsDBNull(ordinal))
+                return null;
+
+            return Convert.ToInt32(reader[columnName]);
+        }
+
+        private DateTime ParseDate(string? value)
+        {
+            return DateTime.TryParse(value, out DateTime date)
+                ? date
+                : DateTime.Today;
+        }
+
+        private TimeSpan ParseTime(string? value)
+        {
+            return TimeSpan.TryParse(value, out TimeSpan time)
+                ? time
+                : TimeSpan.Zero;
+        }
+
+        private TimeSpan? ParseNullableTime(string? value)
+        {
+            return TimeSpan.TryParse(value, out TimeSpan time)
+                ? time
+                : null;
+        }
+
+        #endregion
+    }
+}
