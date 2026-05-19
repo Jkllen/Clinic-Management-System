@@ -326,6 +326,92 @@ ORDER BY LastName ASC, FirstName ASC;";
 
         #endregion
 
+        #region Appointment Conflict Checks
+
+        public bool HasActiveScheduledAppointmentAtExactTime(
+            DateTime appointmentDate,
+            TimeSpan appointmentTime,
+            int? ignoredAppointmentId = null)
+        {
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+
+            command.CommandText = @"
+        SELECT COUNT(*)
+        FROM Appointments
+        WHERE AppointmentDate = @AppointmentDate
+        AND AppointmentTime = @AppointmentTime
+        AND AppointmentType = 'Scheduled'
+        AND Status IN ('Scheduled', 'Waiting', 'In Treatment')
+        AND (@IgnoredAppointmentId IS NULL OR AppointmentId <> @IgnoredAppointmentId);";
+
+            command.Parameters.AddWithValue("@AppointmentDate", appointmentDate.ToString("yyyy-MM-dd"));
+            command.Parameters.AddWithValue("@AppointmentTime", appointmentTime.ToString(@"hh\:mm"));
+            command.Parameters.AddWithValue("@IgnoredAppointmentId", ignoredAppointmentId.HasValue ? ignoredAppointmentId.Value : DBNull.Value);
+
+            return Convert.ToInt32(command.ExecuteScalar()) > 0;
+        }
+
+        public bool HasSamePatientActiveAppointmentAtExactTime(
+            int patientId,
+            DateTime appointmentDate,
+            TimeSpan appointmentTime,
+            int? ignoredAppointmentId = null)
+        {
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+
+            command.CommandText = @"
+        SELECT COUNT(*)
+        FROM Appointments
+        WHERE PatientId = @PatientId
+        AND AppointmentDate = @AppointmentDate
+        AND AppointmentTime = @AppointmentTime
+        AND Status IN ('Scheduled', 'Waiting', 'In Treatment')
+        AND (@IgnoredAppointmentId IS NULL OR AppointmentId <> @IgnoredAppointmentId);";
+
+            command.Parameters.AddWithValue("@PatientId", patientId);
+            command.Parameters.AddWithValue("@AppointmentDate", appointmentDate.ToString("yyyy-MM-dd"));
+            command.Parameters.AddWithValue("@AppointmentTime", appointmentTime.ToString(@"hh\:mm"));
+            command.Parameters.AddWithValue("@IgnoredAppointmentId", ignoredAppointmentId.HasValue ? ignoredAppointmentId.Value : DBNull.Value);
+
+            return Convert.ToInt32(command.ExecuteScalar()) > 0;
+        }
+
+        public bool HasSamePatientActiveAppointmentOnSameDate(
+            int patientId,
+            DateTime appointmentDate,
+            TimeSpan appointmentTime,
+            int? ignoredAppointmentId = null)
+        {
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+
+            command.CommandText = @"
+        SELECT COUNT(*)
+        FROM Appointments
+        WHERE PatientId = @PatientId
+        AND AppointmentDate = @AppointmentDate
+        AND AppointmentTime <> @AppointmentTime
+        AND Status IN ('Scheduled', 'Waiting', 'In Treatment')
+        AND (@IgnoredAppointmentId IS NULL OR AppointmentId <> @IgnoredAppointmentId);";
+
+            command.Parameters.AddWithValue("@PatientId", patientId);
+            command.Parameters.AddWithValue("@AppointmentDate", appointmentDate.ToString("yyyy-MM-dd"));
+            command.Parameters.AddWithValue("@AppointmentTime", appointmentTime.ToString(@"hh\:mm"));
+            command.Parameters.AddWithValue("@IgnoredAppointmentId", ignoredAppointmentId.HasValue ? ignoredAppointmentId.Value : DBNull.Value);
+
+            return Convert.ToInt32(command.ExecuteScalar()) > 0;
+        }
+
+        #endregion
+
         #region Add Appointment
 
         public int AddAppointment(Appointment appointment)

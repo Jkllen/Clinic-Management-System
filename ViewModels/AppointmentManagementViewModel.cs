@@ -59,6 +59,10 @@ namespace CruzNeryClinic.ViewModels
         private string formErrorMessage = string.Empty;
         private bool hasFormError;
 
+        private static readonly TimeSpan ClinicOpeningTime = new(10, 0, 0);
+        private static readonly TimeSpan WeekdaySaturdayClosingTime = new(18, 0, 0);
+        private static readonly TimeSpan SundayClosingTime = new(16, 0, 0);
+
         private string errorMessage = string.Empty;
         private bool hasError;
 
@@ -889,7 +893,11 @@ namespace CruzNeryClinic.ViewModels
                     return;
 
                 TimeSpan appointmentTime = ParseFormTime();
+                DateTime appointmentDate = FormAppointmentDate!.Value.Date;
 
+                if (!ValidateAppointmentConflict(appointmentDate, appointmentTime, isScheduled: false))
+                    return;
+                
                 Appointment appointment = new()
                 {
                     PatientId = SelectedPatient!.PatientId,
@@ -899,7 +907,7 @@ namespace CruzNeryClinic.ViewModels
                     ServiceName = SelectedService.ServiceName,
                     DentistUserId = SelectedDentist!.DentistUserId,
                     DentistName = SelectedDentist.DentistName,
-                    AppointmentDate = DateTime.Today,
+                    AppointmentDate = appointmentDate,
                     AppointmentTime = appointmentTime,
                     ArrivalTime = appointmentTime,
                     IsUrgent = false,
@@ -940,6 +948,10 @@ namespace CruzNeryClinic.ViewModels
                     return;
     
                 TimeSpan appointmentTime = ParseFormTime();
+                DateTime appointmentDate = FormAppointmentDate!.Value.Date;
+
+                if (!ValidateAppointmentConflict(appointmentDate, appointmentTime, isScheduled: true))
+                    return;
 
                 Appointment appointment = new()
                 {
@@ -950,7 +962,7 @@ namespace CruzNeryClinic.ViewModels
                     ServiceName = SelectedService.ServiceName,
                     DentistUserId = SelectedDentist!.DentistUserId,
                     DentistName = SelectedDentist.DentistName,
-                    AppointmentDate = FormAppointmentDate!.Value.Date,
+                    AppointmentDate = appointmentDate,
                     AppointmentTime = appointmentTime,
                     ArrivalTime = null,
                     IsUrgent = false,
@@ -1175,7 +1187,6 @@ namespace CruzNeryClinic.ViewModels
         #endregion
 
         #region Validation and Form Helpers
-
         private bool ValidateAppointmentForm(bool isScheduled)
         {
             if (SelectedPatient == null)
@@ -1196,19 +1207,22 @@ namespace CruzNeryClinic.ViewModels
                 return false;
             }
 
-            if (isScheduled)
+            if (!FormAppointmentDate.HasValue)
             {
-                if (!FormAppointmentDate.HasValue)
-                {
-                    ShowFormError("Please select an appointment date.");
-                    return false;
-                }
+                ShowFormError("Please select an appointment date.");
+                return false;
+            }
 
-                if (FormAppointmentDate.Value.Date < DateTime.Today)
-                {
-                    ShowFormError("Scheduled appointment date cannot be in the past.");
-                    return false;
-                }
+            if (isScheduled && FormAppointmentDate.Value.Date < DateTime.Today)
+            {
+                ShowFormError("Scheduled appointment date cannot be in the past.");
+                return false;
+            }
+
+            if (!isScheduled && FormAppointmentDate.Value.Date < DateTime.Today)
+            {
+                ShowFormError("Walk-in visit date cannot be in the past.");
+                return false;
             }
 
             if (string.IsNullOrWhiteSpace(FormAppointmentTimeText))
@@ -1217,15 +1231,69 @@ namespace CruzNeryClinic.ViewModels
                 return false;
             }
 
-            if (!TryParseTime(FormAppointmentTimeText, out _))
+            if (!TryParseTime(FormAppointmentTimeText, out TimeSpan appointmentTime))
             {
                 ShowFormError("Please enter a valid time. Example: 02:30 PM or 14:30.");
+                return false;
+            }
+
+            DateTime appointmentDate = FormAppointmentDate.Value.Date;
+            TimeSpan clinicClosingTime = GetClinicClosingTime(appointmentDate);
+
+            if (appointmentTime < ClinicOpeningTime || appointmentTime > clinicClosingTime)
+            {
+                ShowFormError($"Appointment time must be within clinic hours: {GetClinicHoursText(appointmentDate)}.");
                 return false;
             }
 
             return true;
         }
 
+        private bool ValidateAppointmentConflict(
+            DateTime appointmentDate,
+            TimeSpan appointmentTime,
+            bool isScheduled)
+        {
+            if (SelectedPatient == null)
+                return false;
+
+            if (isScheduled)
+            {
+                bool scheduledSlotTaken =
+                    appointmentRepository.HasActiveScheduledAppointmentAtExactTime(
+                        appointmentDate,
+                        appointmentTime
+                    );
+
+                if (scheduledSlotTaken)
+                {
+                    ShowFormError("The selected schedule time is already taken. Please choose a different appointment time.");
+                    return false;
+                }
+            }
+
+            bool hasSameDateAppointment =
+                appointmentRepository.HasSamePatientActiveAppointmentOnSameDate(
+                    SelectedPatient.PatientId,
+                    appointmentDate,
+                    appointmentTime
+                );
+
+            if (hasSameDateAppointment)
+            {
+                MessageBoxResult result = MessageBox.Show(
+                    "This patient already has another active appointment or walk-in visit on the selected date.\n\nThis may be intentional if the patient has separate morning and afternoon visits.\n\nDo you still want to continue?",
+                    "Same-Day Visit Warning",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning
+                );
+
+                if (result != MessageBoxResult.Yes)
+                    return false;
+            }
+
+            return true;
+        }
         private TimeSpan ParseFormTime()
         {
             TryParseTime(FormAppointmentTimeText, out TimeSpan time);
@@ -1247,6 +1315,21 @@ namespace CruzNeryClinic.ViewModels
 
             return false;
         }
+
+        private TimeSpan GetClinicClosingTime(DateTime appointmentDate)
+        {
+            return appointmentDate.DayOfWeek == DayOfWeek.Sunday
+                ? SundayClosingTime
+                : WeekdaySaturdayClosingTime;
+        }
+
+        private string GetClinicHoursText(DateTime appointmentDate)
+        {
+            return appointmentDate.DayOfWeek == DayOfWeek.Sunday
+                ? "10:00 AM to 4:00 PM on Sundays"
+                : "10:00 AM to 6:00 PM from Monday to Saturday";
+        }
+
 
         private void ClearForm()
         {
