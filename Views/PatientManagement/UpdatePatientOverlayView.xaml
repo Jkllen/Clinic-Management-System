@@ -155,22 +155,30 @@
                     <!-- PWD / Senior -->
                     <StackPanel
                         Grid.Row="6"
-                        Grid.Column="0"
-                        Orientation="Horizontal"
-                        VerticalAlignment="Center">
+                        Grid.Column="0">
 
-                        <CheckBox
-                            VerticalAlignment="Center"
-                            Content="PWD Patient"
-                            FontSize="15"
-                            IsChecked="{Binding FormIsPwd}" />
+                        <StackPanel Orientation="Horizontal">
+                            <CheckBox
+                                VerticalAlignment="Center"
+                                Content="PWD Patient"
+                                FontSize="15"
+                                IsChecked="{Binding FormIsPwd}" />
 
-                        <CheckBox
-                            Margin="24,0,0,0"
-                            VerticalAlignment="Center"
-                            Content="Senior Citizen"
-                            FontSize="15"
-                            IsChecked="{Binding FormIsSeniorCitizen}" />
+                            <CheckBox
+                                Margin="24,0,0,0"
+                                VerticalAlignment="Center"
+                                Content="Senior Citizen"
+                                FontSize="15"
+                                IsEnabled="False"
+                                IsChecked="{Binding FormIsSeniorCitizen, Mode=OneWay}" />
+                            <TextBlock
+                                Margin="24,0,0,0"
+                                FontSize="15"
+                                Foreground="#777777"
+                                Text="{Binding CalculatedAgeDisplay}" />
+                        </StackPanel>
+
+
                     </StackPanel>
 
                     <!-- Address -->

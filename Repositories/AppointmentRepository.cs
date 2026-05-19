@@ -3,6 +3,8 @@ using CruzNeryClinic.Models;
 using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
+using CruzNeryClinic.Services;
+using System.Text;
 
 namespace CruzNeryClinic.Repositories
 {
@@ -71,7 +73,7 @@ ORDER BY
 SELECT COUNT(*)
 FROM Appointments
 WHERE AppointmentDate = @Today
-  AND Status <> 'Cancelled';");
+  AND Status IN ('Scheduled', 'Waiting', 'In Treatment');");
         }
 
         public int GetCompletedTodayCount()
@@ -166,6 +168,47 @@ LIMIT 10;";
 
         #endregion
 
+        #region Calendar
+
+        public Dictionary<DateTime, int> GetAppointmentCountsByDate(int year, int month)
+        {
+            Dictionary<DateTime, int> counts = new();
+
+            DateTime startDate = new DateTime(year, month, 1);
+            DateTime endDate = startDate.AddMonths(1);
+
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+        SELECT
+            AppointmentDate,
+            COUNT(*) AS AppointmentCount
+        FROM Appointments
+        WHERE AppointmentDate >= @StartDate
+        AND AppointmentDate < @EndDate
+        AND Status IN ('Scheduled', 'Waiting', 'In Treatment')
+        GROUP BY AppointmentDate;";
+
+            command.Parameters.AddWithValue("@StartDate", startDate.ToString("yyyy-MM-dd"));
+            command.Parameters.AddWithValue("@EndDate", endDate.ToString("yyyy-MM-dd"));
+
+            using SqliteDataReader reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                DateTime date = ParseDate(reader["AppointmentDate"]?.ToString());
+                int count = Convert.ToInt32(reader["AppointmentCount"]);
+
+                counts[date.Date] = count;
+            }
+
+            return counts;
+        }
+
+        #endregion
+
         #region Dropdown Options
 
         public List<AppointmentServiceOption> GetActiveServices()
@@ -239,6 +282,46 @@ ORDER BY LastName ASC, FirstName ASC;";
             }
 
             return dentists;
+        }
+
+        #endregion
+
+        #region Patient Medical Alert
+
+        public AppointmentPatientMedicalAlert GetPatientMedicalAlert(int patientId)
+        {
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+        SELECT
+            HasMedicalCondition,
+            MedicalConditionNotes,
+            AllergyNotes,
+            CurrentMedication,
+            RequiresMedicalClearance,
+            ClearanceNotes
+        FROM PatientHistories
+        WHERE PatientId = @PatientId
+        LIMIT 1;";
+
+            command.Parameters.AddWithValue("@PatientId", patientId);
+
+            using SqliteDataReader reader = command.ExecuteReader();
+
+            if (!reader.Read())
+                return new AppointmentPatientMedicalAlert();
+
+            return new AppointmentPatientMedicalAlert
+            {
+                HasMedicalCondition = SafeGetInt(reader, "HasMedicalCondition") == 1,
+                MedicalConditionNotes = CryptoService.DecryptString(SafeGetString(reader, "MedicalConditionNotes")),
+                AllergyNotes = CryptoService.DecryptString(SafeGetString(reader, "AllergyNotes")),
+                CurrentMedication = CryptoService.DecryptString(SafeGetString(reader, "CurrentMedication")),
+                RequiresMedicalClearance = SafeGetInt(reader, "RequiresMedicalClearance") == 1,
+                ClearanceNotes = CryptoService.DecryptString(SafeGetString(reader, "ClearanceNotes"))
+            };
         }
 
         #endregion
@@ -326,6 +409,18 @@ SELECT last_insert_rowid();";
                     command.Parameters.AddWithValue("@ArrivalTime", DateTime.Now.ToString("HH:mm"));
                 });
         }
+
+        public void MarkNoShow(int appointmentId)
+        {
+            UpdateStatus(
+                appointmentId,
+                status: "No Show",
+                extraSetSql: "UpdatedAt = @UpdatedAt",
+                configureParameters: command =>
+                {
+
+            });
+        } 
 
         public bool StartTreatment(int appointmentId)
         {
@@ -523,6 +618,26 @@ WHERE AppointmentId = @AppointmentId;";
             return TimeSpan.TryParse(value, out TimeSpan time)
                 ? time
                 : null;
+        }
+
+        private string SafeGetString(SqliteDataReader reader, string columnName)
+        {
+            int ordinal = reader.GetOrdinal(columnName);
+
+            if (reader.IsDBNull(ordinal))
+                return string.Empty;
+
+            return reader.GetString(ordinal);
+        }
+
+        private int SafeGetInt(SqliteDataReader reader, string columnName)
+        {
+            int ordinal = reader.GetOrdinal(columnName);
+
+            if (reader.IsDBNull(ordinal))
+                return 0;
+
+            return Convert.ToInt32(reader[columnName]);
         }
 
         #endregion

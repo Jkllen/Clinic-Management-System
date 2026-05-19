@@ -97,10 +97,30 @@ namespace CruzNeryClinic.ViewModels
 
         private AppointmentManagementView CreateAppointmentManagementView()
         {
+            AppointmentManagementViewModel appointmentViewModel = new AppointmentManagementViewModel();
+
+            appointmentViewModel.AddPatientRequested += NavigateToPatientsAndOpenAddPatient;
+
             return new AppointmentManagementView
             {
-                DataContext = new AppointmentManagementViewModel()
+                DataContext = appointmentViewModel
             };
+        }
+
+        private void NavigateToPatientsAndOpenAddPatient()
+        {
+            SelectedModule = "Patients";
+
+            PatientManagementViewModel patientViewModel = new PatientManagementViewModel();
+
+            PatientManagementView patientManagementView = new PatientManagementView
+            {
+                DataContext = patientViewModel
+            };
+
+            CurrentModuleView = patientManagementView;
+
+            patientViewModel.OpenAddPatientOverlayFromNavigation();
         }
 
         private UserControl CreatePlaceholderView(string text)

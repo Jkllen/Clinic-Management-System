@@ -86,8 +86,7 @@
                                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                                     <ListBox
                                         BorderThickness="0"
-                                        ItemsSource="{Binding PatientSearchResults}"
-                                        SelectedItem="{Binding SelectedPatient, Mode=TwoWay}">
+                                        ItemsSource="{Binding PatientSearchResults}">
 
                                         <ListBox.ItemContainerStyle>
                                             <Style TargetType="ListBoxItem">
@@ -96,29 +95,60 @@
                                                 <Setter Property="Cursor" Value="Hand" />
                                             </Style>
                                         </ListBox.ItemContainerStyle>
+                                            <ListBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Button
+                                                        HorizontalAlignment="Stretch"
+                                                        HorizontalContentAlignment="Stretch"
+                                                        Background="Transparent"
+                                                        BorderThickness="0"
+                                                        Cursor="Hand"
+                                                        Command="{Binding DataContext.SelectPatientCommand, Source={x:Reference Root}}"
+                                                        CommandParameter="{Binding}">
 
-                                        <ListBox.ItemTemplate>
-                                            <DataTemplate>
-                                                <Border
-                                                    Padding="12,8"
-                                                    Background="Transparent">
+                                                        <Button.Template>
+                                                            <ControlTemplate TargetType="Button">
+                                                                <Border
+                                                                    x:Name="ButtonBorder"
+                                                                    Background="{TemplateBinding Background}">
+                                                                    <ContentPresenter
+                                                                        HorizontalAlignment="Stretch"
+                                                                        VerticalAlignment="Center" />
+                                                                </Border>
 
-                                                    <StackPanel>
-                                                        <TextBlock
-                                                            FontSize="14"
-                                                            FontWeight="SemiBold"
-                                                            Foreground="#111111"
-                                                            Text="{Binding DisplayText}" />
+                                                                <ControlTemplate.Triggers>
+                                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                                        <Setter TargetName="ButtonBorder" Property="Background" Value="#EEF6FF" />
+                                                                    </Trigger>
 
-                                                        <TextBlock
-                                                            Margin="0,2,0,0"
-                                                            FontSize="12"
-                                                            Foreground="#777777"
-                                                            Text="{Binding Category}" />
-                                                    </StackPanel>
-                                                </Border>
-                                            </DataTemplate>
-                                        </ListBox.ItemTemplate>
+                                                                    <Trigger Property="IsPressed" Value="True">
+                                                                        <Setter TargetName="ButtonBorder" Property="Background" Value="#DDEEFF" />
+                                                                    </Trigger>
+                                                                </ControlTemplate.Triggers>
+                                                            </ControlTemplate>
+                                                        </Button.Template>
+
+                                                        <Border
+                                                            Padding="12,8"
+                                                            Background="Transparent">
+
+                                                            <StackPanel>
+                                                                <TextBlock
+                                                                    FontSize="14"
+                                                                    FontWeight="SemiBold"
+                                                                    Foreground="#111111"
+                                                                    Text="{Binding DisplayText}" />
+
+                                                                <TextBlock
+                                                                    Margin="0,2,0,0"
+                                                                    FontSize="12"
+                                                                    Foreground="#777777"
+                                                                    Text="{Binding Category}" />
+                                                            </StackPanel>
+                                                        </Border>
+                                                    </Button>
+                                                </DataTemplate>
+                                            </ListBox.ItemTemplate>
                                     </ListBox>
                                 </ScrollViewer>
                             </Border>
@@ -131,6 +161,48 @@
                         Foreground="#777777"
                         Text="Type at least 2 characters to search existing patients." />
                 </StackPanel>
+
+                <Border
+                    Margin="0,0,0,18"
+                    Padding="14"
+                    Background="#FFF8E1"
+                    BorderBrush="#F4C542"
+                    BorderThickness="1"
+                    CornerRadius="10"
+                    Visibility="{Binding HasNoPatientSearchResults, Converter={StaticResource BoolToVisibilityConverter}}">
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="170" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock
+                            Grid.Column="0"
+                            VerticalAlignment="Center"
+                            FontSize="13"
+                            Foreground="#6B4E00"
+                            Text="No matching patient found. Add the patient first before creating an appointment."
+                            TextWrapping="Wrap" />
+
+                        <Button
+                            Grid.Column="1"
+                            Width="155"
+                            Height="34"
+                            HorizontalAlignment="Right"
+                            Background="#073C98"
+                            Command="{Binding ShowAddPatientInstructionCommand}"
+                            Foreground="White"
+                            Style="{StaticResource SecondaryButtonStyle}">
+
+                            <TextBlock
+                                FontSize="12"
+                                FontWeight="Bold"
+                                Text="Add Patient" />
+                        </Button>
+                    </Grid>
+                </Border>  
+
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -155,6 +227,31 @@
                         <TextBox Style="{StaticResource AppointmentReadOnlyTextBoxStyle}" Text="{Binding FormPatientLastName, Mode=OneWay}" />
                     </StackPanel>
                 </Grid>
+                
+                <Border
+                    Margin="0,18,0,0"
+                    Padding="14"
+                    Background="#FFEBEE"
+                    BorderBrush="#E31D1D"
+                    BorderThickness="1"
+                    CornerRadius="10"
+                    Visibility="{Binding HasMedicalAlert, Converter={StaticResource BoolToVisibilityConverter}}">
+
+                    <StackPanel>
+                        <TextBlock
+                            FontSize="14"
+                            FontWeight="Bold"
+                            Foreground="#B71C1C"
+                            Text="Medical Alert" />
+
+                        <TextBlock
+                            Margin="0,6,0,0"
+                            FontSize="13"
+                            Foreground="#4A1C1C"
+                            Text="{Binding MedicalAlertText}"
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
 
                 <TextBlock
                     Margin="0,28,0,12"

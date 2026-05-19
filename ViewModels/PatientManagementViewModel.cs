@@ -20,6 +20,7 @@ namespace CruzNeryClinic.ViewModels
         private int totalPatients;
         private int newPatientsThisMonth;
         private int pwdSeniorPatients;
+        private int calculatedAge;
         private int patientsWithBalance;
 
         private string searchText = string.Empty;
@@ -69,7 +70,7 @@ namespace CruzNeryClinic.ViewModels
         private string historyTreatmentHistory = string.Empty;
         private ServiceItem? selectedService;
         private string otherServiceName = string.Empty;
-        private bool isOtherServiceSelected;    
+        private bool isOtherServiceSelected;
 
         #endregion
 
@@ -138,7 +139,7 @@ namespace CruzNeryClinic.ViewModels
         public ObservableCollection<string> GenderOptions { get; }
 
         public ObservableCollection<ServiceItem> ServiceOptions { get; } = new();
-        
+
         #endregion
 
         #region Summary Card Properties
@@ -282,7 +283,13 @@ namespace CruzNeryClinic.ViewModels
         public DateTime? FormDateOfBirth
         {
             get => formDateOfBirth;
-            set => SetProperty(ref formDateOfBirth, value);
+            set
+            {
+                if (SetProperty(ref formDateOfBirth, value))
+                {
+                    UpdateCalculatedAgeAndSeniorStatus();
+                }
+            }
         }
 
         public string FormGender
@@ -297,11 +304,24 @@ namespace CruzNeryClinic.ViewModels
             set => SetProperty(ref formIsPwd, value);
         }
 
+        public int CalculatedAge
+        {
+            get => calculatedAge;
+            set => SetProperty(ref calculatedAge, value);
+        }
+
+        public string CalculatedAgeDisplay =>
+            FormDateOfBirth.HasValue ? $"{CalculatedAge} years old" : "Select date of birth";
+
+        public bool IsSeniorCitizenAutoChecked =>
+            CalculatedAge >= 60;
+
         public bool FormIsSeniorCitizen
         {
             get => formIsSeniorCitizen;
             set => SetProperty(ref formIsSeniorCitizen, value);
         }
+
 
         public bool FormHasMedicalCondition
         {
@@ -584,6 +604,10 @@ namespace CruzNeryClinic.ViewModels
 
             PatientFormTitle = "Add New Patient";
             IsAddPatientOverlayOpen = true;
+        }
+        public void OpenAddPatientOverlayFromNavigation()
+        {
+            OpenAddPatientOverlay();
         }
 
         private void SaveNewPatient()
@@ -960,14 +984,14 @@ namespace CruzNeryClinic.ViewModels
                 Address = FormAddress.Trim(),
                 IsPwd = FormIsPwd,
                 IsSeniorCitizen = FormIsSeniorCitizen,
-                
+
                 HasMedicalCondition = FormHasMedicalCondition,
                 MedicalConditionNotes = FormMedicalConditionNotes.Trim(),
                 AllergyNotes = FormAllergyNotes.Trim(),
                 CurrentMedication = FormCurrentMedication.Trim(),
                 RequiresMedicalClearance = FormRequiresMedicalClearance,
                 ClearanceNotes = FormClearanceNotes.Trim(),
-                
+
                 InitialTreatmentNotes = FormInitialTreatmentNotes.Trim(),
                 InitialTreatment = GetSelectedServiceName()
             };
@@ -984,7 +1008,7 @@ namespace CruzNeryClinic.ViewModels
             FormIsPwd = patient.IsPwd;
             FormIsSeniorCitizen = patient.IsSeniorCitizen;
             FormAddress = patient.Address;
-            
+
             // Medical Background
             FormHasMedicalCondition = patient.HasMedicalCondition;
             FormMedicalConditionNotes = patient.MedicalConditionNotes;
@@ -1015,6 +1039,40 @@ namespace CruzNeryClinic.ViewModels
             return SelectedService.ServiceName.Trim();
         }
 
+        private void UpdateCalculatedAgeAndSeniorStatus()
+        {
+            if (!FormDateOfBirth.HasValue)
+            {
+                CalculatedAge = 0;
+                FormIsSeniorCitizen = false;
+                OnPropertyChanged(nameof(CalculatedAgeDisplay));
+                OnPropertyChanged(nameof(IsSeniorCitizenAutoChecked));
+                return;
+            }
+
+            DateTime birthDate = FormDateOfBirth.Value.Date;
+            DateTime today = DateTime.Today;
+
+            if (birthDate > today)
+            {
+                CalculatedAge = 0;
+                FormIsSeniorCitizen = false;
+                OnPropertyChanged(nameof(CalculatedAgeDisplay));
+                OnPropertyChanged(nameof(IsSeniorCitizenAutoChecked));
+                return;
+            }
+
+            int age = today.Year - birthDate.Year;
+
+            if (birthDate.Date > today.AddYears(-age))
+                age--;
+
+            CalculatedAge = age;
+            FormIsSeniorCitizen = age >= 60;
+
+            OnPropertyChanged(nameof(CalculatedAgeDisplay));
+            OnPropertyChanged(nameof(IsSeniorCitizenAutoChecked));
+        }
         private void ClearPatientForm()
         {
             FormFirstName = string.Empty;
@@ -1022,6 +1080,9 @@ namespace CruzNeryClinic.ViewModels
             FormLastName = string.Empty;
             FormPhoneNumber = string.Empty;
             FormDateOfBirth = DateTime.Today;
+            CalculatedAge = 0;
+            OnPropertyChanged(nameof(CalculatedAgeDisplay));
+            OnPropertyChanged(nameof(IsSeniorCitizenAutoChecked));
             FormGender = string.Empty;
             FormIsPwd = false;
             FormIsSeniorCitizen = false;

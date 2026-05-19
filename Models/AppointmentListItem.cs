@@ -50,12 +50,39 @@ namespace CruzNeryClinic.Models
         public string AppointmentTimeDisplay =>
             DateTime.Today.Add(AppointmentTime).ToString("hh:mm tt");
 
-        public string PriorityDisplay =>
-            IsUrgent ? "Urgent" : Priority;
+        public string PriorityDisplay
+        {
+            get
+            {
+                if (IsUrgent)
+                    return "Urgent";
+
+                if (HasAgingPriority)
+                    return "Long Waiting";
+
+                if (Priority == "Scheduled")
+                    return "Scheduled";
+
+                if (Category == "PWD")
+                    return "PWD";
+
+                if (Category == "Senior")
+                    return "Senior";
+
+                return "Normal";
+            }
+        }
+
+        public bool HasPriorityCategory =>
+            AppointmentType == "Walk-In" &&
+            Status == "Waiting" &&
+            Category is "PWD" or "Senior";
 
         public string PriorityBrush =>
             IsUrgent ? "#E67E22" :
+            HasAgingPriority ? "#B8860B" :
             Priority == "Scheduled" ? "#073C98" :
+            Category is "PWD" or "Senior" ? "#8E44AD" :
             "#555555";
 
         public string StatusBrush =>
@@ -71,6 +98,8 @@ namespace CruzNeryClinic.Models
             };
 
         public Visibility MarkArrivedButtonVisibility =>
+            Status == "Scheduled" ? Visibility.Visible : Visibility.Collapsed;
+        public Visibility NoShowButtonVisibility =>
             Status == "Scheduled" ? Visibility.Visible : Visibility.Collapsed;
 
         public Visibility StartTreatmentButtonVisibility =>
@@ -92,5 +121,62 @@ namespace CruzNeryClinic.Models
 
         public string UrgentButtonBrush =>
             IsUrgent ? "#777777" : "#E67E22";
+
+        public bool HasAgingPriority =>
+            Status == "Waiting" &&
+            !IsUrgent &&
+            WaitingMinutes >= 60;
+        public int WaitingMinutes
+        {
+            get
+            {
+                if (AppointmentDate.Date != DateTime.Today)
+                    return 0;
+
+                if (Status != "Waiting")
+                    return 0;
+
+                TimeSpan startTime = ArrivalTime ?? AppointmentTime;
+                TimeSpan currentTime = DateTime.Now.TimeOfDay;
+
+                if (currentTime < startTime)
+                    return 0;
+
+                return (int)(currentTime - startTime).TotalMinutes;
+            }
+        }
+
+        public string WaitingDurationDisplay
+        {
+            get
+            {
+                if (Status == "In Treatment")
+                    return "In treatment";
+
+                if (Status != "Waiting")
+                    return "-";
+
+                if (AppointmentDate.Date != DateTime.Today)
+                    return "-";
+
+                int minutes = WaitingMinutes;
+
+                if (minutes <= 0)
+                    return "0 min";
+
+                if (minutes < 60)
+                    return $"{minutes} min";
+
+                int hours = minutes / 60;
+                int remainingMinutes = minutes % 60;
+
+                if (remainingMinutes == 0)
+                    return $"{hours} hr";
+
+                return $"{hours} hr {remainingMinutes} min";
+            }
+        }
     }
+
+
 }

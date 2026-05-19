@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace CruzNeryClinic.ViewModels
 {
@@ -22,7 +23,7 @@ namespace CruzNeryClinic.ViewModels
         private int cancelledToday;
 
         private string searchText = string.Empty;
-        private string selectedFilterOption = "Today's Appointments";
+        private string selectedFilterOption = "Selected Date Appointments";
         private string selectedSortOption = "Queue Priority";
 
         private bool isWalkInOverlayOpen;
@@ -40,6 +41,16 @@ namespace CruzNeryClinic.ViewModels
         private AppointmentPatientSearchItem? selectedPatient;
         private AppointmentServiceOption? selectedService;
         private AppointmentDentistOption? selectedDentist;
+        public event Action? AddPatientRequested;
+        private AppointmentPatientMedicalAlert? selectedPatientMedicalAlert;
+        private string medicalAlertText = string.Empty;
+        private bool hasMedicalAlert;
+        private bool hasNoPatientSearchResults;
+
+        private DateTime displayedCalendarMonth = new(DateTime.Today.Year, DateTime.Today.Month, 1);
+        private DateTime selectedCalendarDate = DateTime.Today;
+
+        private readonly DispatcherTimer waitingDurationTimer;
 
         private DateTime? formAppointmentDate = DateTime.Today;
         private string formAppointmentTimeText = string.Empty;
@@ -64,14 +75,22 @@ namespace CruzNeryClinic.ViewModels
             ServiceOptions = new ObservableCollection<AppointmentServiceOption>();
             DentistOptions = new ObservableCollection<AppointmentDentistOption>();
 
+            waitingDurationTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMinutes(1)
+            };
+
+            waitingDurationTimer.Tick += (_, _) => RefreshAppointmentsView();
+
             FilterOptions = new ObservableCollection<string>
             {
-                "Today's Appointments",
+                "Selected Date Appointments",
                 "All Appointments",
                 "Upcoming Scheduled",
                 "Walk-in Queue",
                 "Completed",
-                "Cancelled"
+                "Cancelled",
+                "No Show"
             };
 
             SortOptions = new ObservableCollection<string>
@@ -86,20 +105,32 @@ namespace CruzNeryClinic.ViewModels
             OpenWalkInOverlayCommand = new RelayCommand(OpenWalkInOverlay);
             OpenScheduledOverlayCommand = new RelayCommand(OpenScheduledOverlay);
 
+            ShowAddPatientInstructionCommand = new RelayCommand(ShowAddPatientInstruction);
+            SelectPatientCommand = new RelayCommand<AppointmentPatientSearchItem>(SelectPatientFromSearch);
+
             SaveWalkInCommand = new RelayCommand(SaveWalkInAppointment);
             SaveScheduledCommand = new RelayCommand(SaveScheduledAppointment);
+
+            PreviousCalendarMonthCommand = new RelayCommand(GoToPreviousCalendarMonth);
+            NextCalendarMonthCommand = new RelayCommand(GoToNextCalendarMonth);
+            SelectCalendarDateCommand = new RelayCommand<AppointmentCalendarDay>(SelectCalendarDate);
 
             CancelWalkInCommand = new RelayCommand(CloseWalkInOverlay);
             CancelScheduledCommand = new RelayCommand(CloseScheduledOverlay);
 
             MarkArrivedCommand = new RelayCommand<AppointmentListItem>(MarkArrived);
+            MarkNoShowCommand = new RelayCommand<AppointmentListItem>(MarkNoShow);
+            
             StartTreatmentCommand = new RelayCommand<AppointmentListItem>(StartTreatment);
             CompleteAppointmentCommand = new RelayCommand<AppointmentListItem>(CompleteAppointment);
             CancelAppointmentCommand = new RelayCommand<AppointmentListItem>(CancelAppointment);
             ToggleUrgentCommand = new RelayCommand<AppointmentListItem>(ToggleUrgent);
 
             LoadDropdownOptions();
+            BuildCalendarDays();
             LoadAppointments();
+            
+            waitingDurationTimer.Start();
         }
 
         #endregion
@@ -113,6 +144,8 @@ namespace CruzNeryClinic.ViewModels
         public ObservableCollection<string> SortOptions { get; }
 
         public ObservableCollection<AppointmentPatientSearchItem> PatientSearchResults { get; }
+
+        public ObservableCollection<AppointmentCalendarDay> CalendarDays { get; } = new();
 
         public ObservableCollection<AppointmentServiceOption> ServiceOptions { get; }
 
@@ -174,6 +207,39 @@ namespace CruzNeryClinic.ViewModels
             }
         }
 
+        public DateTime DisplayedCalendarMonth
+        {
+            get => displayedCalendarMonth;
+            set
+            {
+                if (SetProperty(ref displayedCalendarMonth, value))
+                {
+                    OnPropertyChanged(nameof(CalendarMonthTitle));
+                    BuildCalendarDays();
+                }
+            }
+        }
+
+        public DateTime SelectedCalendarDate
+        {
+            get => selectedCalendarDate;
+            set
+            {
+                if (SetProperty(ref selectedCalendarDate, value.Date))
+                {
+                    OnPropertyChanged(nameof(SelectedCalendarDateTitle));
+                    BuildCalendarDays();
+                    RefreshAppointmentsView();
+                }
+            }
+        }
+
+        public string CalendarMonthTitle =>
+            DisplayedCalendarMonth.ToString("MMMM yyyy");
+
+        public string SelectedCalendarDateTitle =>
+            $"Appointments and Walk-in Visits for {SelectedCalendarDate:MMMM dd, yyyy}";
+
         #endregion
 
         #region Overlay Properties
@@ -233,6 +299,9 @@ namespace CruzNeryClinic.ViewModels
                     OnPropertyChanged(nameof(FormPatientFirstName));
                     OnPropertyChanged(nameof(FormPatientLastName));
                     OnPropertyChanged(nameof(FormPatientCategory));
+
+                    if (selectedPatient == null)
+                        ClearMedicalAlert();
                 }
             }
         }
@@ -300,6 +369,29 @@ namespace CruzNeryClinic.ViewModels
             set => SetProperty(ref hasFormError, value);
         }
 
+        public AppointmentPatientMedicalAlert? SelectedPatientMedicalAlert
+        {
+            get => selectedPatientMedicalAlert;
+            set => SetProperty(ref selectedPatientMedicalAlert, value);
+        }
+
+        public string MedicalAlertText
+        {
+            get => medicalAlertText;
+            set => SetProperty(ref medicalAlertText, value);
+        }
+
+        public bool HasMedicalAlert
+        {
+            get => hasMedicalAlert;
+            set => SetProperty(ref hasMedicalAlert, value);
+        }
+
+        public bool HasNoPatientSearchResults
+        {
+            get => hasNoPatientSearchResults;
+            set => SetProperty(ref hasNoPatientSearchResults, value);
+        }
         #endregion
 
         #region Error Properties
@@ -324,6 +416,14 @@ namespace CruzNeryClinic.ViewModels
 
         public ICommand OpenScheduledOverlayCommand { get; }
 
+        public ICommand PreviousCalendarMonthCommand { get; }
+
+        public ICommand NextCalendarMonthCommand { get; }
+
+        public ICommand SelectCalendarDateCommand { get; }
+
+        public ICommand SelectPatientCommand { get; }
+
         public ICommand SaveWalkInCommand { get; }
 
         public ICommand SaveScheduledCommand { get; }
@@ -334,6 +434,8 @@ namespace CruzNeryClinic.ViewModels
 
         public ICommand MarkArrivedCommand { get; }
 
+        public ICommand MarkNoShowCommand { get; }
+
         public ICommand StartTreatmentCommand { get; }
 
         public ICommand CompleteAppointmentCommand { get; }
@@ -341,6 +443,8 @@ namespace CruzNeryClinic.ViewModels
         public ICommand CancelAppointmentCommand { get; }
 
         public ICommand ToggleUrgentCommand { get; }
+
+        public ICommand ShowAddPatientInstructionCommand { get; }
 
         #endregion
 
@@ -394,6 +498,7 @@ namespace CruzNeryClinic.ViewModels
                     allAppointments.Add(appointment);
 
                 RefreshSummaryCards();
+                BuildCalendarDays();
                 RefreshAppointmentsView();
             }
             catch (Exception ex)
@@ -401,12 +506,82 @@ namespace CruzNeryClinic.ViewModels
                 ShowError($"Failed to load appointments: {ex.Message}");
             }
         }
+        
 
         private void RefreshSummaryCards()
         {
             TodaysAppointments = appointmentRepository.GetTodayAppointmentCount();
             CompletedToday = appointmentRepository.GetCompletedTodayCount();
             CancelledToday = appointmentRepository.GetCancelledTodayCount();
+        }
+
+        #endregion
+
+        #region Calendar Methods
+
+        private void BuildCalendarDays()
+        {
+            CalendarDays.Clear();
+
+            DateTime firstDayOfMonth = new(
+                DisplayedCalendarMonth.Year,
+                DisplayedCalendarMonth.Month,
+                1
+            );
+
+            int daysFromSunday = (int)firstDayOfMonth.DayOfWeek;
+            DateTime calendarStartDate = firstDayOfMonth.AddDays(-daysFromSunday);
+
+            Dictionary<DateTime, int> appointmentCounts =
+                appointmentRepository.GetAppointmentCountsByDate(
+                    DisplayedCalendarMonth.Year,
+                    DisplayedCalendarMonth.Month
+                );
+
+            for (int i = 0; i < 42; i++)
+            {
+                DateTime date = calendarStartDate.AddDays(i).Date;
+
+                bool isCurrentMonth =
+                    date.Month == DisplayedCalendarMonth.Month &&
+                    date.Year == DisplayedCalendarMonth.Year;
+
+                int appointmentCount = 0;
+
+                if (isCurrentMonth && appointmentCounts.TryGetValue(date, out int count))
+                    appointmentCount = count;
+
+                CalendarDays.Add(new AppointmentCalendarDay
+                {
+                    Date = date,
+                    AppointmentCount = appointmentCount,
+                    IsCurrentMonth = isCurrentMonth,
+                    IsToday = date == DateTime.Today,
+                    IsSelected = date == SelectedCalendarDate.Date
+                });
+            }
+        }
+
+        private void GoToPreviousCalendarMonth()
+        {
+            DisplayedCalendarMonth = DisplayedCalendarMonth.AddMonths(-1);
+        }
+
+        private void GoToNextCalendarMonth()
+        {
+            DisplayedCalendarMonth = DisplayedCalendarMonth.AddMonths(1);
+        }
+
+        private void SelectCalendarDate(AppointmentCalendarDay? calendarDay)
+        {
+            if (calendarDay == null)
+                return;
+
+            SelectedCalendarDate = calendarDay.Date;
+            SelectedFilterOption = "Selected Date Appointments";
+
+            BuildCalendarDays();
+            RefreshAppointmentsView();
         }
 
         #endregion
@@ -420,7 +595,7 @@ namespace CruzNeryClinic.ViewModels
 
             query = SelectedFilterOption switch
             {
-                "Today's Appointments" => query.Where(a => a.AppointmentDate.Date == today),
+                "Selected Date Appointments" => query.Where(a => a.AppointmentDate.Date == SelectedCalendarDate.Date),
                 "All Appointments" => query,
                 "Upcoming Scheduled" => query.Where(a =>
                     a.AppointmentType == "Scheduled" &&
@@ -432,6 +607,7 @@ namespace CruzNeryClinic.ViewModels
                     a.Status is "Waiting" or "In Treatment"),
                 "Completed" => query.Where(a => a.Status == "Completed"),
                 "Cancelled" => query.Where(a => a.Status == "Cancelled"),
+                "No Show" => query.Where(a => a.Status == "No Show"),
                 _ => query.Where(a => a.AppointmentDate.Date == today)
             };
 
@@ -453,6 +629,7 @@ namespace CruzNeryClinic.ViewModels
             {
                 "Queue Priority" => query
                     .OrderBy(a => GetQueueRank(a))
+                    .ThenByDescending(a => a.WaitingMinutes)
                     .ThenBy(a => a.AppointmentDate)
                     .ThenBy(a => a.AppointmentTime)
                     .ThenBy(a => a.AppointmentId),
@@ -475,6 +652,7 @@ namespace CruzNeryClinic.ViewModels
 
                 _ => query
                     .OrderBy(a => GetQueueRank(a))
+                    .ThenByDescending(a => a.WaitingMinutes)
                     .ThenBy(a => a.AppointmentDate)
                     .ThenBy(a => a.AppointmentTime)
             };
@@ -502,16 +680,28 @@ namespace CruzNeryClinic.ViewModels
                 return 2;
 
             if (appointment.AppointmentType == "Walk-In" &&
-                appointment.Status == "Waiting")
+                appointment.HasAgingPriority)
                 return 3;
 
-            if (appointment.Status == "Completed")
+            if (appointment.AppointmentType == "Walk-In" &&
+                appointment.Status == "Waiting" &&
+                appointment.Category is "PWD" or "Senior")
                 return 4;
 
-            if (appointment.Status == "Cancelled")
+            if (appointment.AppointmentType == "Walk-In" &&
+                appointment.Status == "Waiting")
                 return 5;
 
-            return 6;
+            if (appointment.Status == "Completed")
+                return 6;
+
+            if (appointment.Status == "Cancelled")
+                return 7;
+
+            if (appointment.Status == "No Show")
+                return 8;
+
+            return 9;
         }
 
         private void ApplyQueueNumbers(List<AppointmentListItem> displayList)
@@ -579,6 +769,7 @@ namespace CruzNeryClinic.ViewModels
         private void SearchPatientsForForm()
         {
             PatientSearchResults.Clear();
+            HasNoPatientSearchResults = false;
 
             if (string.IsNullOrWhiteSpace(FormPatientSearchText) ||
                 FormPatientSearchText.Trim().Length < 2)
@@ -603,6 +794,82 @@ namespace CruzNeryClinic.ViewModels
                 PatientSearchResults.Add(patient);
 
             IsPatientSearchPopupOpen = PatientSearchResults.Count > 0;
+            HasNoPatientSearchResults = PatientSearchResults.Count == 0;
+        }
+        private void SelectPatientFromSearch(AppointmentPatientSearchItem? patient)
+        {
+            if (patient == null)
+                return;
+
+            selectedPatient = patient;
+            OnPropertyChanged(nameof(SelectedPatient));
+            OnPropertyChanged(nameof(FormPatientCode));
+            OnPropertyChanged(nameof(FormPatientFirstName));
+            OnPropertyChanged(nameof(FormPatientLastName));
+            OnPropertyChanged(nameof(FormPatientCategory));
+
+            formPatientSearchText = patient.DisplayText;
+            OnPropertyChanged(nameof(FormPatientSearchText));
+
+            PatientSearchResults.Clear();
+            IsPatientSearchPopupOpen = false;
+            HasNoPatientSearchResults = false;
+
+            LoadSelectedPatientMedicalAlert(patient.PatientId);
+        }
+
+        private void LoadSelectedPatientMedicalAlert(int patientId)
+        {
+            try
+            {
+                SelectedPatientMedicalAlert = appointmentRepository.GetPatientMedicalAlert(patientId);
+
+                if (SelectedPatientMedicalAlert == null || !SelectedPatientMedicalAlert.HasAnyAlert)
+                {
+                    ClearMedicalAlert();
+                    return;
+                }
+
+                MedicalAlertText = BuildMedicalAlertText(SelectedPatientMedicalAlert);
+                HasMedicalAlert = true;
+            }
+            catch (Exception ex)
+            {
+                MedicalAlertText = $"Unable to load medical alert: {ex.Message}";
+                HasMedicalAlert = true;
+            }
+        }
+
+        private string BuildMedicalAlertText(AppointmentPatientMedicalAlert alert)
+        {
+            List<string> lines = new();
+
+            if (alert.HasMedicalCondition)
+                lines.Add("• Patient has a recorded medical condition.");
+
+            if (!string.IsNullOrWhiteSpace(alert.MedicalConditionNotes))
+                lines.Add($"• Medical Notes: {alert.MedicalConditionNotes}");
+
+            if (!string.IsNullOrWhiteSpace(alert.AllergyNotes))
+                lines.Add($"• Allergy Notes: {alert.AllergyNotes}");
+
+            if (!string.IsNullOrWhiteSpace(alert.CurrentMedication))
+                lines.Add($"• Current Medication: {alert.CurrentMedication}");
+
+            if (alert.RequiresMedicalClearance)
+                lines.Add("• Patient requires medical clearance.");
+
+            if (!string.IsNullOrWhiteSpace(alert.ClearanceNotes))
+                lines.Add($"• Clearance Notes: {alert.ClearanceNotes}");
+
+            return string.Join(Environment.NewLine, lines);
+        }
+
+        private void ClearMedicalAlert()
+        {
+            SelectedPatientMedicalAlert = null;
+            MedicalAlertText = string.Empty;
+            HasMedicalAlert = false;
         }
 
         #endregion
@@ -616,6 +883,9 @@ namespace CruzNeryClinic.ViewModels
                 ClearFormError();
 
                 if (!ValidateAppointmentForm(isScheduled: false))
+                    return;
+                
+                if (!ConfirmMedicalClearanceIfNeeded("add this walk-in visit"))
                     return;
 
                 TimeSpan appointmentTime = ParseFormTime();
@@ -666,6 +936,9 @@ namespace CruzNeryClinic.ViewModels
                 if (!ValidateAppointmentForm(isScheduled: true))
                     return;
 
+                if (!ConfirmMedicalClearanceIfNeeded("save this scheduled appointment"))
+                    return;
+    
                 TimeSpan appointmentTime = ParseFormTime();
 
                 Appointment appointment = new()
@@ -735,10 +1008,54 @@ namespace CruzNeryClinic.ViewModels
             }
         }
 
+        private void MarkNoShow(AppointmentListItem? appointment)
+        {
+            if (appointment == null)
+                return;
+
+            MessageBoxResult result = MessageBox.Show(
+                $"Mark {appointment.PatientName} as No Show?",
+                "Confirm No Show",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning
+            );
+
+            if (result != MessageBoxResult.Yes)
+                return;
+
+            try
+            {
+                appointmentRepository.MarkNoShow(appointment.AppointmentId);
+                LoadAppointments();
+            }
+            catch (Exception ex)
+            {
+                ShowError($"Failed to mark appointment as no-show: {ex.Message}");
+            }
+        }
+
         private void StartTreatment(AppointmentListItem? appointment)
         {
             if (appointment == null)
                 return;
+
+            AppointmentPatientMedicalAlert alert =
+                appointmentRepository.GetPatientMedicalAlert(appointment.PatientId);
+
+            if (alert.RequiresMedicalClearance)
+            {
+                string alertText = BuildMedicalAlertText(alert);
+
+                MessageBoxResult clearanceResult = MessageBox.Show(
+                    $"This patient is marked as requiring medical clearance.\n\n{alertText}\n\nPlease confirm that clearance has been checked before starting treatment.",
+                    "Medical Clearance Warning",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning
+                );
+
+                if (clearanceResult != MessageBoxResult.Yes)
+                    return;
+            }
 
             MessageBoxResult result = MessageBox.Show(
                 $"Start treatment for {appointment.PatientName}?",
@@ -937,12 +1254,34 @@ namespace CruzNeryClinic.ViewModels
             SelectedPatient = null;
             PatientSearchResults.Clear();
 
+            HasNoPatientSearchResults = false;
+            IsPatientSearchPopupOpen = false;
+            ClearMedicalAlert();
+
             SelectedService = null;
             SelectedDentist = DentistOptions.FirstOrDefault();
 
             FormAppointmentDate = DateTime.Today;
             FormAppointmentTimeText = string.Empty;
             FormNotes = string.Empty;
+        }
+
+        private bool ConfirmMedicalClearanceIfNeeded(string actionText)
+        {
+            if (SelectedPatientMedicalAlert == null ||
+                !SelectedPatientMedicalAlert.RequiresMedicalClearance)
+            {
+                return true;
+            }
+
+            MessageBoxResult result = MessageBox.Show(
+                $"This patient is marked as requiring medical clearance.\n\n{MedicalAlertText}\n\nDo you still want to {actionText}?",
+                "Medical Clearance Warning",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning
+            );
+
+            return result == MessageBoxResult.Yes;
         }
 
         private void ShowFormError(string message)
@@ -971,6 +1310,25 @@ namespace CruzNeryClinic.ViewModels
         {
             ErrorMessage = string.Empty;
             HasError = false;
+        }
+
+        private void ShowAddPatientInstruction()
+        {
+            MessageBoxResult result = MessageBox.Show(
+                "No matching patient was found. Do you want to go to Patient Management and add a new patient?",
+                "Patient Not Found",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question
+            );
+
+            if (result != MessageBoxResult.Yes)
+                return;
+
+            IsPatientSearchPopupOpen = false;
+            IsWalkInOverlayOpen = false;
+            IsScheduledOverlayOpen = false;
+
+            AddPatientRequested?.Invoke();
         }
 
         #endregion
