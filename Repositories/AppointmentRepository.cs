@@ -41,7 +41,10 @@ SELECT
     a.IsUrgent,
     a.Priority,
     a.Status,
-    a.Notes
+    a.Notes,
+    a.StartedAt,
+    a.CompletedAt,
+    a.CancelledAt
 FROM Appointments a
 INNER JOIN Patients p
     ON a.PatientId = p.PatientId
@@ -511,7 +514,10 @@ SELECT last_insert_rowid();";
             a.IsUrgent,
             a.Priority,
             a.Status,
-            a.Notes
+            a.Notes,
+            a.StartedAt,
+            a.CompletedAt,
+            a.CancelledAt
         FROM Appointments a
         INNER JOIN Patients p
             ON a.PatientId = p.PatientId
@@ -759,7 +765,10 @@ WHERE AppointmentId = @AppointmentId;";
                 IsUrgent = Convert.ToInt32(reader["IsUrgent"]) == 1,
                 Priority = reader["Priority"]?.ToString() ?? "Normal",
                 Status = reader["Status"]?.ToString() ?? "Scheduled",
-                Notes = reader["Notes"]?.ToString() ?? string.Empty
+                Notes = reader["Notes"]?.ToString() ?? string.Empty,
+                StartedAt = ParseNullableDateTime(reader["StartedAt"]?.ToString()),
+                CompletedAt = ParseNullableDateTime(reader["CompletedAt"]?.ToString()),
+                CancelledAt = ParseNullableDateTime(reader["CancelledAt"]?.ToString())
             };
         }
 
@@ -791,6 +800,13 @@ WHERE AppointmentId = @AppointmentId;";
         {
             return TimeSpan.TryParse(value, out TimeSpan time)
                 ? time
+                : null;
+        }
+
+        private DateTime? ParseNullableDateTime(string? value)
+        {
+            return DateTime.TryParse(value, out DateTime dateTime)
+                ? dateTime
                 : null;
         }
 

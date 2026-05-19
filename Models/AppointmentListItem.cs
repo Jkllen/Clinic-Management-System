@@ -27,6 +27,10 @@ namespace CruzNeryClinic.Models
 
         public DateTime AppointmentDate { get; set; }
 
+        public DateTime? StartedAt { get; set; }
+        public DateTime? CompletedAt { get; set; }
+        public DateTime? CancelledAt { get; set; }
+
         public TimeSpan AppointmentTime { get; set; }
 
         public TimeSpan? ArrivalTime { get; set; }
@@ -41,6 +45,7 @@ namespace CruzNeryClinic.Models
 
         public string Notes { get; set; } = string.Empty;
 
+
         public string QueueNumberDisplay =>
             QueueNumber.HasValue ? QueueNumber.Value.ToString() : "-";
 
@@ -49,6 +54,20 @@ namespace CruzNeryClinic.Models
 
         public string AppointmentTimeDisplay =>
             DateTime.Today.Add(AppointmentTime).ToString("hh:mm tt");
+
+        public string StartedAtDisplay =>
+            StartedAt.HasValue ? StartedAt.Value.ToString("MM/dd/yyyy hh:mm tt") : "-";
+
+        public string CompletedAtDisplay =>
+            CompletedAt.HasValue ? CompletedAt.Value.ToString("MM/dd/yyyy hh:mm tt") : "-";
+
+        public string CancelledAtDisplay =>
+            CancelledAt.HasValue ? CancelledAt.Value.ToString("MM/dd/yyyy hh:mm tt") : "-";
+
+        public string NotesDisplay =>
+            string.IsNullOrWhiteSpace(Notes)
+                ? "No notes or remarks recorded."
+                : Notes;
 
         public string PriorityDisplay
         {
@@ -124,6 +143,11 @@ namespace CruzNeryClinic.Models
 
         public string UrgentButtonBrush =>
             IsUrgent ? "#777777" : "#E67E22";
+
+        public string ArrivalTimeDisplay =>
+            ArrivalTime.HasValue
+                ? DateTime.Today.Add(ArrivalTime.Value).ToString("hh:mm tt")
+                : "-";
 
         public bool HasAgingPriority =>
             Status == "Waiting" &&

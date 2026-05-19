@@ -30,6 +30,12 @@ namespace CruzNeryClinic.ViewModels
         private bool isScheduledOverlayOpen;
         private bool isPatientSearchPopupOpen;
 
+        private bool isAppointmentDetailsOverlayOpen;
+        private AppointmentListItem? selectedAppointmentDetails;
+        private string appointmentDetailsMedicalAlertText = string.Empty;
+        private bool appointmentDetailsHasMedicalAlert;
+
+
         // Reschedule
         private bool isRescheduleOverlayOpen;
         private AppointmentListItem? appointmentBeingRescheduled;
@@ -144,6 +150,9 @@ namespace CruzNeryClinic.ViewModels
             CompleteAppointmentCommand = new RelayCommand<AppointmentListItem>(CompleteAppointment);
             CancelAppointmentCommand = new RelayCommand<AppointmentListItem>(CancelAppointment);
             ToggleUrgentCommand = new RelayCommand<AppointmentListItem>(ToggleUrgent);
+
+            ViewAppointmentDetailsCommand = new RelayCommand<AppointmentListItem>(OpenAppointmentDetails);
+            CloseAppointmentDetailsCommand = new RelayCommand(CloseAppointmentDetails);
 
             LoadDropdownOptions();
             BuildCalendarDays();
@@ -291,6 +300,30 @@ namespace CruzNeryClinic.ViewModels
         {
             get => isRescheduleOverlayOpen;
             set => SetProperty(ref isRescheduleOverlayOpen, value);
+        }
+
+        public bool IsAppointmentDetailsOverlayOpen
+        {
+            get => isAppointmentDetailsOverlayOpen;
+            set => SetProperty(ref isAppointmentDetailsOverlayOpen, value);
+        }
+
+        public AppointmentListItem? SelectedAppointmentDetails
+        {
+            get => selectedAppointmentDetails;
+            set => SetProperty(ref selectedAppointmentDetails, value);
+        }
+
+        public string AppointmentDetailsMedicalAlertText
+        {
+            get => appointmentDetailsMedicalAlertText;
+            set => SetProperty(ref appointmentDetailsMedicalAlertText, value);
+        }
+
+        public bool AppointmentDetailsHasMedicalAlert
+        {
+            get => appointmentDetailsHasMedicalAlert;
+            set => SetProperty(ref appointmentDetailsHasMedicalAlert, value);
         }
 
         public AppointmentListItem? AppointmentBeingRescheduled
@@ -545,6 +578,10 @@ namespace CruzNeryClinic.ViewModels
         public ICommand SaveRescheduleCommand { get; }
 
         public ICommand CloseRescheduleOverlayCommand { get; }
+
+        public ICommand ViewAppointmentDetailsCommand { get; }
+
+        public ICommand CloseAppointmentDetailsCommand { get; }
 
         #endregion
 
@@ -1331,6 +1368,58 @@ namespace CruzNeryClinic.ViewModels
         {
             RescheduleErrorMessage = string.Empty;
             HasRescheduleError = false;
+        }
+
+        #endregion
+
+        #region Appointment Details Methods
+
+        private void OpenAppointmentDetails(AppointmentListItem? appointment)
+        {
+            if (appointment == null)
+                return;
+
+            try
+            {
+                AppointmentListItem? latestAppointment =
+                    appointmentRepository.GetAppointmentListItemById(appointment.AppointmentId);
+
+                if (latestAppointment == null)
+                {
+                    ShowError("Unable to load appointment details.");
+                    return;
+                }
+
+                SelectedAppointmentDetails = latestAppointment;
+
+                AppointmentPatientMedicalAlert alert =
+                    appointmentRepository.GetPatientMedicalAlert(latestAppointment.PatientId);
+
+                if (alert.HasAnyAlert)
+                {
+                    AppointmentDetailsMedicalAlertText = BuildMedicalAlertText(alert);
+                    AppointmentDetailsHasMedicalAlert = true;
+                }
+                else
+                {
+                    AppointmentDetailsMedicalAlertText = string.Empty;
+                    AppointmentDetailsHasMedicalAlert = false;
+                }
+
+                IsAppointmentDetailsOverlayOpen = true;
+            }
+            catch (Exception ex)
+            {
+                ShowError($"Failed to load appointment details: {ex.Message}");
+            }
+        }
+
+        private void CloseAppointmentDetails()
+        {
+            IsAppointmentDetailsOverlayOpen = false;
+            SelectedAppointmentDetails = null;
+            AppointmentDetailsMedicalAlertText = string.Empty;
+            AppointmentDetailsHasMedicalAlert = false;
         }
 
         #endregion
