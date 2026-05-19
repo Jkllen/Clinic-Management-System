@@ -49,6 +49,7 @@ namespace CruzNeryClinic.ViewModels
                 "Inventory" => CreatePlaceholderView("Inventory Screen Next"),
                 "Maintenance" => CreatePlaceholderView("Maintenance Screen Next"),
                 "Reports" => CreatePlaceholderView("Reports Screen Next"),
+                "Help" => CreateHelpView(),
                 _ => CreateDashboardView()
             };
         }
@@ -104,6 +105,14 @@ namespace CruzNeryClinic.ViewModels
             return new AppointmentManagementView
             {
                 DataContext = appointmentViewModel
+            };
+        }
+
+        private HelpView CreateHelpView()
+        {
+            return new HelpView
+            {
+                DataContext = new HelpViewModel()
             };
         }
 

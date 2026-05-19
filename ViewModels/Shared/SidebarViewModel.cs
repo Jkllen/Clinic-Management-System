@@ -26,6 +26,7 @@ namespace CruzNeryClinic.ViewModels.Shared
             InventoryCommand = new RelayCommand(() => Navigate("Inventory"));
             MaintenanceCommand = new RelayCommand(() => Navigate("Maintenance"));
             ReportsCommand = new RelayCommand(() => Navigate("Reports"));
+            HelpCommand = new RelayCommand(() => Navigate("Help"));
             LogoutCommand = new RelayCommand(Logout);
         }
 
@@ -54,6 +55,8 @@ namespace CruzNeryClinic.ViewModels.Shared
                 OnPropertyChanged(nameof(InventoryBackground));
                 OnPropertyChanged(nameof(MaintenanceBackground));
                 OnPropertyChanged(nameof(ReportsBackground));
+                OnPropertyChanged(nameof(HelpBackground));
+
 
                 OnPropertyChanged(nameof(DashboardForeground));
                 OnPropertyChanged(nameof(ManageUsersForeground));
@@ -63,6 +66,7 @@ namespace CruzNeryClinic.ViewModels.Shared
                 OnPropertyChanged(nameof(InventoryForeground));
                 OnPropertyChanged(nameof(MaintenanceForeground));
                 OnPropertyChanged(nameof(ReportsForeground));
+                OnPropertyChanged(nameof(HelpForeground));
             }
         }
 
@@ -74,6 +78,7 @@ namespace CruzNeryClinic.ViewModels.Shared
         public Brush InventoryBackground => GetBackground("Inventory");
         public Brush MaintenanceBackground => GetBackground("Maintenance");
         public Brush ReportsBackground => GetBackground("Reports");
+        public Brush HelpBackground => GetBackground("Help");
 
         public Brush DashboardForeground => GetForeground("Dashboard");
         public Brush ManageUsersForeground => GetForeground("ManageUsers");
@@ -83,6 +88,7 @@ namespace CruzNeryClinic.ViewModels.Shared
         public Brush InventoryForeground => GetForeground("Inventory");
         public Brush MaintenanceForeground => GetForeground("Maintenance");
         public Brush ReportsForeground => GetForeground("Reports");
+        public Brush HelpForeground => GetForeground("Help");
 
         public ICommand DashboardCommand { get; }
         public ICommand ManageUsersCommand { get; }
@@ -92,6 +98,7 @@ namespace CruzNeryClinic.ViewModels.Shared
         public ICommand InventoryCommand { get; }
         public ICommand MaintenanceCommand { get; }
         public ICommand ReportsCommand { get; }
+        public ICommand HelpCommand { get; }
         public ICommand LogoutCommand { get; }
 
         private Brush GetBackground(string moduleName)

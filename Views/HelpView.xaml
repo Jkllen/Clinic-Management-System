@@ -1,0 +1,54 @@
+<UserControl
+    x:Class="CruzNeryClinic.Views.HelpView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DesignHeight="900"
+    d:DesignWidth="1600"
+    mc:Ignorable="d">
+
+    <!--
+        HELP SCREEN TODO
+
+        Required layout:
+        1. Header
+           - Title: Help
+           - Subtitle: User Manual, FAQs, and System Guide
+
+        2. Toolbar
+           - Search Help textbox
+           - Print Manual button
+
+        3. Main content area
+           - Left panel: User Manual
+           - Right panel: Frequently Asked Questions
+
+        Required bindings:
+        - SearchText
+        - PrintUserManualCommand
+        - FilteredManualTopics
+        - FilteredFaqs
+
+        Suggested styles to reuse:
+        - ScreenBackgroundBrush
+        - SearchTextBoxStyle
+        - SecondaryButtonStyle
+        - LargePanelStyle
+
+        Notes:
+        - Do not add this as a separate Help button inside Dashboard/User/Patient screens.
+        - Help is now part of the sidebar.
+        - Help should be available to all roles.
+    -->
+
+    <Grid Background="{StaticResource ScreenBackgroundBrush}">
+
+        <!-- TODO:
+             Build the Help screen UI here.
+             Use the same spacing and style as Dashboard/User/Patient screens.
+        -->
+
+    </Grid>
+</UserControl>
