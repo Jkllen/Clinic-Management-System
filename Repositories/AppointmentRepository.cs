@@ -648,9 +648,11 @@ SELECT last_insert_rowid();";
             @CreatedAt
         FROM Appointments
         WHERE AppointmentId = @AppointmentId;";
-
+                
+                string encryptedTreatmentNotes = CryptoService.EncryptString(treatmentNotes.Trim());
+                
                 insertCommand.Parameters.AddWithValue("@AppointmentId", appointmentId);
-                insertCommand.Parameters.AddWithValue("@TreatmentNotes", treatmentNotes.Trim());
+                insertCommand.Parameters.AddWithValue("@TreatmentNotes", encryptedTreatmentNotes);
                 insertCommand.Parameters.AddWithValue("@CreatedAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
 
                 insertCommand.ExecuteNonQuery();

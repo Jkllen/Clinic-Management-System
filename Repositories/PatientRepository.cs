@@ -404,7 +404,7 @@ LIMIT 1;";
                     DentistName = reader["DentistName"]?.ToString() ?? "Unassigned",
                     TreatmentDate = ParseDate(reader["TreatmentDate"]?.ToString()),
                     TreatmentTime = ParseNullableTime(reader["TreatmentTime"]?.ToString()),
-                    TreatmentNotes = reader["TreatmentNotes"]?.ToString() ?? string.Empty
+                    TreatmentNotes = DecryptTreatmentNotes(reader["TreatmentNotes"]?.ToString())
                 });
             }
 
@@ -662,6 +662,22 @@ LIMIT 1;";
             return TimeSpan.TryParse(value, out TimeSpan time)
                 ? time
                 : null;
+        }
+
+        private string DecryptTreatmentNotes(string? encryptedValue)
+        {
+            if (string.IsNullOrWhiteSpace(encryptedValue))
+                return string.Empty;
+
+            try
+            {
+                return CryptoService.DecryptString(encryptedValue);
+            }
+            catch
+            {
+                // Fallback for old treatment notes that were saved before encryption was added.
+                return encryptedValue;
+            }
         }
 
         #endregion
