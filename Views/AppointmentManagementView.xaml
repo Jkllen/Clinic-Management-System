@@ -1095,6 +1095,85 @@
                     </StackPanel>
                 </ScrollViewer>
             </Border>
+        </Grid>
+
+        <!-- Complete Treatment Overlay -->
+        <Grid
+            Background="#99000000"
+            Visibility="{Binding IsCompleteTreatmentOverlayOpen, Converter={StaticResource BoolToVisibilityConverter}}">
+
+            <Border
+                Width="620"
+                Padding="30"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Background="White"
+                CornerRadius="22">
+
+                <StackPanel>
+                    <TextBlock
+                        FontSize="24"
+                        FontWeight="Bold"
+                        Foreground="#111111"
+                        Text="Complete Appointment" />
+
+                    <TextBlock
+                        Margin="0,6,0,20"
+                        FontSize="14"
+                        Foreground="#777777"
+                        Text="Add treatment notes before completing this appointment. These notes will be saved to the patient’s treatment history."
+                        TextWrapping="Wrap" />
+
+                    <TextBlock
+                        Margin="0,0,0,10"
+                        FontSize="14"
+                        FontWeight="SemiBold"
+                        Foreground="#C62828"
+                        Text="{Binding CompletionErrorMessage}"
+                        TextWrapping="Wrap"
+                        Visibility="{Binding HasCompletionError, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+                    <TextBlock
+                        Margin="2,0,0,6"
+                        FontSize="13"
+                        FontWeight="SemiBold"
+                        Foreground="#333333"
+                        Text="Treatment Notes" />
+
+                    <TextBox
+                        Height="130"
+                        Padding="14,10"
+                        AcceptsReturn="True"
+                        TextWrapping="Wrap"
+                        VerticalScrollBarVisibility="Auto"
+                        Text="{Binding CompletionTreatmentNotes, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <StackPanel
+                        Margin="0,24,0,0"
+                        HorizontalAlignment="Right"
+                        Orientation="Horizontal">
+
+                        <Button
+                            Width="110"
+                            Height="42"
+                            Margin="0,0,10,0"
+                            Background="#777777"
+                            Command="{Binding CloseCompleteTreatmentOverlayCommand}"
+                            Content="Back"
+                            Foreground="White"
+                            Style="{StaticResource SecondaryButtonStyle}" />
+
+                        <Button
+                            Width="170"
+                            Height="42"
+                            Background="#00A423"
+                            Command="{Binding ConfirmCompleteAppointmentCommand}"
+                            Content="Complete"
+                            Foreground="White"
+                            Style="{StaticResource SecondaryButtonStyle}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
         </Grid>       
     </Grid>
 </UserControl>

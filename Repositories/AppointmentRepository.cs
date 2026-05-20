@@ -576,6 +576,97 @@ SELECT last_insert_rowid();";
 
         #endregion
 
+        #region Treatment Records
+
+        public bool TreatmentRecordExistsForAppointment(int appointmentId)
+        {
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+        SELECT COUNT(*)
+        FROM TreatmentRecords
+        WHERE AppointmentId = @AppointmentId;";
+
+            command.Parameters.AddWithValue("@AppointmentId", appointmentId);
+
+            return Convert.ToInt32(command.ExecuteScalar()) > 0;
+        }
+
+        public void CreateTreatmentRecordFromAppointment(int appointmentId, string treatmentNotes)
+        {
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteTransaction transaction = connection.BeginTransaction();
+
+            try
+            {
+                using SqliteCommand existsCommand = connection.CreateCommand();
+                existsCommand.Transaction = transaction;
+                existsCommand.CommandText = @"
+        SELECT COUNT(*)
+        FROM TreatmentRecords
+        WHERE AppointmentId = @AppointmentId;";
+
+                existsCommand.Parameters.AddWithValue("@AppointmentId", appointmentId);
+
+                int existingCount = Convert.ToInt32(existsCommand.ExecuteScalar());
+
+                if (existingCount > 0)
+                {
+                    transaction.Commit();
+                    return;
+                }
+
+                using SqliteCommand insertCommand = connection.CreateCommand();
+                insertCommand.Transaction = transaction;
+                insertCommand.CommandText = @"
+        INSERT INTO TreatmentRecords (
+            PatientId,
+            AppointmentId,
+            ServiceId,
+            ServiceName,
+            DentistUserId,
+            DentistName,
+            TreatmentDate,
+            TreatmentTime,
+            TreatmentNotes,
+            CreatedAt
+        )
+        SELECT
+            PatientId,
+            AppointmentId,
+            ServiceId,
+            ServiceName,
+            DentistUserId,
+            DentistName,
+            AppointmentDate,
+            AppointmentTime,
+            @TreatmentNotes,
+            @CreatedAt
+        FROM Appointments
+        WHERE AppointmentId = @AppointmentId;";
+
+                insertCommand.Parameters.AddWithValue("@AppointmentId", appointmentId);
+                insertCommand.Parameters.AddWithValue("@TreatmentNotes", treatmentNotes.Trim());
+                insertCommand.Parameters.AddWithValue("@CreatedAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+
+                insertCommand.ExecuteNonQuery();
+
+                transaction.Commit();
+            }
+            catch
+            {
+                transaction.Rollback();
+                throw;
+            }
+        }
+
+        #endregion
+
+
         #region Status Actions
 
         public void MarkArrived(int appointmentId)

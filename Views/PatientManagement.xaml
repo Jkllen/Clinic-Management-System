@@ -688,19 +688,102 @@
                             Text="{Binding HistoryInitialVisit}"
                             TextWrapping="Wrap" />
 
-                        <!-- Treatment History -->
+                        <!-- Treatment Records -->
                         <TextBlock
                             FontSize="18"
                             FontWeight="Bold"
                             Foreground="#223357"
-                            Text="Treatment History" />
+                            Text="Treatment Records" />
 
                         <TextBlock
+                            Margin="0,8,0,12"
+                            FontSize="14"
+                            Foreground="#777777"
+                            Text="No completed treatment records found.">
+
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasTreatmentRecords}" Value="False">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+                        <ItemsControl
                             Margin="0,8,0,28"
-                            FontSize="15"
-                            Foreground="#333333"
-                            Text="{Binding HistoryTreatmentHistory}"
-                            TextWrapping="Wrap" />
+                            ItemsSource="{Binding HistoryTreatmentRecords}">
+
+                            <ItemsControl.Style>
+                                <Style TargetType="ItemsControl">
+                                    <Setter Property="Visibility" Value="Visible" />
+
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasTreatmentRecords}" Value="False">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ItemsControl.Style>
+
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border
+                                        Margin="0,0,0,10"
+                                        Padding="14"
+                                        Background="#F8FBFF"
+                                        BorderBrush="#D8D8D8"
+                                        BorderThickness="1"
+                                        CornerRadius="10">
+
+                                        <StackPanel>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <TextBlock
+                                                    Grid.Column="0"
+                                                    FontSize="15"
+                                                    FontWeight="Bold"
+                                                    Foreground="#111111"
+                                                    Text="{Binding ServiceName}" />
+
+                                                <TextBlock
+                                                    Grid.Column="1"
+                                                    FontSize="13"
+                                                    Foreground="#555555"
+                                                    Text="{Binding TreatmentDateDisplay}" />
+                                            </Grid>
+
+                                            <TextBlock
+                                                Margin="0,4,0,0"
+                                                FontSize="13"
+                                                Foreground="#555555"
+                                                Text="{Binding DentistName}" />
+
+                                            <TextBlock
+                                                Margin="0,2,0,0"
+                                                FontSize="13"
+                                                Foreground="#777777"
+                                                Text="{Binding TreatmentTimeDisplay}" />
+
+                                            <TextBlock
+                                                Margin="0,8,0,0"
+                                                FontSize="13"
+                                                Foreground="#333333"
+                                                Text="{Binding TreatmentNotesDisplay}"
+                                                TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
 
                         <Button
                             Width="120"

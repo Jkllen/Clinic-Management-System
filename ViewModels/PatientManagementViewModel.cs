@@ -72,6 +72,8 @@ namespace CruzNeryClinic.ViewModels
         private string otherServiceName = string.Empty;
         private bool isOtherServiceSelected;
 
+        private bool hasTreatmentRecords;
+
         #endregion
 
         #region Constructor
@@ -81,6 +83,7 @@ namespace CruzNeryClinic.ViewModels
             patientRepository = new PatientRepository();
 
             Patients = new ObservableCollection<PatientListItem>();
+            HistoryTreatmentRecords = new ObservableCollection<TreatmentRecordListItem>();
 
             FilterOptions = new ObservableCollection<string>
             {
@@ -139,6 +142,8 @@ namespace CruzNeryClinic.ViewModels
         public ObservableCollection<string> GenderOptions { get; }
 
         public ObservableCollection<ServiceItem> ServiceOptions { get; } = new();
+
+        public ObservableCollection<TreatmentRecordListItem> HistoryTreatmentRecords { get; }
 
         #endregion
 
@@ -464,6 +469,12 @@ namespace CruzNeryClinic.ViewModels
         {
             get => historyTreatmentHistory;
             set => SetProperty(ref historyTreatmentHistory, value);
+        }
+
+        public bool HasTreatmentRecords
+        {
+            get => hasTreatmentRecords;
+            set => SetProperty(ref hasTreatmentRecords, value);
         }
 
         #endregion
@@ -833,8 +844,8 @@ namespace CruzNeryClinic.ViewModels
                 HistoryMedicalBackground = BuildMedicalBackgroundSummary(patientDetails);
                 HistoryInitialVisit = BuildInitialVisitSummary(patientDetails);
 
-                // Real dental/treatment history should come from completed appointments or TreatmentRecords later.
-                HistoryTreatmentHistory = "No treatment history recorded yet. Treatment records will be added after completed appointments or future treatment entries.";
+                // Treatment Records that came from completed appointment
+                LoadTreatmentRecordsForHistory(patient.PatientId);
 
                 IsPatientHistoryOverlayOpen = true;
             }
@@ -842,6 +853,23 @@ namespace CruzNeryClinic.ViewModels
             {
                 ShowError($"Failed to open patient history: {ex.Message}");
             }
+        }
+
+        private void LoadTreatmentRecordsForHistory(int patientId)
+        {
+            HistoryTreatmentRecords.Clear();
+
+            List<TreatmentRecordListItem> treatmentRecords =
+                patientRepository.GetTreatmentRecordsByPatientId(patientId);
+
+            foreach (TreatmentRecordListItem treatmentRecord in treatmentRecords)
+                HistoryTreatmentRecords.Add(treatmentRecord);
+
+            HasTreatmentRecords = HistoryTreatmentRecords.Count > 0;
+
+            HistoryTreatmentHistory = HasTreatmentRecords
+                ? "Completed treatment records are listed below."
+                : "No completed treatment records found.";
         }
 
         private string BuildMedicalBackgroundSummary(Patient patient)
@@ -896,9 +924,15 @@ namespace CruzNeryClinic.ViewModels
         private void ClosePatientHistoryOverlay()
         {
             IsPatientHistoryOverlayOpen = false;
+
+            HistoryPatientName = string.Empty;
+            HistoryMedicalBackground = string.Empty;
+            HistoryInitialVisit = string.Empty;
+            HistoryTreatmentHistory = string.Empty;
+
+            HistoryTreatmentRecords.Clear();
+            HasTreatmentRecords = false;
         }
-
-
 
         #endregion
 

@@ -365,6 +365,53 @@ LIMIT 1;";
 
         #endregion
 
+        #region Treatment Records
+
+        public List<TreatmentRecordListItem> GetTreatmentRecordsByPatientId(int patientId)
+        {
+            List<TreatmentRecordListItem> treatmentRecords = new();
+
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+        SELECT
+            TreatmentRecordId,
+            PatientId,
+            AppointmentId,
+            ServiceName,
+            DentistName,
+            TreatmentDate,
+            TreatmentTime,
+            TreatmentNotes
+        FROM TreatmentRecords
+        WHERE PatientId = @PatientId
+        ORDER BY TreatmentDate DESC, TreatmentTime DESC, TreatmentRecordId DESC;";
+
+            command.Parameters.AddWithValue("@PatientId", patientId);
+
+            using SqliteDataReader reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                treatmentRecords.Add(new TreatmentRecordListItem
+                {
+                    TreatmentRecordId = Convert.ToInt32(reader["TreatmentRecordId"]),
+                    PatientId = Convert.ToInt32(reader["PatientId"]),
+                    AppointmentId = SafeGetNullableInt(reader, "AppointmentId"),
+                    ServiceName = reader["ServiceName"]?.ToString() ?? string.Empty,
+                    DentistName = reader["DentistName"]?.ToString() ?? "Unassigned",
+                    TreatmentDate = ParseDate(reader["TreatmentDate"]?.ToString()),
+                    TreatmentTime = ParseNullableTime(reader["TreatmentTime"]?.ToString()),
+                    TreatmentNotes = reader["TreatmentNotes"]?.ToString() ?? string.Empty
+                });
+            }
+
+            return treatmentRecords;
+        }
+
+        #endregion
 
         #region Archive and Restore
 
@@ -586,6 +633,16 @@ LIMIT 1;";
             return Convert.ToInt32(reader[columnName]);
         }
 
+        private int? SafeGetNullableInt(SqliteDataReader reader, string columnName)
+        {
+            int ordinal = reader.GetOrdinal(columnName);
+
+            if (reader.IsDBNull(ordinal))
+                return null;
+
+            return Convert.ToInt32(reader[columnName]);
+        }
+
         private DateTime ParseDate(string? value)
         {
             return DateTime.TryParse(value, out DateTime date)
@@ -597,6 +654,13 @@ LIMIT 1;";
         {
             return DateTime.TryParse(value, out DateTime date)
                 ? date
+                : null;
+        }
+
+        private TimeSpan? ParseNullableTime(string? value)
+        {
+            return TimeSpan.TryParse(value, out TimeSpan time)
+                ? time
                 : null;
         }
 

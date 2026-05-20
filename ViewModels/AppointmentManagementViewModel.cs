@@ -35,6 +35,12 @@ namespace CruzNeryClinic.ViewModels
         private string appointmentDetailsMedicalAlertText = string.Empty;
         private bool appointmentDetailsHasMedicalAlert;
 
+        private bool isCompleteTreatmentOverlayOpen;
+        private AppointmentListItem? appointmentPendingCompletion;
+        private string completionTreatmentNotes = string.Empty;
+        private string completionErrorMessage = string.Empty;
+        private bool hasCompletionError;
+
 
         // Reschedule
         private bool isRescheduleOverlayOpen;
@@ -153,6 +159,9 @@ namespace CruzNeryClinic.ViewModels
 
             ViewAppointmentDetailsCommand = new RelayCommand<AppointmentListItem>(OpenAppointmentDetails);
             CloseAppointmentDetailsCommand = new RelayCommand(CloseAppointmentDetails);
+
+            ConfirmCompleteAppointmentCommand = new RelayCommand(ConfirmCompleteAppointment);
+            CloseCompleteTreatmentOverlayCommand = new RelayCommand(CloseCompleteTreatmentOverlay);
 
             LoadDropdownOptions();
             BuildCalendarDays();
@@ -325,6 +334,37 @@ namespace CruzNeryClinic.ViewModels
             get => appointmentDetailsHasMedicalAlert;
             set => SetProperty(ref appointmentDetailsHasMedicalAlert, value);
         }
+
+        public bool IsCompleteTreatmentOverlayOpen
+        {
+            get => isCompleteTreatmentOverlayOpen;
+            set => SetProperty(ref isCompleteTreatmentOverlayOpen, value);
+        }
+
+        public AppointmentListItem? AppointmentPendingCompletion
+        {
+            get => appointmentPendingCompletion;
+            set => SetProperty(ref appointmentPendingCompletion, value);
+        }
+
+        public string CompletionTreatmentNotes
+        {
+            get => completionTreatmentNotes;
+            set => SetProperty(ref completionTreatmentNotes, value);
+        }
+
+        public string CompletionErrorMessage
+        {
+            get => completionErrorMessage;
+            set => SetProperty(ref completionErrorMessage, value);
+        }
+
+        public bool HasCompletionError
+        {
+            get => hasCompletionError;
+            set => SetProperty(ref hasCompletionError, value);
+        }
+
 
         public AppointmentListItem? AppointmentBeingRescheduled
         {
@@ -582,6 +622,10 @@ namespace CruzNeryClinic.ViewModels
         public ICommand ViewAppointmentDetailsCommand { get; }
 
         public ICommand CloseAppointmentDetailsCommand { get; }
+
+        public ICommand ConfirmCompleteAppointmentCommand { get; }
+
+        public ICommand CloseCompleteTreatmentOverlayCommand { get; }
 
         #endregion
 
@@ -1539,8 +1583,34 @@ namespace CruzNeryClinic.ViewModels
             if (appointment == null)
                 return;
 
+            if (appointment.Status != "In Treatment")
+            {
+                MessageBox.Show(
+                    "Only appointments that are currently in treatment can be completed.",
+                    "Complete Not Allowed",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning
+                );
+                return;
+            }
+
+            AppointmentPendingCompletion = appointment;
+            CompletionTreatmentNotes = string.Empty;
+            ClearCompletionError();
+
+            IsCompleteTreatmentOverlayOpen = true;
+        }
+
+        private void ConfirmCompleteAppointment()
+        {
+            if (AppointmentPendingCompletion == null)
+            {
+                CloseCompleteTreatmentOverlay();
+                return;
+            }
+
             MessageBoxResult result = MessageBox.Show(
-                $"Mark {appointment.PatientName}'s appointment as completed?",
+                $"Mark {AppointmentPendingCompletion.PatientName}'s appointment as completed and save treatment record?",
                 "Complete Appointment",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question
@@ -1551,13 +1621,47 @@ namespace CruzNeryClinic.ViewModels
 
             try
             {
-                appointmentRepository.CompleteAppointment(appointment.AppointmentId);
+                appointmentRepository.CompleteAppointment(AppointmentPendingCompletion.AppointmentId);
+
+                appointmentRepository.CreateTreatmentRecordFromAppointment(
+                    AppointmentPendingCompletion.AppointmentId,
+                    CompletionTreatmentNotes
+                );
+
+                CloseCompleteTreatmentOverlay();
                 LoadAppointments();
+
+                MessageBox.Show(
+                    "Appointment was completed and treatment record was saved.",
+                    "Appointment Completed",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information
+                );
             }
             catch (Exception ex)
             {
-                ShowError($"Failed to complete appointment: {ex.Message}");
+                ShowCompletionError($"Failed to complete appointment: {ex.Message}");
             }
+        }
+
+        private void CloseCompleteTreatmentOverlay()
+        {
+            IsCompleteTreatmentOverlayOpen = false;
+            AppointmentPendingCompletion = null;
+            CompletionTreatmentNotes = string.Empty;
+            ClearCompletionError();
+        }
+
+        private void ShowCompletionError(string message)
+        {
+            CompletionErrorMessage = message;
+            HasCompletionError = true;
+        }
+
+        private void ClearCompletionError()
+        {
+            CompletionErrorMessage = string.Empty;
+            HasCompletionError = false;
         }
 
         private void CancelAppointment(AppointmentListItem? appointment)

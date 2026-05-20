@@ -209,6 +209,32 @@ CREATE TABLE IF NOT EXISTS Appointments (
     FOREIGN KEY (CreatedByUserId) REFERENCES Users(UserId)
 );
 
+CREATE TABLE IF NOT EXISTS TreatmentRecords (
+    TreatmentRecordId INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    PatientId INTEGER NOT NULL,
+    AppointmentId INTEGER,
+
+    ServiceId INTEGER,
+    ServiceName TEXT NOT NULL,
+
+    DentistUserId INTEGER,
+    DentistName TEXT DEFAULT 'Unassigned',
+
+    TreatmentDate TEXT NOT NULL,
+    TreatmentTime TEXT,
+
+    TreatmentNotes TEXT,
+
+    CreatedAt TEXT NOT NULL,
+    UpdatedAt TEXT,
+
+    FOREIGN KEY (PatientId) REFERENCES Patients(PatientId),
+    FOREIGN KEY (AppointmentId) REFERENCES Appointments(AppointmentId),
+    FOREIGN KEY (ServiceId) REFERENCES Services(ServiceId),
+    FOREIGN KEY (DentistUserId) REFERENCES Users(UserId)
+);
+
 CREATE TABLE IF NOT EXISTS BillingTransactions (
     BillingId INTEGER PRIMARY KEY AUTOINCREMENT,
 
@@ -383,6 +409,10 @@ CREATE INDEX IF NOT EXISTS idx_appointments_patient ON Appointments(PatientId);
 CREATE INDEX IF NOT EXISTS idx_appointments_type ON Appointments(AppointmentType);
 CREATE INDEX IF NOT EXISTS idx_appointments_datetime ON Appointments(AppointmentDate, AppointmentTime);
 CREATE INDEX IF NOT EXISTS idx_appointments_queue ON Appointments(AppointmentDate, Status, IsUrgent, AppointmentType, AppointmentTime);
+
+CREATE INDEX IF NOT EXISTS idx_treatment_records_patient ON TreatmentRecords(PatientId);
+CREATE INDEX IF NOT EXISTS idx_treatment_records_appointment ON TreatmentRecords(AppointmentId);
+CREATE INDEX IF NOT EXISTS idx_treatment_records_date ON TreatmentRecords(TreatmentDate);
 
 CREATE INDEX IF NOT EXISTS idx_billing_patient ON BillingTransactions(PatientId);
 CREATE INDEX IF NOT EXISTS idx_billing_status ON BillingTransactions(PaymentStatus);
