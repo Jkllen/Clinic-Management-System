@@ -12,6 +12,7 @@ namespace CruzNeryClinic.Data
             connection.Open();
 
             EnableForeignKeys(connection);
+            MigrateInventoryTables(connection);
             CreateTables(connection);
             // Security questions must be seeded before admin accounts,
             // because Users now store SecurityQuestionId1, 2, and 3.
@@ -26,6 +27,42 @@ namespace CruzNeryClinic.Data
             using SqliteCommand command = connection.CreateCommand();
             command.CommandText = "PRAGMA foreign_keys = ON;";
             command.ExecuteNonQuery();
+        }
+
+        // Drops the inventory tables if they use the old schema so CreateTables can
+        // recreate them with the correct column layout.
+        private static void MigrateInventoryTables(SqliteConnection connection)
+        {
+            bool hasOldSchema = false;
+
+            using (var cmd = connection.CreateCommand())
+            {
+                cmd.CommandText = "PRAGMA table_info(InventoryItems);";
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    string col = reader.GetString(1);
+                    if (col == "Notes" || col == "CreatedAt" || col == "LastRestockDate")
+                    {
+                        hasOldSchema = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!hasOldSchema) return;
+
+            foreach (string drop in new[]
+            {
+                "DROP TABLE IF EXISTS InventoryUsage;",
+                "DROP TABLE IF EXISTS InventoryRestocks;",
+                "DROP TABLE IF EXISTS InventoryItems;"
+            })
+            {
+                using var cmd = connection.CreateCommand();
+                cmd.CommandText = drop;
+                cmd.ExecuteNonQuery();
+            }
         }
 
         private static void CreateTables(SqliteConnection connection)
@@ -242,56 +279,49 @@ CREATE TABLE IF NOT EXISTS InventoryItems (
     ItemId INTEGER PRIMARY KEY AUTOINCREMENT,
 
     ItemName TEXT NOT NULL UNIQUE,
-    Category TEXT,
 
     Quantity INTEGER NOT NULL DEFAULT 0,
-    Unit TEXT,
+    UnitPrice REAL NOT NULL DEFAULT 0,
 
     -- If Quantity is less than or equal to this value, item is low stock.
     MinimumThreshold INTEGER NOT NULL DEFAULT 0,
 
-    LastRestockDate TEXT,
-    ExpirationDate TEXT,
-
-    Notes TEXT,
+    [Stock Status] TEXT NOT NULL DEFAULT 'In Stock',
     IsActive INTEGER NOT NULL DEFAULT 1,
 
-    CreatedAt TEXT NOT NULL,
-    UpdatedAt TEXT
+    LastRestock TEXT,
+    UpdatedAt TEXT,
+    ItemCreated TEXT NOT NULL,
+    Note TEXT
 );
 
 CREATE TABLE IF NOT EXISTS InventoryUsage (
     UsageId INTEGER PRIMARY KEY AUTOINCREMENT,
 
     ItemId INTEGER NOT NULL,
-    AppointmentId INTEGER,
+    ItemName TEXT NOT NULL,
 
     QuantityUsed INTEGER NOT NULL,
-    UsedByUserId INTEGER,
     UsageDate TEXT NOT NULL,
 
     Notes TEXT,
-    CreatedAt TEXT NOT NULL,
 
-    FOREIGN KEY (ItemId) REFERENCES InventoryItems(ItemId),
-    FOREIGN KEY (AppointmentId) REFERENCES Appointments(AppointmentId),
-    FOREIGN KEY (UsedByUserId) REFERENCES Users(UserId)
+    FOREIGN KEY (ItemId) REFERENCES InventoryItems(ItemId)
 );
 
 CREATE TABLE IF NOT EXISTS InventoryRestocks (
     RestockId INTEGER PRIMARY KEY AUTOINCREMENT,
 
     ItemId INTEGER NOT NULL,
+    ItemName TEXT NOT NULL,
 
     QuantityAdded INTEGER NOT NULL,
-    RestockDate TEXT NOT NULL,
-    RestockedByUserId INTEGER,
+    RestockedDate TEXT NOT NULL,
+    Supplier TEXT,
+    UnitPrice REAL NOT NULL DEFAULT 0,
+    Note TEXT,
 
-    Notes TEXT,
-    CreatedAt TEXT NOT NULL,
-
-    FOREIGN KEY (ItemId) REFERENCES InventoryItems(ItemId),
-    FOREIGN KEY (RestockedByUserId) REFERENCES Users(UserId)
+    FOREIGN KEY (ItemId) REFERENCES InventoryItems(ItemId)
 );
 
 CREATE TABLE IF NOT EXISTS ActivityLogs (

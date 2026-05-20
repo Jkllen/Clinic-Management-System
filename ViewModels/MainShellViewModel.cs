@@ -46,7 +46,7 @@ namespace CruzNeryClinic.ViewModels
                 "Patients" => CreatePlaceholderView("Patients Screen Next"),
                 "Appointment" => CreatePlaceholderView("Appointment Screen Next"),
                 "Billing" => CreatePlaceholderView("Billing Screen Next"),
-                "Inventory" => CreatePlaceholderView("Inventory Screen Next"),
+                "Inventory" => CreateInventoryView(),
                 "Maintenance" => CreatePlaceholderView("Maintenance Screen Next"),
                 "Reports" => CreatePlaceholderView("Reports Screen Next"),
                 _ => CreateDashboardView()
@@ -87,6 +87,17 @@ namespace CruzNeryClinic.ViewModels
             return userManagementView;
         }
 
+        private InventoryView CreateInventoryView()
+        {
+            InventoryViewModel inventoryViewModel = new InventoryViewModel();
+
+            InventoryView inventoryView = new InventoryView
+            {
+                DataContext = inventoryViewModel
+            };
+
+            return inventoryView;
+        }
 
         private UserControl CreatePlaceholderView(string text)
         {

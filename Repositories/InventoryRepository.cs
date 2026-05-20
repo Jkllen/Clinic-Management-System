@@ -1,0 +1,266 @@
+using CruzNeryClinic.Data;
+using CruzNeryClinic.Models.Inventory;
+using CruzNeryClinic.ViewModels;
+using Microsoft.Data.Sqlite;
+using System;
+using System.Collections.Generic;
+
+namespace CruzNeryClinic.Repositories
+{
+    public class InventoryRepository
+    {
+        public List<InventoryItem> GetAllItems()
+        {
+            var items = new List<InventoryItem>();
+
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = "SELECT ItemId, ItemName, Quantity, UnitPrice, MinimumThreshold, IsActive, LastRestock, UpdatedAt, ItemCreated, Note FROM InventoryItems;";
+
+            using SqliteDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                items.Add(new InventoryItem
+                {
+                    RawItemId         = reader.GetInt32(0),
+                    ItemName          = reader.GetString(1),
+                    QuantityInStock   = reader.GetInt32(2),
+                    UnitPrice         = Convert.ToDecimal(reader.GetDouble(3)),
+                    MinimumStockLevel = reader.GetInt32(4),
+                    IsActive          = reader.GetInt32(5) == 1,
+                    LastRestock       = reader.IsDBNull(6) ? null : DateTime.Parse(reader.GetString(6)),
+                    UpdatedAt         = reader.IsDBNull(7) ? "" : reader.GetString(7),
+                    ItemCreated       = reader.IsDBNull(8) ? "" : reader.GetString(8),
+                    Note              = reader.IsDBNull(9) ? "" : reader.GetString(9)
+                });
+            }
+
+            return items;
+        }
+
+        public string GetNextItemId()
+        {
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = "SELECT IFNULL(MAX(ItemId), 0) + 1 FROM InventoryItems;";
+            int nextId = Convert.ToInt32(command.ExecuteScalar());
+            return $"INV-{nextId:D3}";
+        }
+
+        public void AddItem(string itemName, int quantity, double unitPrice, int minimumThreshold, string stockStatus, string note, string timestamp)
+        {
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+                INSERT INTO InventoryItems (ItemName, Quantity, UnitPrice, MinimumThreshold, [Stock Status], IsActive, ItemCreated, Note)
+                VALUES (@ItemName, @Quantity, @UnitPrice, @MinimumThreshold, @StockStatus, 1, @ItemCreated, @Note);";
+
+            command.Parameters.AddWithValue("@ItemName", itemName);
+            command.Parameters.AddWithValue("@Quantity", quantity);
+            command.Parameters.AddWithValue("@UnitPrice", unitPrice);
+            command.Parameters.AddWithValue("@MinimumThreshold", minimumThreshold);
+            command.Parameters.AddWithValue("@StockStatus", stockStatus);
+            command.Parameters.AddWithValue("@ItemCreated", timestamp);
+            command.Parameters.AddWithValue("@Note", note);
+            command.ExecuteNonQuery();
+        }
+
+        public void UpdateItem(int itemId, string itemName, int quantity, double unitPrice, int minimumThreshold, string stockStatus, string note, string timestamp)
+        {
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+                UPDATE InventoryItems
+                SET ItemName = @ItemName,
+                    Quantity = @Quantity,
+                    UnitPrice = @UnitPrice,
+                    MinimumThreshold = @MinimumThreshold,
+                    [Stock Status] = @StockStatus,
+                    Note = @Note,
+                    UpdatedAt = @UpdatedAt
+                WHERE ItemId = @ItemId;";
+
+            command.Parameters.AddWithValue("@ItemName", itemName);
+            command.Parameters.AddWithValue("@Quantity", quantity);
+            command.Parameters.AddWithValue("@UnitPrice", unitPrice);
+            command.Parameters.AddWithValue("@MinimumThreshold", minimumThreshold);
+            command.Parameters.AddWithValue("@StockStatus", stockStatus);
+            command.Parameters.AddWithValue("@Note", note);
+            command.Parameters.AddWithValue("@UpdatedAt", timestamp);
+            command.Parameters.AddWithValue("@ItemId", itemId);
+            command.ExecuteNonQuery();
+        }
+
+        public void ArchiveItem(int itemId, string timestamp)
+        {
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+                UPDATE InventoryItems
+                SET IsActive = 0,
+                    UpdatedAt = @UpdatedAt
+                WHERE ItemId = @ItemId;";
+
+            command.Parameters.AddWithValue("@ItemId", itemId);
+            command.Parameters.AddWithValue("@UpdatedAt", timestamp);
+            command.ExecuteNonQuery();
+        }
+
+        public void RestockItem(int itemId, string itemName, int quantityAdded, string restockedDate,
+            string supplier, double unitPrice, string note, int currentQuantity, int minimumThreshold)
+        {
+            int newQuantity = currentQuantity + quantityAdded;
+            string stockStatus = newQuantity == 0 ? "Out of Stock"
+                : newQuantity <= minimumThreshold ? "Low Stock"
+                : "In Stock";
+            string now = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+            using SqliteTransaction tx = connection.BeginTransaction();
+
+            using (var cmd = connection.CreateCommand())
+            {
+                cmd.Transaction = tx;
+                cmd.CommandText = @"
+                    INSERT INTO InventoryRestocks (ItemId, ItemName, QuantityAdded, RestockedDate, Supplier, UnitPrice, Note)
+                    VALUES (@ItemId, @ItemName, @QuantityAdded, @RestockedDate, @Supplier, @UnitPrice, @Note);";
+                cmd.Parameters.AddWithValue("@ItemId", itemId);
+                cmd.Parameters.AddWithValue("@ItemName", itemName);
+                cmd.Parameters.AddWithValue("@QuantityAdded", quantityAdded);
+                cmd.Parameters.AddWithValue("@RestockedDate", restockedDate);
+                cmd.Parameters.AddWithValue("@Supplier", string.IsNullOrWhiteSpace(supplier) ? (object)DBNull.Value : supplier);
+                cmd.Parameters.AddWithValue("@UnitPrice", unitPrice);
+                cmd.Parameters.AddWithValue("@Note", string.IsNullOrWhiteSpace(note) ? (object)DBNull.Value : note);
+                cmd.ExecuteNonQuery();
+            }
+
+            using (var cmd = connection.CreateCommand())
+            {
+                cmd.Transaction = tx;
+                cmd.CommandText = @"
+                    UPDATE InventoryItems
+                    SET Quantity = @Quantity,
+                        [Stock Status] = @StockStatus,
+                        LastRestock = @LastRestock,
+                        UpdatedAt = @UpdatedAt
+                    WHERE ItemId = @ItemId;";
+                cmd.Parameters.AddWithValue("@Quantity", newQuantity);
+                cmd.Parameters.AddWithValue("@StockStatus", stockStatus);
+                cmd.Parameters.AddWithValue("@LastRestock", restockedDate);
+                cmd.Parameters.AddWithValue("@UpdatedAt", now);
+                cmd.Parameters.AddWithValue("@ItemId", itemId);
+                cmd.ExecuteNonQuery();
+            }
+
+            tx.Commit();
+        }
+
+        public List<RecentItemUsage> GetRecentUsages(int count = 5)
+        {
+            var list = new List<RecentItemUsage>();
+
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = $"SELECT ItemId, ItemName, QuantityUsed, UsageDate FROM InventoryUsage ORDER BY UsageId DESC LIMIT {count};";
+
+            using SqliteDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                list.Add(new RecentItemUsage
+                {
+                    ItemId       = $"INV-{reader.GetInt32(0):D3}",
+                    ItemName     = reader.GetString(1),
+                    QuantityUsed = reader.GetInt32(2),
+                    Date         = DateTime.Parse(reader.GetString(3))
+                });
+            }
+
+            return list;
+        }
+
+        public List<RecentRestockItem> GetRecentRestocks(int count = 5)
+        {
+            var list = new List<RecentRestockItem>();
+
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = $"SELECT ItemId, ItemName, UnitPrice, QuantityAdded, RestockedDate FROM InventoryRestocks ORDER BY RestockId DESC LIMIT {count};";
+
+            using SqliteDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                list.Add(new RecentRestockItem
+                {
+                    ItemId     = $"INV-{reader.GetInt32(0):D3}",
+                    ItemName   = reader.GetString(1),
+                    UnitPrice  = Convert.ToDecimal(reader.GetDouble(2)),
+                    StockAdded = reader.GetInt32(3),
+                    Date       = DateTime.Parse(reader.GetString(4))
+                });
+            }
+
+            return list;
+        }
+
+        public void LogItemUsage(int itemId, string itemName, int quantityUsed, string usageDate,
+            string notes, int currentQuantity, int minimumThreshold)
+        {
+            int newQuantity = Math.Max(0, currentQuantity - quantityUsed);
+            string stockStatus = newQuantity == 0 ? "Out of Stock"
+                : newQuantity <= minimumThreshold ? "Low Stock"
+                : "In Stock";
+            string now = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+            using SqliteTransaction tx = connection.BeginTransaction();
+
+            using (var cmd = connection.CreateCommand())
+            {
+                cmd.Transaction = tx;
+                cmd.CommandText = @"
+                    INSERT INTO InventoryUsage (ItemId, ItemName, QuantityUsed, UsageDate, Notes)
+                    VALUES (@ItemId, @ItemName, @QuantityUsed, @UsageDate, @Notes);";
+                cmd.Parameters.AddWithValue("@ItemId", itemId);
+                cmd.Parameters.AddWithValue("@ItemName", itemName);
+                cmd.Parameters.AddWithValue("@QuantityUsed", quantityUsed);
+                cmd.Parameters.AddWithValue("@UsageDate", usageDate);
+                cmd.Parameters.AddWithValue("@Notes", string.IsNullOrWhiteSpace(notes) ? (object)DBNull.Value : notes);
+                cmd.ExecuteNonQuery();
+            }
+
+            using (var cmd = connection.CreateCommand())
+            {
+                cmd.Transaction = tx;
+                cmd.CommandText = @"
+                    UPDATE InventoryItems
+                    SET Quantity = @Quantity,
+                        [Stock Status] = @StockStatus,
+                        UpdatedAt = @UpdatedAt
+                    WHERE ItemId = @ItemId;";
+                cmd.Parameters.AddWithValue("@Quantity", newQuantity);
+                cmd.Parameters.AddWithValue("@StockStatus", stockStatus);
+                cmd.Parameters.AddWithValue("@UpdatedAt", now);
+                cmd.Parameters.AddWithValue("@ItemId", itemId);
+                cmd.ExecuteNonQuery();
+            }
+
+            tx.Commit();
+        }
+    }
+}

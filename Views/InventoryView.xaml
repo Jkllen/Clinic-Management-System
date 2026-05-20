@@ -1,0 +1,2065 @@
+<UserControl
+    x:Class="CruzNeryClinic.Views.InventoryView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DesignHeight="900"
+    d:DesignWidth="1600"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+
+        <!--  Summary card number styles  -->
+        <Style x:Key="SummaryNumberStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="Foreground" Value="#50C878" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+
+        <Style x:Key="LowStockNumberStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="Foreground" Value="#F0A500" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+
+        <Style x:Key="OutOfStockNumberStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="Foreground" Value="#E31D1D" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+
+        <!--  Small rounded action button (text+icon)  -->
+        <Style x:Key="SmallActionButtonStyle" TargetType="Button">
+            <Setter Property="Height" Value="36" />
+            <Setter Property="Padding" Value="12,0" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="ButtonBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="10"
+                            Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.82" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!--  Icon-only square action button for DataGrid rows  -->
+        <Style x:Key="IconSquareButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="30" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="ButtonBorder"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="8">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.82" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.65" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!--  Blue scrollbar style for DataGrid  -->
+        <Style x:Key="BlueDataGridScrollBarStyle" TargetType="{x:Type ScrollBar}">
+            <Setter Property="Background" Value="#ffffff" />
+            <Setter Property="Width" Value="Auto" />
+            <Setter Property="Height" Value="Auto" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ScrollBar}">
+                        <Grid Background="{TemplateBinding Background}">
+                            <Track x:Name="PART_Track" IsDirectionReversed="True">
+                                <Track.Thumb>
+                                    <Thumb>
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="Thumb">
+                                                <Border
+                                                    Margin="2"
+                                                    Background="#223357"
+                                                    CornerRadius="6" />
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="Orientation" Value="Horizontal">
+                                <Setter TargetName="PART_Track" Property="IsDirectionReversed" Value="False" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!--  Overlay TextBox style (Add/Edit Item modal)  -->
+        <Style x:Key="InventoryOverlayTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Height" Value="46" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Foreground" Value="#111111" />
+            <Setter Property="Background" Value="#FFFDFD" />
+            <Setter Property="BorderBrush" Value="#C8DCF0" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="7.5,0,16,0" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border
+                            x:Name="TextBoxBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="14">
+                            <Grid>
+                                <ScrollViewer
+                                    x:Name="PART_ContentHost"
+                                    Margin="{TemplateBinding Padding}"
+                                    VerticalAlignment="Center" />
+                                <TextBlock
+                                    Margin="16,0,16,0"
+                                    VerticalAlignment="Center"
+                                    FontSize="{TemplateBinding FontSize}"
+                                    Foreground="#A0A0A0"
+                                    IsHitTestVisible="False"
+                                    Text="{TemplateBinding Tag}">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value="">
+                                                    <Setter Property="Visibility" Value="Visible" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Null}">
+                                                    <Setter Property="Visibility" Value="Visible" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="TextBoxBorder" Property="BorderBrush" Value="#223357" />
+                                <Setter TargetName="TextBoxBorder" Property="BorderThickness" Value="2" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!--  Overlay TextBox style with ₱ prefix (Unit Price field)  -->
+        <Style x:Key="InventoryOverlayPriceTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Height" Value="46" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Foreground" Value="#111111" />
+            <Setter Property="Background" Value="#FFFDFD" />
+            <Setter Property="BorderBrush" Value="#C8DCF0" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="34,0,16,0" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border
+                            x:Name="TextBoxBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="14">
+                            <Grid>
+                                <ScrollViewer
+                                    x:Name="PART_ContentHost"
+                                    Margin="{TemplateBinding Padding}"
+                                    VerticalAlignment="Center" />
+                                <TextBlock
+                                    Margin="14,0,0,0"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    FontSize="{TemplateBinding FontSize}"
+                                    Foreground="#111111"
+                                    IsHitTestVisible="False"
+                                    Text="₱" />
+                                <TextBlock
+                                    Margin="34,0,16,0"
+                                    VerticalAlignment="Center"
+                                    FontSize="{TemplateBinding FontSize}"
+                                    Foreground="#A0A0A0"
+                                    IsHitTestVisible="False"
+                                    Text="{TemplateBinding Tag}">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value="">
+                                                    <Setter Property="Visibility" Value="Visible" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Null}">
+                                                    <Setter Property="Visibility" Value="Visible" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="TextBoxBorder" Property="BorderBrush" Value="#223357" />
+                                <Setter TargetName="TextBoxBorder" Property="BorderThickness" Value="2" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!--  Overlay ComboBox style (Add/Edit Item modal)  -->
+        <Style x:Key="InventoryOverlayComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Height" Value="46" />
+            <Setter Property="MinHeight" Value="46" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Foreground" Value="#111111" />
+            <Setter Property="Background" Value="#FFFDFD" />
+            <Setter Property="BorderBrush" Value="#C8DCF0" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="16,0,46,0" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <ToggleButton
+                                x:Name="ToggleButton"
+                                Width="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
+                                HorizontalAlignment="Stretch"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                ClickMode="Press"
+                                Focusable="False"
+                                IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                                <Border
+                                    x:Name="ComboBorder"
+                                    HorizontalAlignment="Stretch"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="14">
+                                    <Grid>
+                                        <ContentPresenter
+                                            x:Name="ContentSite"
+                                            Margin="16,0,46,0"
+                                            HorizontalAlignment="Left"
+                                            VerticalAlignment="Center"
+                                            Content="{TemplateBinding SelectionBoxItem}"
+                                            ContentStringFormat="{TemplateBinding SelectionBoxItemStringFormat}"
+                                            ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" />
+                                        <TextBlock
+                                            x:Name="PlaceholderText"
+                                            Margin="16,0,46,0"
+                                            VerticalAlignment="Center"
+                                            Foreground="#A0A0A0"
+                                            IsHitTestVisible="False"
+                                            Text="{TemplateBinding Tag}">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding SelectedItem, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Null}">
+                                                            <Setter Property="Visibility" Value="Visible" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                        <fa:IconBlock
+                                            Margin="0,0,16,0"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Center"
+                                            FontSize="16"
+                                            Foreground="Black"
+                                            Icon="AngleDown" />
+                                    </Grid>
+                                </Border>
+                            </ToggleButton>
+                            <Popup
+                                x:Name="PART_Popup"
+                                AllowsTransparency="True"
+                                Focusable="False"
+                                IsOpen="{TemplateBinding IsDropDownOpen}"
+                                Placement="Bottom"
+                                PopupAnimation="Slide">
+                                <Border
+                                    Width="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
+                                    MaxHeight="220"
+                                    Background="White"
+                                    BorderBrush="#DADADA"
+                                    BorderThickness="1"
+                                    CornerRadius="8">
+                                    <ScrollViewer Margin="2">
+                                        <ItemsPresenter />
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                <Setter TargetName="ComboBorder" Property="BorderBrush" Value="#223357" />
+                                <Setter TargetName="ComboBorder" Property="BorderThickness" Value="2" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!--  DatePickerTextBox sub-style – clears default watermark chrome  -->
+        <Style x:Key="InventoryDatePickerTextBoxStyle" TargetType="DatePickerTextBox">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="#111111" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DatePickerTextBox">
+                        <Grid>
+                            <ContentControl
+                                x:Name="PART_Watermark"
+                                Focusable="False"
+                                Foreground="#A0A0A0"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Visibility="Hidden" />
+                            <ScrollViewer
+                                x:Name="PART_ContentHost"
+                                Background="Transparent"
+                                Focusable="False"
+                                HorizontalScrollBarVisibility="Hidden"
+                                VerticalScrollBarVisibility="Hidden"
+                                VerticalAlignment="Center" />
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!--  DatePicker style matching InventoryOverlayTextBoxStyle  -->
+        <Style x:Key="InventoryOverlayDatePickerStyle" TargetType="DatePicker">
+            <Setter Property="Height" Value="46" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Foreground" Value="#111111" />
+            <Setter Property="Background" Value="#FFFDFD" />
+            <Setter Property="BorderBrush" Value="#C8DCF0" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DatePicker">
+                        <Border
+                            x:Name="DatePickerBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="14">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <DatePickerTextBox
+                                    x:Name="PART_TextBox"
+                                    Grid.Column="0"
+                                    Margin="12,0,0,0"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Focusable="True"
+                                    FontSize="{TemplateBinding FontSize}"
+                                    Foreground="{TemplateBinding Foreground}"
+                                    Style="{StaticResource InventoryDatePickerTextBoxStyle}"
+                                    VerticalAlignment="Center" />
+                                <Button
+                                    x:Name="PART_Button"
+                                    Grid.Column="1"
+                                    Width="38"
+                                    Margin="0,0,6,0"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Cursor="Hand"
+                                    Focusable="False"
+                                    VerticalAlignment="Center">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="BtnBorder" Background="Transparent" CornerRadius="8" Padding="4">
+                                                <ContentPresenter />
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="BtnBorder" Property="Background" Value="#F0F0F0" />
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                    <fa:IconBlock FontSize="16" Foreground="#777777" Icon="CalendarAlt" />
+                                </Button>
+                                <Popup
+                                    x:Name="PART_Popup"
+                                    AllowsTransparency="True"
+                                    Placement="Bottom"
+                                    StaysOpen="False" />
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                <Setter TargetName="DatePickerBorder" Property="BorderBrush" Value="#223357" />
+                                <Setter TargetName="DatePickerBorder" Property="BorderThickness" Value="2" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+    </UserControl.Resources>
+
+    <Grid Background="{StaticResource ScreenBackgroundBrush}">
+        <!--  Main content  -->
+        <Grid Margin="24,28,24,18">
+
+            <Grid.RowDefinitions>
+                <!--  Row 0: Page header  -->
+                <RowDefinition Height="80" />
+                <!--  Row 1: Overview card + Recent Usage card + Recent Restock card  -->
+                <RowDefinition Height="300" />
+                <!--  Row 2: Search / Filter / Sort / Add New Item toolbar  -->
+                <RowDefinition Height="88" />
+                <!--  Row 3: DataGrid table + Help button  -->
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!--  Row 0 – Page Header -->
+            <StackPanel Grid.Row="0">
+                <TextBlock
+                    FontSize="30"
+                    FontWeight="Bold"
+                    Foreground="Black"
+                    Text="Inventory" />
+                <TextBlock
+                    Margin="0,4,0,0"
+                    FontSize="20"
+                    Foreground="#7A7A7A"
+                    Text="Management and Monitoring of Dental Supplies" />
+            </StackPanel>
+
+            <!--  Row 1 – Three top info cards -->
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="280" />
+                    <ColumnDefinition Width="30" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="30" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- ─── Inventory Overview card ─────────── -->
+                <Border
+                    Grid.Column="0"
+                    Padding="20,16"
+                    Style="{StaticResource DashboardCardStyle}">
+                    <StackPanel>
+                        <TextBlock
+                            FontSize="20"
+                            FontWeight="SemiBold"
+                            Text="Inventory Overview" />
+
+                        <!--  Total Items  -->
+                        <StackPanel Margin="0,16,0,0" Orientation="Horizontal">
+                            <Border Width="55" Height="55" Background="#F5DEF5" CornerRadius="10">
+                                <fa:IconBlock
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="30"
+                                    Foreground="#080341"
+                                    Icon = "BoxOpen" />
+                            </Border>
+                            <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
+                                <TextBlock FontSize="18" Text="Total Items" />
+                                <TextBlock Style="{StaticResource SummaryNumberStyle}" Text="{Binding TotalItems}" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!--  Low Stock  -->
+                        <StackPanel Margin="0,20,0,0" Orientation="Horizontal">
+                            <Border Width="55" Height="55" Background="#FEF3C7" CornerRadius="10">
+                                <fa:IconBlock
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="30"
+                                    Foreground="#F59E0B"
+                                    Icon="ExclamationTriangle" />
+                            </Border>
+                            <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
+                                <TextBlock FontSize="18" Text="Low Stock" />
+                                <TextBlock Style="{StaticResource LowStockNumberStyle}" Text="{Binding LowStockCount}" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!--  Out of Stock  -->
+                        <StackPanel Margin="0,20,0,0" Orientation="Horizontal">
+                            <Border Width="55" Height="55" Background="#FEE2E2" CornerRadius="10">
+                                <fa:IconBlock
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="30"
+                                    Foreground="#EF4444"
+                                    Icon="Ban" />
+                            </Border>
+                            <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
+                                <TextBlock FontSize="18" Text="Out of Stock" />
+                                <TextBlock Style="{StaticResource OutOfStockNumberStyle}" Text="{Binding OutOfStockCount}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- ─── Recent Item Usage card ──────────── -->
+                <Border
+                    Grid.Column="2"
+                    Padding="16,16"
+                    Style="{StaticResource DashboardCardStyle}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <!--  Card header  -->
+                        <StackPanel Grid.Row="0" Orientation="Horizontal">
+                            <Border Width="55" Height="55" Background="#3B8CBB" CornerRadius="10">
+                                <fa:IconBlock
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="30"
+                                    Foreground="White"
+                                    Icon="ClipboardList" />
+                            </Border>
+                            <StackPanel Margin="10,0,0,0" VerticalAlignment="Center" MaxWidth="300">
+                                <TextBlock FontSize="16" FontWeight="SemiBold" Text="Recent Item Usage" />
+                                <TextBlock
+                                    FontSize="11"
+                                    Foreground="#7A7A7A"
+                                    Text="Number of dental supply items that have been recently used during patient treatments."
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!--  Column headers  -->
+                        <Grid Grid.Row="1" Margin="0,14,0,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" FontSize="12" FontWeight="Bold" Text="Item Id"        HorizontalAlignment="Center" />
+                            <TextBlock Grid.Column="1" FontSize="12" FontWeight="Bold" Text="Item Name"      HorizontalAlignment="Center" />
+                            <TextBlock Grid.Column="2" FontSize="12" FontWeight="Bold" Text="Quantity Used"  HorizontalAlignment="Center" />
+                            <TextBlock Grid.Column="3" FontSize="12" FontWeight="Bold" Text="Date"           HorizontalAlignment="Center" />
+                        </Grid>
+
+                        <!--  Recent usage list  -->
+                        <ItemsControl Grid.Row="2" ItemsSource="{Binding RecentItemUsages}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,5,0,5">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" FontSize="12" Text="{Binding ItemId}"       HorizontalAlignment="Center" />
+                                        <TextBlock Grid.Column="1" FontSize="12" Text="{Binding ItemName}"     HorizontalAlignment="Center" />
+                                        <TextBlock Grid.Column="2" FontSize="12" Text="{Binding QuantityUsed}" HorizontalAlignment="Center" />
+                                        <TextBlock Grid.Column="3" FontSize="12" Text="{Binding Date, StringFormat=MM/dd/yyyy}" HorizontalAlignment="Center" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <!--  View all / Log Item Usage  -->
+                        <StackPanel
+                            Grid.Row="3"
+                            Margin="0,8,0,0"
+                            HorizontalAlignment="Right"
+                            Orientation="Horizontal">
+
+                            <Button
+                                Height="36"
+                                Padding="16,0"
+                                Background="Transparent"
+                                BorderBrush="#223357"
+                                BorderThickness="1.5"
+                                Command="{Binding ViewAllUsagesCommand}"
+                                Cursor="Hand"
+                                Style="{StaticResource SmallActionButtonStyle}">
+                                <TextBlock
+                                    FontSize="12"
+                                    FontWeight="SemiBold"
+                                    Foreground="#223357"
+                                    Text="View all" />
+                            </Button>
+
+                            <Button
+                                Height="36"
+                                Margin="10,0,0,0"
+                                Padding="14,0"
+                                Background="#073C98"
+                                Command="{Binding LogItemUsageCommand}"
+                                Style="{StaticResource SmallActionButtonStyle}">
+                                <StackPanel Orientation="Horizontal">
+                                    <fa:IconBlock
+                                        Margin="0,0,7,0"
+                                        VerticalAlignment="Center"
+                                        FontSize="13"
+                                        Foreground="White"
+                                        Icon="ClipboardList" />
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        FontSize="13"
+                                        FontWeight="Bold"
+                                        Foreground="White"
+                                        Text="Log Item Usage" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- ─── Recent Restock Item card ────────── -->
+                <Border
+                    Grid.Column="4"
+                    Padding="20,16"
+                    Style="{StaticResource DashboardCardStyle}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <!--  Card header  -->
+                        <StackPanel Grid.Row="0" Orientation="Horizontal">
+                            <Border Width="55" Height="55" Background="#3B8CBB" CornerRadius="10">
+                                <fa:IconBlock
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="30"
+                                    Foreground="White"
+                                    Icon="PlusSquare" />
+                            </Border>
+                            <StackPanel Margin="10,0,0,0" VerticalAlignment="Center" MaxWidth="300">
+                                <TextBlock FontSize="20" FontWeight="SemiBold" Text="Recent Restock Item" />
+                                <TextBlock
+                                    FontSize="11"
+                                    Foreground="#7A7A7A"
+                                    Text="Dental supply items that have been recently restocked and added back into the inventory."
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!--  Column headers  -->
+                        <Grid Grid.Row="1" Margin="0,14,0,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" FontSize="12" FontWeight="Bold" Text="Item Id"     HorizontalAlignment="Center" />
+                            <TextBlock Grid.Column="1" FontSize="12" FontWeight="Bold" Text="Item Name"   HorizontalAlignment="Center" />
+                            <TextBlock Grid.Column="2" FontSize="12" FontWeight="Bold" Text="Unit Price"  HorizontalAlignment="Center" />
+                            <TextBlock Grid.Column="3" FontSize="12" FontWeight="Bold" Text="Stock Added" HorizontalAlignment="Center" />
+                            <TextBlock Grid.Column="4" FontSize="12" FontWeight="Bold" Text="Date"        HorizontalAlignment="Center" />
+                        </Grid>
+
+                        <!--  Recent restock list  -->
+                        <ItemsControl Grid.Row="2" ItemsSource="{Binding RecentRestockItems}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,5,0,5">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" FontSize="12" Text="{Binding ItemId}"                                    HorizontalAlignment="Center" />
+                                        <TextBlock Grid.Column="1" FontSize="12" Text="{Binding ItemName}"                                  HorizontalAlignment="Center" />
+                                        <TextBlock Grid.Column="2" FontSize="12" Text="{Binding UnitPrice, StringFormat=&#x20B1;{0:N2}}"   HorizontalAlignment="Center" />
+                                        <TextBlock Grid.Column="3" FontSize="12" Text="{Binding StockAdded}"                               HorizontalAlignment="Center" />
+                                        <TextBlock Grid.Column="4" FontSize="12" Text="{Binding Date, StringFormat=MM/dd/yyyy}"            HorizontalAlignment="Center" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <!--  View all / Restock Item  -->
+                        <StackPanel
+                            Grid.Row="3"
+                            Margin="0,8,0,0"
+                            HorizontalAlignment="Right"
+                            Orientation="Horizontal">
+
+                            <Button
+                                Height="36"
+                                Padding="16,0"
+                                Background="Transparent"
+                                BorderBrush="#223357"
+                                BorderThickness="1.5"
+                                Command="{Binding ViewAllRestocksCommand}"
+                                Cursor="Hand"
+                                Style="{StaticResource SmallActionButtonStyle}">
+                                <TextBlock
+                                    FontSize="13"
+                                    FontWeight="SemiBold"
+                                    Foreground="#223357"
+                                    Text="View all" />
+                            </Button>
+
+                            <Button
+                                Height="36"
+                                Margin="10,0,0,0"
+                                Padding="14,0"
+                                Background="#073C98"
+                                Command="{Binding RestockItemCommand}"
+                                Style="{StaticResource SmallActionButtonStyle}">
+                                <StackPanel Orientation="Horizontal">
+                                    <fa:IconBlock
+                                        Margin="0,0,7,0"
+                                        VerticalAlignment="Center"
+                                        FontSize="13"
+                                        Foreground="White"
+                                        Icon="PlusSquare" />
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        FontSize="13"
+                                        FontWeight="Bold"
+                                        Foreground="White"
+                                        Text="Restock Item" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!--  Row 2 – Toolbar: Search / Filter / Sort / Add New Item  -->
+            <Grid Grid.Row="2" Margin="0,12,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="230" />
+                    <ColumnDefinition Width="28" />
+                    <ColumnDefinition Width="190" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="220" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="220" />
+                </Grid.ColumnDefinitions>
+
+                <!--  Search Item  -->
+                <Grid x:Name="SearchBox" Grid.Column="0" Height="52" VerticalAlignment="Center">
+                    <TextBox
+                        x:Name="SearchTextBox"
+                        Style="{StaticResource SearchTextBoxStyle}"
+                        Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock
+                        Margin="51,0,0,0"
+                        VerticalAlignment="Center"
+                        FontSize="20"
+                        Foreground="#8A8A8A"
+                        IsHitTestVisible="False"
+                        Text="Search Item">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SearchText}" Value="">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding SearchText}" Value="{x:Null}">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <fa:IconBlock
+                        Margin="18,0,0,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        FontSize="20"
+                        Foreground="Black"
+                        Icon="Search" />
+                </Grid>
+
+                <!--  Filter dropdown  -->
+                <ComboBox
+                    Grid.Column="2"
+                    Height="52"
+                    Width="Auto"
+                    FontSize="16"
+                    ItemsSource="{Binding FilterOptions}"
+                    SelectedItem="{Binding SelectedFilterOption, Mode=TwoWay}"
+                    Style="{StaticResource ToolbarComboBoxStyle}"
+                    Tag="Filter" />
+
+                <!--  Sort By dropdown  -->
+                <ComboBox
+                    Grid.Column="4"
+                    Height="52"
+                    FontSize="16"
+                    ItemsSource="{Binding SortOptions}"
+                    SelectedItem="{Binding SelectedSortOption, Mode=TwoWay}"
+                    Style="{StaticResource ToolbarComboBoxStyle}"
+                    Tag="Sort By" />
+
+                <!--  Add New Item button  -->
+                <Button
+                    Grid.Column="6"
+                    Height="45"
+                    VerticalAlignment="Center"
+                    Background="#073C98"
+                    Command="{Binding AddNewItemCommand}"
+                    FontSize="16"
+                    FontWeight="Bold"
+                    Foreground="White"
+                    Style="{StaticResource SecondaryButtonStyle}">
+                    <StackPanel Orientation="Horizontal">
+                        <fa:IconBlock
+                            Margin="0,0,10,0"
+                            VerticalAlignment="Center"
+                            FontSize="16"
+                            Foreground="White"
+                            Icon="PlusCircle" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="16"
+                            FontWeight="Bold"
+                            Foreground="White"
+                            Text="Add New Item" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+
+            <!--  Row 3 – Inventory DataGrid + Help Button (overlapping)  -->
+            <Grid Grid.Row="3" Margin="0,0,0,18">
+
+                <!--  Main table container  -->
+                <Border
+                    Padding="20"
+                    Style="{StaticResource LargePanelStyle}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <!--  Error message  -->
+                        <TextBlock
+                            Grid.Row="0"
+                            Margin="0,0,0,8"
+                            FontSize="15"
+                            FontWeight="SemiBold"
+                            Foreground="#C62828"
+                            Text="{Binding ErrorMessage}"
+                            TextWrapping="Wrap"
+                            Visibility="{Binding HasError, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+                        <!--  Inventory Items DataGrid  -->
+                        <DataGrid
+                            Grid.Row="1"
+                            CanUserResizeRows="False"
+                            CellStyle="{StaticResource DashboardDataGridCellStyle}"
+                            ColumnHeaderStyle="{StaticResource DashboardDataGridColumnHeaderStyle}"
+                            ItemsSource="{Binding InventoryItems}"
+                            MinRowHeight="42"
+                            RowHeight="46"
+                            ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                            ScrollViewer.VerticalScrollBarVisibility="Auto"
+                            SelectedItem="{Binding SelectedInventoryItem, Mode=TwoWay}"
+                            Style="{StaticResource DashboardDataGridStyle}">
+
+                            <DataGrid.Resources>
+                                <Style BasedOn="{StaticResource BlueDataGridScrollBarStyle}" TargetType="{x:Type ScrollBar}" />
+                            </DataGrid.Resources>
+
+                            <DataGrid.Columns>
+
+                                <DataGridTextColumn
+                                    Width="1*"
+                                    MinWidth="110"
+                                    Binding="{Binding ItemId}"
+                                    Header="Item Id"  />
+
+                                <DataGridTextColumn
+                                    Width="1.6*"
+                                    MinWidth="160"
+                                    Binding="{Binding ItemName}"
+                                    Header="Item Name" />
+
+                                <DataGridTextColumn
+                                    Width="0.8*"
+                                    MinWidth="90"
+                                    Binding="{Binding Stock}"
+                                    Header="Stock" />
+
+                                <DataGridTextColumn
+                                    Width="1*"
+                                    MinWidth="120"
+                                    Binding="{Binding UnitPrice, StringFormat=&#x20B1;{0:N2}}"
+                                    Header="Unit Price" />
+
+                                <!--  Last Restock – pill badge  -->
+                                <DataGridTemplateColumn
+                                    Width="1.2*"
+                                    MinWidth="140"
+                                    Header="Last Restock">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border
+                                                Padding="10,4"
+                                                HorizontalAlignment="Center"
+                                                Background="#DBEAFE"
+                                                CornerRadius="12">
+                                                <TextBlock
+                                                    FontSize="13"
+                                                    Foreground="#1D4ED8"
+                                                    Text="{Binding LastRestock, StringFormat=MM/dd/yyyy}" />
+                                            </Border>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <!--  Status – colour-coded badge  -->
+                                <DataGridTemplateColumn
+                                    Width="1*"
+                                    MinWidth="120"
+                                    Header="Status">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border
+                                                Padding="10,4"
+                                                HorizontalAlignment="Center"
+                                                CornerRadius="12">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Background" Value="#D1FAE5" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Status}" Value="Low Stock">
+                                                                <Setter Property="Background" Value="#FEF3C7" />
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Status}" Value="Out of Stock">
+                                                                <Setter Property="Background" Value="#FEE2E2" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <TextBlock FontSize="13">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Foreground" Value="#065F46" />
+                                                            <Setter Property="Text" Value="{Binding Status}" />
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Status}" Value="Low Stock">
+                                                                    <Setter Property="Foreground" Value="#92400E" />
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Status}" Value="Out of Stock">
+                                                                    <Setter Property="Foreground" Value="#991B1B" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </Border>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <!--  Actions: View | Edit | Archive  -->
+                                <DataGridTemplateColumn
+                                    Width="1.4*"
+                                    MinWidth="140"
+                                    Header="Actions">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Orientation="Horizontal">
+
+                                                <!--  View Details  -->
+                                                <Button
+                                                    Margin="0,0,6,0"
+                                                    Background="#223357"
+                                                    Command="{Binding DataContext.ViewItemCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                    CommandParameter="{Binding}"
+                                                    Style="{StaticResource IconSquareButtonStyle}"
+                                                    ToolTip="View Details">
+                                                    <fa:IconBlock FontSize="15" Foreground="White" Icon="FileAlt" />
+                                                </Button>
+
+                                                <!--  Edit  -->
+                                                <Button
+                                                    Margin="0,0,6,0"
+                                                    Background="#22C84A"
+                                                    Command="{Binding DataContext.EditItemCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                    CommandParameter="{Binding}"
+                                                    Style="{StaticResource IconSquareButtonStyle}"
+                                                    ToolTip="Edit Item">
+                                                    <fa:IconBlock FontSize="15" Foreground="White" Icon="Edit" />
+                                                </Button>
+
+                                                <!--  Archive  -->
+                                                <Button
+                                                    Background="#E31D1D"
+                                                    Command="{Binding DataContext.ArchiveItemCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                    CommandParameter="{Binding}"
+                                                    Style="{StaticResource IconSquareButtonStyle}"
+                                                    ToolTip="Archive Item">
+                                                    <fa:IconBlock FontSize="15" Foreground="White" Icon="BoxArchive" />
+                                                </Button>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </Border>
+
+                <!--  Help button – floats over the bottom-right of the table  -->
+                <Button
+                    Margin="0,0,16,16"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
+                    Panel.ZIndex="10"
+                    Style="{StaticResource HelpButtonStyle}">
+                    <StackPanel Orientation="Horizontal">
+                        <fa:IconBlock
+                            VerticalAlignment="Center"
+                            FontSize="36"
+                            Foreground="White"
+                            Icon="QuestionCircle" />
+                        <TextBlock
+                            Margin="12,0,0,0"
+                            VerticalAlignment="Center"
+                            FontSize="26"
+                            FontWeight="Bold"
+                            Foreground="White"
+                            Text="HELP" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+        </Grid>
+
+        <!-- Add / Edit Item Overlay -->
+        <Grid Panel.ZIndex="50" Visibility="{Binding IsItemOverlayOpen, Converter={StaticResource BoolToVisibilityConverter}}">
+
+            <Border Background="#88000000" />
+
+            <Border
+                Width="600"
+                Height="Auto"
+                MaxHeight="860"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Background="White"
+                BorderBrush="#DADADA"
+                BorderThickness="1"
+                CornerRadius="14">
+
+                <Grid Margin="34,24,34,24">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="68" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="80" />
+                    </Grid.RowDefinitions>
+
+                    <!--  Modal header  -->
+                    <Grid Grid.Row="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="1" />
+                        </Grid.RowDefinitions>
+                        <TextBlock
+                            Grid.Row="0"
+                            VerticalAlignment="Center"
+                            FontSize="26"
+                            FontWeight="Bold"
+                            Foreground="Black"
+                            Text="{Binding OverlayTitle}" />
+                        <Button
+                            Grid.Row="0"
+                            Width="42"
+                            Height="42"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Command="{Binding CloseItemOverlayCommand}"
+                            Style="{StaticResource IconButtonStyle}">
+                            <fa:IconBlock FontSize="22" Foreground="#444444" Icon="Times" />
+                        </Button>
+                        <!--  Divider line  -->
+                        <Border
+                            Grid.Row="1"
+                            Background="#E0E0E0" />
+                    </Grid>
+
+                    <!--  Form fields  -->
+                    <ScrollViewer Grid.Row="1" Margin="0,14,0,0" MaxHeight="580" VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+
+                            <!--  Add-mode: Item Id banner (full-width)  -->
+                            <StackPanel Margin="0,0,0,12" Visibility="{Binding EditIsAddMode, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Item Id :" />
+                                <Border Height="46" Background="#F0F0F0" BorderBrush="#D8D8D8" BorderThickness="1" CornerRadius="14">
+                                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13" Foreground="#111111" Text="{Binding PreviewItemId}" />
+                                </Border>
+                            </StackPanel>
+
+                            <!--  Add-mode: Item Name (full-width)  -->
+                            <StackPanel Margin="0,0,0,12" Visibility="{Binding EditIsAddMode, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Item Name :" />
+                                <TextBox Style="{StaticResource InventoryOverlayTextBoxStyle}" Tag="Enter Item Name" Text="{Binding EditItemName, UpdateSourceTrigger=PropertyChanged}" />
+                            </StackPanel>
+
+                            <!--  Edit-mode: Item Name + Item Id side by side  -->
+                            <Grid Margin="0,0,0,12" Visibility="{Binding EditIsEditMode, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Item Name :" />
+                                    <TextBox Style="{StaticResource InventoryOverlayTextBoxStyle}" Tag="Enter Item Name" Text="{Binding EditItemName, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Item Id :" />
+                                    <Border Height="46" Background="#F0F0F0" BorderBrush="#D8D8D8" BorderThickness="1" CornerRadius="14">
+                                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13" FontWeight="SemiBold" Foreground="#666666" Text="{Binding PreviewItemId}" />
+                                    </Border>
+                                </StackPanel>
+                            </Grid>
+
+                            <!--  Current Stock + Unit Price + Stock Status badge (edit only)  -->
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Current Stock :" />
+                                    <TextBox x:Name="StockTextBox" Style="{StaticResource InventoryOverlayTextBoxStyle}" Tag="Enter Item Stock" Text="{Binding EditStock, UpdateSourceTrigger=PropertyChanged}" PreviewTextInput="IntegerOnly_PreviewTextInput" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Unit Price :" />
+                                    <TextBox x:Name="UnitPriceTextBox" Style="{StaticResource InventoryOverlayPriceTextBoxStyle}" Tag="0.00" Text="{Binding EditUnitPrice, UpdateSourceTrigger=PropertyChanged}" PreviewTextInput="DecimalOnly_PreviewTextInput" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="3" Margin="12,0,0,0" VerticalAlignment="Bottom" Visibility="{Binding EditIsEditMode, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Stock Status :" />
+                                    <Border Height="46" MinWidth="90" Padding="14,0" CornerRadius="14">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="#D1FAE5" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding EditCurrentStatusDisplay}" Value="Low Stock">
+                                                        <Setter Property="Background" Value="#FEF3C7" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding EditCurrentStatusDisplay}" Value="Out of Stock">
+                                                        <Setter Property="Background" Value="#FEE2E2" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12" FontWeight="SemiBold" Text="{Binding EditCurrentStatusDisplay}">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Foreground" Value="#065F46" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding EditCurrentStatusDisplay}" Value="Low Stock">
+                                                            <Setter Property="Foreground" Value="#92400E" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding EditCurrentStatusDisplay}" Value="Out of Stock">
+                                                            <Setter Property="Foreground" Value="#991B1B" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Border>
+                                </StackPanel>
+                            </Grid>
+
+                            <!--  Edit-mode: Item Date Added + Last Restock + Item Status  -->
+                            <Grid Margin="0,0,0,12" Visibility="{Binding EditIsEditMode, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Item Date Added :" />
+                                    <Border Height="46" Background="#F0F0F0" BorderBrush="#D8D8D8" BorderThickness="1" CornerRadius="14">
+                                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13" Foreground="#666666" Text="{Binding EditItemCreatedDisplay}" />
+                                    </Border>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Last Restock :" />
+                                    <Border Height="46" Background="#F0F0F0" BorderBrush="#D8D8D8" BorderThickness="1" CornerRadius="14">
+                                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13" Foreground="#666666" Text="{Binding EditLastRestockDisplay}" />
+                                    </Border>
+                                </StackPanel>
+                                <StackPanel Grid.Column="3" Margin="12,0,0,0" VerticalAlignment="Bottom">
+                                    <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Item Status :" />
+                                    <Border Height="46" MinWidth="90" Padding="14,0" CornerRadius="14">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="#D1FAE5" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding EditItemStatusDisplay}" Value="Inactive">
+                                                        <Setter Property="Background" Value="#FEE2E2" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12" FontWeight="SemiBold" Text="{Binding EditItemStatusDisplay}">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Foreground" Value="#065F46" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding EditItemStatusDisplay}" Value="Inactive">
+                                                            <Setter Property="Foreground" Value="#991B1B" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Border>
+                                </StackPanel>
+                            </Grid>
+
+                            <!--  Low Stock Threshold  -->
+                            <StackPanel Margin="0,0,0,12">
+                                <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Low Stock Threshold :" />
+                                <TextBox x:Name="ThresholdTextBox" Style="{StaticResource InventoryOverlayTextBoxStyle}" Tag="Enter the minimum stock level for this item" Text="{Binding EditLowStockThreshold, UpdateSourceTrigger=PropertyChanged}" PreviewTextInput="IntegerOnly_PreviewTextInput" />
+                                <TextBlock Margin="4,5,0,0" FontSize="11" Foreground="#7A7A7A" Text="Note: Set the minimum stock level for this item. The system will trigger a Low Stock alert when the available quantity reaches this threshold." TextWrapping="Wrap" />
+                            </StackPanel>
+
+                            <!--  Notes (optional)  -->
+                            <StackPanel Margin="0,0,0,4">
+                                <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Notes (optional) :" />
+                                <Border BorderBrush="#C8DCF0" BorderThickness="1" CornerRadius="10">
+                                    <TextBox
+                                        Height="90"
+                                        Padding="12,8"
+                                        AcceptsReturn="True"
+                                        Background="#FFFDFD"
+                                        BorderThickness="0"
+                                        FontSize="13"
+                                        Foreground="#111111"
+                                        Tag="Add any additional notes here..."
+                                        Text="{Binding EditNotes, UpdateSourceTrigger=PropertyChanged}"
+                                        TextWrapping="Wrap"
+                                        VerticalScrollBarVisibility="Auto">
+                                        <TextBox.Style>
+                                            <Style TargetType="TextBox">
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="TextBox">
+                                                            <Border x:Name="NotesBorder" Background="{TemplateBinding Background}" BorderBrush="Transparent" BorderThickness="0" CornerRadius="10">
+                                                                <Grid>
+                                                                    <ScrollViewer x:Name="PART_ContentHost" Margin="12,8,12,8" />
+                                                                    <TextBlock Margin="12,8,12,8" VerticalAlignment="Top" FontSize="{TemplateBinding FontSize}" Foreground="#A0A0A0" IsHitTestVisible="False" Text="{TemplateBinding Tag}" TextWrapping="Wrap">
+                                                                        <TextBlock.Style>
+                                                                            <Style TargetType="TextBlock">
+                                                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                                                <Style.Triggers>
+                                                                                    <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value=""><Setter Property="Visibility" Value="Visible" /></DataTrigger>
+                                                                                    <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Null}"><Setter Property="Visibility" Value="Visible" /></DataTrigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </TextBlock.Style>
+                                                                    </TextBlock>
+                                                                </Grid>
+                                                            </Border>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsKeyboardFocused" Value="True">
+                                                                    <Setter TargetName="NotesBorder" Property="BorderBrush" Value="#223357" />
+                                                                    <Setter TargetName="NotesBorder" Property="BorderThickness" Value="2" />
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+                                        </TextBox.Style>
+                                    </TextBox>
+                                </Border>
+                            </StackPanel>
+
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!--  Validation error + Cancel / Add Item buttons  -->
+                    <Grid Grid.Row="2">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock
+                            Grid.Row="0"
+                            Margin="0,0,0,6"
+                            HorizontalAlignment="Center"
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            Foreground="#C62828"
+                            Text="{Binding ItemOverlayErrorMessage}"
+                            TextWrapping="Wrap"
+                            Visibility="{Binding HasItemOverlayError, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+                        <StackPanel
+                            Grid.Row="1"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Bottom"
+                            Orientation="Horizontal">
+
+                            <Button
+                                Width="130"
+                                Height="44"
+                                Margin="0,0,16,0"
+                                Command="{Binding CloseItemOverlayCommand}"
+                                Cursor="Hand">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border
+                                            x:Name="CancelBorder"
+                                            Background="#E31D1D"
+                                            CornerRadius="22">
+                                            <TextBlock
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                FontSize="16"
+                                                FontWeight="Bold"
+                                                Foreground="White"
+                                                Text="Cancel" />
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="CancelBorder" Property="Opacity" Value="0.85" />
+                                            </Trigger>
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter TargetName="CancelBorder" Property="Opacity" Value="0.7" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+
+                            <Button
+                                Width="150"
+                                Height="44"
+                                Command="{Binding SaveItemCommand}"
+                                Cursor="Hand">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border
+                                            x:Name="SaveBorder"
+                                            Background="#22C84A"
+                                            CornerRadius="22">
+                                            <TextBlock
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                FontSize="16"
+                                                FontWeight="Bold"
+                                                Foreground="White"
+                                                Text="{Binding SaveButtonLabel}" />
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="SaveBorder" Property="Opacity" Value="0.85" />
+                                            </Trigger>
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter TargetName="SaveBorder" Property="Opacity" Value="0.7" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!--  Restock Item Overlay                               -->
+        <!-- ═══════════════════════════════════════════════════ -->
+        <Grid Panel.ZIndex="55" Visibility="{Binding IsRestockOverlayOpen, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Border Background="#88000000" />
+            <Border
+                Width="600"
+                Height="Auto"
+                MaxHeight="860"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Background="White"
+                BorderBrush="#DADADA"
+                BorderThickness="1"
+                CornerRadius="14">
+
+                <Grid Margin="34,24,34,24">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="68" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="80" />
+                    </Grid.RowDefinitions>
+
+                    <!--  Header  -->
+                    <Grid Grid.Row="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="1" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" VerticalAlignment="Center" FontSize="26" FontWeight="Bold" Foreground="Black" Text="Restock Item" />
+                        <Button Grid.Row="0" Width="42" Height="42" HorizontalAlignment="Right" VerticalAlignment="Center" Command="{Binding CloseRestockOverlayCommand}" Style="{StaticResource IconButtonStyle}">
+                            <fa:IconBlock FontSize="22" Foreground="#444444" Icon="Times" />
+                        </Button>
+                        <Border Grid.Row="1" Background="#E0E0E0" />
+                    </Grid>
+
+                    <!--  Form fields  -->
+                    <ScrollViewer Grid.Row="1" Margin="0,14,0,0" MaxHeight="580" VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+
+                            <!--  Item Name + Item Id  -->
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Item Name :" />
+                                    <Grid>
+                                        <ToggleButton x:Name="RestockItemDropdownBtn" Height="46" Cursor="Hand" HorizontalAlignment="Stretch">
+                                            <ToggleButton.Template>
+                                                <ControlTemplate TargetType="ToggleButton">
+                                                    <Border x:Name="DropBorder" Height="46" Background="#FFFDFD" BorderBrush="#C8DCF0" BorderThickness="1" CornerRadius="14">
+                                                        <Grid>
+                                                            <TextBlock Margin="16,0,46,0" VerticalAlignment="Center" FontSize="14" Foreground="#111111" Text="{Binding RestockSelectedItemName}">
+                                                                <TextBlock.Style>
+                                                                    <Style TargetType="TextBlock">
+                                                                        <Setter Property="Visibility" Value="Visible" />
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding RestockSelectedItemName}" Value=""><Setter Property="Visibility" Value="Collapsed" /></DataTrigger>
+                                                                            <DataTrigger Binding="{Binding RestockSelectedItemName}" Value="{x:Null}"><Setter Property="Visibility" Value="Collapsed" /></DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </TextBlock.Style>
+                                                            </TextBlock>
+                                                            <TextBlock Margin="16,0,46,0" VerticalAlignment="Center" FontSize="14" Foreground="#A0A0A0" IsHitTestVisible="False" Text="Select Item">
+                                                                <TextBlock.Style>
+                                                                    <Style TargetType="TextBlock">
+                                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding RestockSelectedItemName}" Value=""><Setter Property="Visibility" Value="Visible" /></DataTrigger>
+                                                                            <DataTrigger Binding="{Binding RestockSelectedItemName}" Value="{x:Null}"><Setter Property="Visibility" Value="Visible" /></DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </TextBlock.Style>
+                                                            </TextBlock>
+                                                            <fa:IconBlock Margin="0,0,16,0" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="16" Foreground="Black" Icon="AngleDown" />
+                                                        </Grid>
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsChecked" Value="True">
+                                                            <Setter TargetName="DropBorder" Property="BorderBrush" Value="#223357" />
+                                                            <Setter TargetName="DropBorder" Property="BorderThickness" Value="2" />
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </ToggleButton.Template>
+                                        </ToggleButton>
+                                        <Popup
+                                            x:Name="RestockItemPopup"
+                                            AllowsTransparency="True"
+                                            IsOpen="{Binding IsChecked, ElementName=RestockItemDropdownBtn, Mode=TwoWay}"
+                                            Placement="Bottom"
+                                            PlacementTarget="{Binding ElementName=RestockItemDropdownBtn}"
+                                            StaysOpen="False"
+                                            Width="{Binding ActualWidth, ElementName=RestockItemDropdownBtn}">
+                                            <Border Background="White" BorderBrush="#DADADA" BorderThickness="1" CornerRadius="8" MaxHeight="220">
+                                                <ListBox
+                                                    x:Name="RestockItemList"
+                                                    Background="Transparent"
+                                                    BorderThickness="0"
+                                                    FontSize="14"
+                                                    ItemsSource="{Binding ActiveItemNames}"
+                                                    SelectedItem="{Binding RestockSelectedItemName, Mode=TwoWay}"
+                                                    SelectionChanged="RestockItemList_SelectionChanged">
+                                                    <ListBox.ItemContainerStyle>
+                                                        <Style TargetType="ListBoxItem">
+                                                            <Setter Property="Height" Value="40" />
+                                                            <Setter Property="Padding" Value="12,0" />
+                                                            <Setter Property="VerticalContentAlignment" Value="Center" />
+                                                            <Setter Property="Cursor" Value="Hand" />
+                                                        </Style>
+                                                    </ListBox.ItemContainerStyle>
+                                                </ListBox>
+                                            </Border>
+                                        </Popup>
+                                    </Grid>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Item Id :" />
+                                    <Border Height="46" Background="#F0F0F0" BorderBrush="#D8D8D8" BorderThickness="1" CornerRadius="14">
+                                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13" FontWeight="SemiBold" Foreground="#666666" Text="{Binding RestockItemIdDisplay}" />
+                                    </Border>
+                                </StackPanel>
+                            </Grid>
+
+                            <!--  Stock Added + Date of Restock  -->
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Stock Added :" />
+                                    <TextBox Style="{StaticResource InventoryOverlayTextBoxStyle}" Tag="e.g. 50" Text="{Binding RestockStockAdded, UpdateSourceTrigger=PropertyChanged}" PreviewTextInput="IntegerOnly_PreviewTextInput" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Date of Restock :" />
+                                    <DatePicker SelectedDate="{Binding RestockDate, Mode=TwoWay}" SelectedDateFormat="Short" Style="{StaticResource InventoryOverlayDatePickerStyle}" />
+                                </StackPanel>
+                            </Grid>
+
+                            <!--  Unit Price + Supplier  -->
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Unit Price :" />
+                                    <TextBox Style="{StaticResource InventoryOverlayPriceTextBoxStyle}" Tag="0.00" Text="{Binding RestockUnitPriceStr, UpdateSourceTrigger=PropertyChanged}" PreviewTextInput="DecimalOnly_PreviewTextInput" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Supplier (optional) :" />
+                                    <TextBox Style="{StaticResource InventoryOverlayTextBoxStyle}" Tag="Optional" Text="{Binding RestockSupplier, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                            </Grid>
+
+                            <!--  Info boxes: Current Stock + New Stock Total  -->
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="12" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" Background="#EBF5FF" BorderBrush="#B3D7FF" BorderThickness="1" CornerRadius="10" Padding="14,10">
+                                    <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="#1A5FA8" Text="{Binding RestockCurrentStockDisplay}" TextWrapping="Wrap" />
+                                </Border>
+                                <Border Grid.Column="2" Background="#FFFBEB" BorderBrush="#FDE68A" BorderThickness="1" CornerRadius="10" Padding="14,10">
+                                    <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="#92400E" Text="{Binding RestockNewTotalDisplay}" TextWrapping="Wrap" />
+                                </Border>
+                            </Grid>
+
+                            <!--  Notes (optional)  -->
+                            <StackPanel Margin="0,0,0,4">
+                                <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Notes (optional) :" />
+                                <Border BorderBrush="#C8DCF0" BorderThickness="1" CornerRadius="10">
+                                    <TextBox
+                                        Height="80"
+                                        Padding="12,8"
+                                        AcceptsReturn="True"
+                                        Background="#FFFDFD"
+                                        BorderThickness="0"
+                                        FontSize="13"
+                                        Foreground="#111111"
+                                        Tag="Optional notes about this restock..."
+                                        Text="{Binding RestockNotes, UpdateSourceTrigger=PropertyChanged}"
+                                        TextWrapping="Wrap"
+                                        VerticalScrollBarVisibility="Auto">
+                                        <TextBox.Style>
+                                            <Style TargetType="TextBox">
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="TextBox">
+                                                            <Border x:Name="NotesBorder" Background="{TemplateBinding Background}" BorderBrush="Transparent" BorderThickness="0" CornerRadius="10">
+                                                                <Grid>
+                                                                    <ScrollViewer x:Name="PART_ContentHost" Margin="12,8,12,8" />
+                                                                    <TextBlock Margin="12,8,12,8" VerticalAlignment="Top" FontSize="{TemplateBinding FontSize}" Foreground="#A0A0A0" IsHitTestVisible="False" Text="{TemplateBinding Tag}" TextWrapping="Wrap">
+                                                                        <TextBlock.Style>
+                                                                            <Style TargetType="TextBlock">
+                                                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                                                <Style.Triggers>
+                                                                                    <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value=""><Setter Property="Visibility" Value="Visible" /></DataTrigger>
+                                                                                    <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Null}"><Setter Property="Visibility" Value="Visible" /></DataTrigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </TextBlock.Style>
+                                                                    </TextBlock>
+                                                                </Grid>
+                                                            </Border>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsKeyboardFocused" Value="True">
+                                                                    <Setter TargetName="NotesBorder" Property="BorderBrush" Value="#223357" />
+                                                                    <Setter TargetName="NotesBorder" Property="BorderThickness" Value="2" />
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+                                        </TextBox.Style>
+                                    </TextBox>
+                                </Border>
+                            </StackPanel>
+
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!--  Error + buttons  -->
+                    <Grid Grid.Row="2">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock
+                            Grid.Row="0"
+                            Margin="0,0,0,6"
+                            HorizontalAlignment="Center"
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            Foreground="#C62828"
+                            Text="{Binding RestockErrorMessage}"
+                            TextWrapping="Wrap"
+                            Visibility="{Binding HasRestockError, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+                        <StackPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Bottom" Orientation="Horizontal">
+                            <Button Width="130" Height="44" Margin="0,0,16,0" Command="{Binding CloseRestockOverlayCommand}" Cursor="Hand">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="CancelBorder" Background="#E31D1D" CornerRadius="22">
+                                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="White" Text="Cancel" />
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="CancelBorder" Property="Opacity" Value="0.85" /></Trigger>
+                                            <Trigger Property="IsPressed" Value="True"><Setter TargetName="CancelBorder" Property="Opacity" Value="0.7" /></Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                            <Button Width="170" Height="44" Command="{Binding ConfirmRestockCommand}" Cursor="Hand">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="ConfirmBorder" Background="#22C84A" CornerRadius="22">
+                                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="White" Text="Confirm Restock" />
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="ConfirmBorder" Property="Opacity" Value="0.85" /></Trigger>
+                                            <Trigger Property="IsPressed" Value="True"><Setter TargetName="ConfirmBorder" Property="Opacity" Value="0.7" /></Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!--  Log Item Usage Overlay                             -->
+        <!-- ═══════════════════════════════════════════════════ -->
+        <Grid Panel.ZIndex="56" Visibility="{Binding IsUsageOverlayOpen, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Border Background="#88000000" />
+            <Border
+                Width="600"
+                Height="Auto"
+                MaxHeight="860"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Background="White"
+                BorderBrush="#DADADA"
+                BorderThickness="1"
+                CornerRadius="14">
+
+                <Grid Margin="34,24,34,24">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="68" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="80" />
+                    </Grid.RowDefinitions>
+
+                    <!--  Header  -->
+                    <Grid Grid.Row="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="1" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" VerticalAlignment="Center" FontSize="26" FontWeight="Bold" Foreground="Black" Text="Log Item Usage" />
+                        <Button Grid.Row="0" Width="42" Height="42" HorizontalAlignment="Right" VerticalAlignment="Center" Command="{Binding CloseUsageOverlayCommand}" Style="{StaticResource IconButtonStyle}">
+                            <fa:IconBlock FontSize="22" Foreground="#444444" Icon="Times" />
+                        </Button>
+                        <Border Grid.Row="1" Background="#E0E0E0" />
+                    </Grid>
+
+                    <!--  Form fields  -->
+                    <ScrollViewer Grid.Row="1" Margin="0,14,0,0" MaxHeight="580" VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+
+                            <!--  Item Name + Item Id  -->
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Item Name :" />
+                                    <Grid>
+                                        <ToggleButton x:Name="UsageItemDropdownBtn" Height="46" Cursor="Hand" HorizontalAlignment="Stretch">
+                                            <ToggleButton.Template>
+                                                <ControlTemplate TargetType="ToggleButton">
+                                                    <Border x:Name="DropBorder" Height="46" Background="#FFFDFD" BorderBrush="#C8DCF0" BorderThickness="1" CornerRadius="14">
+                                                        <Grid>
+                                                            <TextBlock Margin="16,0,46,0" VerticalAlignment="Center" FontSize="14" Foreground="#111111" Text="{Binding UsageSelectedItemName}">
+                                                                <TextBlock.Style>
+                                                                    <Style TargetType="TextBlock">
+                                                                        <Setter Property="Visibility" Value="Visible" />
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding UsageSelectedItemName}" Value=""><Setter Property="Visibility" Value="Collapsed" /></DataTrigger>
+                                                                            <DataTrigger Binding="{Binding UsageSelectedItemName}" Value="{x:Null}"><Setter Property="Visibility" Value="Collapsed" /></DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </TextBlock.Style>
+                                                            </TextBlock>
+                                                            <TextBlock Margin="16,0,46,0" VerticalAlignment="Center" FontSize="14" Foreground="#A0A0A0" IsHitTestVisible="False" Text="Select Item">
+                                                                <TextBlock.Style>
+                                                                    <Style TargetType="TextBlock">
+                                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding UsageSelectedItemName}" Value=""><Setter Property="Visibility" Value="Visible" /></DataTrigger>
+                                                                            <DataTrigger Binding="{Binding UsageSelectedItemName}" Value="{x:Null}"><Setter Property="Visibility" Value="Visible" /></DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </TextBlock.Style>
+                                                            </TextBlock>
+                                                            <fa:IconBlock Margin="0,0,16,0" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="16" Foreground="Black" Icon="AngleDown" />
+                                                        </Grid>
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsChecked" Value="True">
+                                                            <Setter TargetName="DropBorder" Property="BorderBrush" Value="#223357" />
+                                                            <Setter TargetName="DropBorder" Property="BorderThickness" Value="2" />
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </ToggleButton.Template>
+                                        </ToggleButton>
+                                        <Popup
+                                            x:Name="UsageItemPopup"
+                                            AllowsTransparency="True"
+                                            IsOpen="{Binding IsChecked, ElementName=UsageItemDropdownBtn, Mode=TwoWay}"
+                                            Placement="Bottom"
+                                            PlacementTarget="{Binding ElementName=UsageItemDropdownBtn}"
+                                            StaysOpen="False"
+                                            Width="{Binding ActualWidth, ElementName=UsageItemDropdownBtn}">
+                                            <Border Background="White" BorderBrush="#DADADA" BorderThickness="1" CornerRadius="8" MaxHeight="220">
+                                                <ListBox
+                                                    x:Name="UsageItemList"
+                                                    Background="Transparent"
+                                                    BorderThickness="0"
+                                                    FontSize="14"
+                                                    ItemsSource="{Binding ActiveItemNames}"
+                                                    SelectedItem="{Binding UsageSelectedItemName, Mode=TwoWay}"
+                                                    SelectionChanged="UsageItemList_SelectionChanged">
+                                                    <ListBox.ItemContainerStyle>
+                                                        <Style TargetType="ListBoxItem">
+                                                            <Setter Property="Height" Value="40" />
+                                                            <Setter Property="Padding" Value="12,0" />
+                                                            <Setter Property="VerticalContentAlignment" Value="Center" />
+                                                            <Setter Property="Cursor" Value="Hand" />
+                                                        </Style>
+                                                    </ListBox.ItemContainerStyle>
+                                                </ListBox>
+                                            </Border>
+                                        </Popup>
+                                    </Grid>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Item Id :" />
+                                    <Border Height="46" Background="#F0F0F0" BorderBrush="#D8D8D8" BorderThickness="1" CornerRadius="14">
+                                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13" FontWeight="SemiBold" Foreground="#666666" Text="{Binding UsageItemIdDisplay}" />
+                                    </Border>
+                                </StackPanel>
+                            </Grid>
+
+                            <!--  Quantity Used + Date of Usage  -->
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Quantity Used :" />
+                                    <TextBox Style="{StaticResource InventoryOverlayTextBoxStyle}" Tag="e.g. 10" Text="{Binding UsageQuantityUsed, UpdateSourceTrigger=PropertyChanged}" PreviewTextInput="IntegerOnly_PreviewTextInput" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Date of Usage :" />
+                                    <DatePicker SelectedDate="{Binding UsageDate, Mode=TwoWay}" SelectedDateFormat="Short" Style="{StaticResource InventoryOverlayDatePickerStyle}" />
+                                </StackPanel>
+                            </Grid>
+
+                            <!--  Info boxes: Current Stock + Remaining Stock  -->
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="12" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" Background="#EBF5FF" BorderBrush="#B3D7FF" BorderThickness="1" CornerRadius="10" Padding="14,10">
+                                    <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="#1A5FA8" Text="{Binding UsageCurrentStockDisplay}" TextWrapping="Wrap" />
+                                </Border>
+                                <Border Grid.Column="2" Background="#FFFBEB" BorderBrush="#FDE68A" BorderThickness="1" CornerRadius="10" Padding="14,10">
+                                    <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="#92400E" Text="{Binding UsageRemainingStockDisplay}" TextWrapping="Wrap" />
+                                </Border>
+                            </Grid>
+
+                            <!--  Notes (optional)  -->
+                            <StackPanel Margin="0,0,0,4">
+                                <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Notes (optional) :" />
+                                <Border BorderBrush="#C8DCF0" BorderThickness="1" CornerRadius="10">
+                                    <TextBox
+                                        Height="80"
+                                        Padding="12,8"
+                                        AcceptsReturn="True"
+                                        Background="#FFFDFD"
+                                        BorderThickness="0"
+                                        FontSize="13"
+                                        Foreground="#111111"
+                                        Tag="Optional notes about this usage..."
+                                        Text="{Binding UsageNotes, UpdateSourceTrigger=PropertyChanged}"
+                                        TextWrapping="Wrap"
+                                        VerticalScrollBarVisibility="Auto">
+                                        <TextBox.Style>
+                                            <Style TargetType="TextBox">
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="TextBox">
+                                                            <Border x:Name="NotesBorder" Background="{TemplateBinding Background}" BorderBrush="Transparent" BorderThickness="0" CornerRadius="10">
+                                                                <Grid>
+                                                                    <ScrollViewer x:Name="PART_ContentHost" Margin="12,8,12,8" />
+                                                                    <TextBlock Margin="12,8,12,8" VerticalAlignment="Top" FontSize="{TemplateBinding FontSize}" Foreground="#A0A0A0" IsHitTestVisible="False" Text="{TemplateBinding Tag}" TextWrapping="Wrap">
+                                                                        <TextBlock.Style>
+                                                                            <Style TargetType="TextBlock">
+                                                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                                                <Style.Triggers>
+                                                                                    <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value=""><Setter Property="Visibility" Value="Visible" /></DataTrigger>
+                                                                                    <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Null}"><Setter Property="Visibility" Value="Visible" /></DataTrigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </TextBlock.Style>
+                                                                    </TextBlock>
+                                                                </Grid>
+                                                            </Border>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsKeyboardFocused" Value="True">
+                                                                    <Setter TargetName="NotesBorder" Property="BorderBrush" Value="#223357" />
+                                                                    <Setter TargetName="NotesBorder" Property="BorderThickness" Value="2" />
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+                                        </TextBox.Style>
+                                    </TextBox>
+                                </Border>
+                            </StackPanel>
+
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!--  Error + buttons  -->
+                    <Grid Grid.Row="2">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock
+                            Grid.Row="0"
+                            Margin="0,0,0,6"
+                            HorizontalAlignment="Center"
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            Foreground="#C62828"
+                            Text="{Binding UsageErrorMessage}"
+                            TextWrapping="Wrap"
+                            Visibility="{Binding HasUsageError, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+                        <StackPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Bottom" Orientation="Horizontal">
+                            <Button Width="130" Height="44" Margin="0,0,16,0" Command="{Binding CloseUsageOverlayCommand}" Cursor="Hand">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="CancelBorder" Background="#E31D1D" CornerRadius="22">
+                                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="White" Text="Cancel" />
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="CancelBorder" Property="Opacity" Value="0.85" /></Trigger>
+                                            <Trigger Property="IsPressed" Value="True"><Setter TargetName="CancelBorder" Property="Opacity" Value="0.7" /></Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                            <Button Width="190" Height="44" Command="{Binding ConfirmUsageCommand}" Cursor="Hand">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="ConfirmBorder" Background="#22C84A" CornerRadius="22">
+                                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="White" Text="Record Item Usage" />
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="ConfirmBorder" Property="Opacity" Value="0.85" /></Trigger>
+                                            <Trigger Property="IsPressed" Value="True"><Setter TargetName="ConfirmBorder" Property="Opacity" Value="0.7" /></Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!--  Success Prompt Overlay                             -->
+        <!-- ═══════════════════════════════════════════════════ -->
+        <Grid Panel.ZIndex="60" Visibility="{Binding IsSuccessPromptVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Border Background="#88FFFFFF" />
+            <Border
+                Width="290"
+                Height="200"
+                Padding="20"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Background="White"
+                BorderBrush="#9A9A9A"
+                BorderThickness="1"
+                CornerRadius="8">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <fa:IconBlock
+                            Margin="0,0,10,0"
+                            FontSize="22"
+                            Foreground="#19C929"
+                            Icon="CheckSquare" />
+                        <TextBlock FontSize="16" FontWeight="SemiBold" Text="{Binding SuccessMessage}" />
+                    </StackPanel>
+
+                    <TextBlock
+                        Margin="32,10,0,0"
+                        FontSize="12"
+                        Foreground="#777777"
+                        Text="{Binding SuccessSubMessage}"
+                        TextWrapping="Wrap" />
+
+                    <TextBlock
+                        Margin="32,12,0,0"
+                        FontSize="11"
+                        FontStyle="Italic"
+                        Foreground="#999999"
+                        Text="You may now close this window or continue managing inventory."
+                        TextWrapping="Wrap" />
+
+                    <StackPanel
+                        Margin="0,18,0,0"
+                        HorizontalAlignment="Right"
+                        Orientation="Horizontal">
+                        <Button
+                            Width="70"
+                            Height="30"
+                            Margin="0,0,12,0"
+                            Background="#999999"
+                            Command="{Binding CloseSuccessPromptCommand}"
+                            Content="Close"
+                            FontWeight="Bold"
+                            Foreground="White"
+                            Style="{StaticResource PrimaryButtonStyle}" />
+                        <Button
+                            Width="120"
+                            Height="30"
+                            Background="#223357"
+                            Command="{Binding AddAnotherItemCommand}"
+                            Content="Add another?"
+                            FontWeight="Bold"
+                            Foreground="White"
+                            Style="{StaticResource PrimaryButtonStyle}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+    </Grid>
+</UserControl>
