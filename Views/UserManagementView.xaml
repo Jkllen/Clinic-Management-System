@@ -294,8 +294,6 @@
                 <Grid.RowDefinitions>
                     <!--  Table Area  -->
                     <RowDefinition Height="*" />
-                    <!--  Help Button Area  -->
-                    <RowDefinition Height="76" />
                 </Grid.RowDefinitions>
 
                 <!--  Main table container  -->
@@ -482,32 +480,6 @@
                         </DataGrid>
                     </Grid>
                 </Border>
-
-                <!--  Help button  -->
-                <Button
-                    Grid.Row="1"
-                    Margin="0,12,0,0"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Center"
-                    Panel.ZIndex="10"
-                    Style="{StaticResource HelpButtonStyle}">
-
-                    <StackPanel Orientation="Horizontal">
-                        <fa:IconBlock
-                            VerticalAlignment="Center"
-                            FontSize="36"
-                            Foreground="White"
-                            Icon="QuestionCircle" />
-
-                        <TextBlock
-                            Margin="12,0,0,0"
-                            VerticalAlignment="Center"
-                            FontSize="26"
-                            FontWeight="Bold"
-                            Foreground="White"
-                            Text="HELP" />
-                    </StackPanel>
-                </Button>
             </Grid>
         </Grid>
         
