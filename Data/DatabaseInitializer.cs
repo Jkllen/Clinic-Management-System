@@ -238,13 +238,22 @@ CREATE TABLE IF NOT EXISTS TreatmentRecords (
 CREATE TABLE IF NOT EXISTS BillingTransactions (
     BillingId INTEGER PRIMARY KEY AUTOINCREMENT,
 
-    -- Billing is usually created from a completed appointment.
     PatientId INTEGER NOT NULL,
+
+    -- Optional links depending on source.
     AppointmentId INTEGER,
+    TreatmentRecordId INTEGER,
+
+    -- Appointment = created from completed appointment/treatment record.
+    -- Manual = manually created by staff.
+    BillingSource TEXT NOT NULL DEFAULT 'Manual'
+        CHECK(BillingSource IN ('Appointment', 'Manual')),
 
     ReceiptNumber TEXT NOT NULL UNIQUE,
 
+    ServiceId INTEGER,
     ServiceName TEXT NOT NULL,
+    Description TEXT,
 
     TotalAmount REAL NOT NULL DEFAULT 0,
     DiscountType TEXT NOT NULL DEFAULT 'None',
@@ -256,9 +265,6 @@ CREATE TABLE IF NOT EXISTS BillingTransactions (
     AmountPaid REAL NOT NULL DEFAULT 0,
     RemainingBalance REAL NOT NULL DEFAULT 0,
 
-    PaymentMethod TEXT NOT NULL DEFAULT 'Cash',
-
-    -- Supports installment/partial payments.
     PaymentStatus TEXT NOT NULL DEFAULT 'Unpaid'
         CHECK(PaymentStatus IN ('Unpaid', 'Partial', 'Paid')),
 
@@ -272,15 +278,16 @@ CREATE TABLE IF NOT EXISTS BillingTransactions (
 
     FOREIGN KEY (PatientId) REFERENCES Patients(PatientId),
     FOREIGN KEY (AppointmentId) REFERENCES Appointments(AppointmentId),
+    FOREIGN KEY (TreatmentRecordId) REFERENCES TreatmentRecords(TreatmentRecordId),
+    FOREIGN KEY (ServiceId) REFERENCES Services(ServiceId),
     FOREIGN KEY (CreatedByUserId) REFERENCES Users(UserId)
 );
 
 CREATE TABLE IF NOT EXISTS PaymentRecords (
     PaymentRecordId INTEGER PRIMARY KEY AUTOINCREMENT,
 
-    -- One billing transaction can have many payment records.
-    -- This is important for partial payments/installments.
     BillingId INTEGER NOT NULL,
+    PatientId INTEGER NOT NULL,
 
     AmountPaid REAL NOT NULL,
     PaymentMethod TEXT NOT NULL DEFAULT 'Cash',
@@ -292,6 +299,7 @@ CREATE TABLE IF NOT EXISTS PaymentRecords (
     CreatedAt TEXT NOT NULL,
 
     FOREIGN KEY (BillingId) REFERENCES BillingTransactions(BillingId),
+    FOREIGN KEY (PatientId) REFERENCES Patients(PatientId),
     FOREIGN KEY (ReceivedByUserId) REFERENCES Users(UserId)
 );
 
@@ -417,6 +425,13 @@ CREATE INDEX IF NOT EXISTS idx_treatment_records_date ON TreatmentRecords(Treatm
 CREATE INDEX IF NOT EXISTS idx_billing_patient ON BillingTransactions(PatientId);
 CREATE INDEX IF NOT EXISTS idx_billing_status ON BillingTransactions(PaymentStatus);
 CREATE INDEX IF NOT EXISTS idx_billing_receipt ON BillingTransactions(ReceiptNumber);
+CREATE INDEX IF NOT EXISTS idx_billing_source ON BillingTransactions(BillingSource);
+CREATE INDEX IF NOT EXISTS idx_billing_treatment_record ON BillingTransactions(TreatmentRecordId);
+CREATE INDEX IF NOT EXISTS idx_billing_appointment ON BillingTransactions(AppointmentId);
+
+CREATE INDEX IF NOT EXISTS idx_payment_records_billing ON PaymentRecords(BillingId);
+CREATE INDEX IF NOT EXISTS idx_payment_records_patient ON PaymentRecords(PatientId);
+CREATE INDEX IF NOT EXISTS idx_payment_records_date ON PaymentRecords(PaymentDate);
 
 CREATE INDEX IF NOT EXISTS idx_inventory_item_name ON InventoryItems(ItemName);
 CREATE INDEX IF NOT EXISTS idx_activity_created ON ActivityLogs(CreatedAt);
@@ -758,7 +773,6 @@ CREATE INDEX IF NOT EXISTS idx_activity_created ON ActivityLogs(CreatedAt);
             SeedService(connection, "TMJ", 0);
             SeedService(connection, "Dentures", 0);
             SeedService(connection, "Consultation", 0);
-            SeedService(connection, "Cleaning", 0);
         }
 
         private static void SeedService(SqliteConnection connection, string serviceName, double defaultPrice)
