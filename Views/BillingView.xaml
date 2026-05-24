@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
     xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:converters="clr-namespace:CruzNeryClinic.Converters"
@@ -1194,8 +1195,8 @@
             Visibility="{Binding IsReceiptOverlayOpen, Converter={StaticResource BoolToVisibilityConverter}}">
 
             <Border
-                Width="760"
-                MaxHeight="640"
+                Width="820"
+                MaxHeight="700"
                 Padding="0"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
@@ -1211,7 +1212,7 @@
 
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="76" />
+                        <RowDefinition Height="84" />
                         <RowDefinition Height="*" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
@@ -1222,10 +1223,10 @@
                         Background="#223357"
                         CornerRadius="18,18,0,0">
 
-                        <Grid Margin="28,0">
+                        <Grid Margin="30,0">
                             <TextBlock
                                 VerticalAlignment="Center"
-                                FontSize="26"
+                                FontSize="28"
                                 FontWeight="Bold"
                                 Foreground="White"
                                 Text="Dental Receipt" />
@@ -1236,15 +1237,16 @@
 
                                 <TextBlock
                                     FontSize="12"
+                                    FontWeight="SemiBold"
                                     Foreground="White"
                                     Text="Receipt Number" />
 
                                 <TextBlock
                                     Margin="0,4,0,0"
-                                    FontSize="14"
+                                    FontSize="15"
                                     FontWeight="Bold"
                                     Foreground="White"
-                                    Text="{Binding SelectedReceiptRecord.ReceiptNumber}" />
+                                    Text="{Binding SelectedReceiptDetail.ReceiptNumber}" />
                             </StackPanel>
                         </Grid>
                     </Border>
@@ -1252,10 +1254,17 @@
                     <!-- Body -->
                     <ScrollViewer
                         Grid.Row="1"
-                        Padding="28"
+                        Padding="30"
+                        HorizontalScrollBarVisibility="Disabled"
                         VerticalScrollBarVisibility="Auto">
 
+                        <ScrollViewer.Resources>
+                            <Style BasedOn="{StaticResource BlueDataGridScrollBarStyle}" TargetType="{x:Type ScrollBar}" />
+                        </ScrollViewer.Resources>
+
                         <StackPanel>
+
+                            <!-- Info blocks -->
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -1263,10 +1272,10 @@
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
 
-                                <!-- Patient info -->
+                                <!-- Patient Information -->
                                 <StackPanel Grid.Column="0">
                                     <Border
-                                        Padding="10"
+                                        Padding="12"
                                         Background="#F3F7FA">
                                         <TextBlock
                                             FontSize="16"
@@ -1274,22 +1283,29 @@
                                             Text="Patient Information" />
                                     </Border>
 
-                                    <TextBlock
-                                        Margin="0,12,0,0"
-                                        FontSize="14"
-                                        Text="{Binding SelectedReceiptRecord.PatientName}" />
+                                    <StackPanel Margin="0,14,0,0">
+                                        <TextBlock
+                                            FontSize="14"
+                                            Text="{Binding SelectedReceiptDetail.PatientName}" />
 
-                                    <TextBlock
-                                        Margin="0,6,0,0"
-                                        FontSize="13"
-                                        Foreground="#555555"
-                                        Text="{Binding SelectedReceiptRecord.PatientCode}" />
+                                        <TextBlock
+                                            Margin="0,6,0,0"
+                                            FontSize="13"
+                                            Foreground="#555555"
+                                            Text="{Binding SelectedReceiptDetail.PatientCode}" />
+
+                                        <TextBlock
+                                            Margin="0,6,0,0"
+                                            FontSize="13"
+                                            Foreground="#555555"
+                                            Text="{Binding SelectedReceiptDetail.PatientCategory, StringFormat=Category: {0}}" />
+                                    </StackPanel>
                                 </StackPanel>
 
-                                <!-- Transaction info -->
+                                <!-- Transaction Information -->
                                 <StackPanel Grid.Column="2">
                                     <Border
-                                        Padding="10"
+                                        Padding="12"
                                         Background="#F3F7FA">
                                         <TextBlock
                                             FontSize="16"
@@ -1297,22 +1313,35 @@
                                             Text="Transaction Information" />
                                     </Border>
 
-                                    <TextBlock
-                                        Margin="0,12,0,0"
-                                        FontSize="14"
-                                        Text="{Binding SelectedReceiptRecord.TransactionDateDisplay}" />
+                                    <StackPanel Margin="0,14,0,0">
+                                        <TextBlock
+                                            FontSize="14"
+                                            Text="{Binding SelectedReceiptDetail.TransactionDateDisplay}" />
 
-                                    <TextBlock
-                                        Margin="0,6,0,0"
-                                        FontSize="13"
-                                        Foreground="#555555"
-                                        Text="Payment Method: Cash" />
+                                        <TextBlock
+                                            Margin="0,6,0,0"
+                                            FontSize="13"
+                                            Foreground="#555555"
+                                            Text="{Binding SelectedReceiptDetail.PaymentMethod, StringFormat=Payment Method: {0}}" />
 
-                                    <TextBlock
-                                        Margin="0,6,0,0"
-                                        FontSize="13"
-                                        Foreground="#555555"
-                                        Text="{Binding SelectedReceiptRecord.PaymentStatus}" />
+                                        <TextBlock
+                                            Margin="0,6,0,0"
+                                            FontSize="13"
+                                            Foreground="#555555"
+                                            Text="{Binding SelectedReceiptDetail.PaymentStatus, StringFormat=Payment Status: {0}}" />
+
+                                        <TextBlock
+                                            Margin="0,6,0,0"
+                                            FontSize="13"
+                                            Foreground="#555555"
+                                            Text="{Binding SelectedReceiptDetail.BillingSource, StringFormat=Billing Source: {0}}" />
+
+                                        <TextBlock
+                                            Margin="0,6,0,0"
+                                            FontSize="13"
+                                            Foreground="#555555"
+                                            Text="{Binding SelectedReceiptDetail.LatestPaymentDateDisplay, StringFormat=Latest Payment: {0}}" />
+                                    </StackPanel>
                                 </StackPanel>
                             </Grid>
 
@@ -1321,8 +1350,9 @@
                                 Margin="0,28,0,20"
                                 Background="#DDDDDD" />
 
+                            <!-- Service / Treatment -->
                             <TextBlock
-                                FontSize="18"
+                                FontSize="19"
                                 FontWeight="Bold"
                                 Text="Service / Treatment" />
 
@@ -1334,19 +1364,29 @@
 
                                 <Border
                                     Grid.Column="0"
-                                    Padding="12"
+                                    Padding="14"
                                     Background="#F8F8F8"
                                     BorderBrush="#E0E0E0"
                                     BorderThickness="1">
 
-                                    <TextBlock
-                                        FontSize="14"
-                                        Text="{Binding SelectedReceiptRecord.ServiceName}" />
+                                    <StackPanel>
+                                        <TextBlock
+                                            FontSize="14"
+                                            FontWeight="SemiBold"
+                                            Text="{Binding SelectedReceiptDetail.ServiceName}" />
+
+                                        <TextBlock
+                                            Margin="0,6,0,0"
+                                            FontSize="12"
+                                            Foreground="#555555"
+                                            Text="{Binding SelectedReceiptDetail.Description}"
+                                            TextWrapping="Wrap" />
+                                    </StackPanel>
                                 </Border>
 
                                 <Border
                                     Grid.Column="1"
-                                    Padding="12"
+                                    Padding="14"
                                     Background="#F8F8F8"
                                     BorderBrush="#E0E0E0"
                                     BorderThickness="1">
@@ -1354,29 +1394,72 @@
                                     <TextBlock
                                         HorizontalAlignment="Right"
                                         FontSize="14"
-                                        Text="{Binding SelectedReceiptRecord.TotalAmountDisplay}" />
+                                        FontWeight="SemiBold"
+                                        Text="{Binding SelectedReceiptDetail.TotalAmountDisplay}" />
                                 </Border>
                             </Grid>
 
+                            <!-- Billing Summary -->
                             <Grid Margin="0,30,0,0">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="260" />
+                                    <ColumnDefinition Width="300" />
                                 </Grid.ColumnDefinitions>
 
                                 <StackPanel Grid.Column="1">
+                                    <TextBlock
+                                        Margin="0,0,0,12"
+                                        FontSize="16"
+                                        FontWeight="Bold"
+                                        Text="Billing Summary" />
+
                                     <Grid Margin="0,0,0,10">
-                                        <TextBlock FontWeight="SemiBold" Text="Total Amount" />
+                                        <TextBlock FontWeight="SemiBold" Text="Gross Amount" />
                                         <TextBlock
                                             HorizontalAlignment="Right"
-                                            Text="{Binding SelectedReceiptRecord.TotalAmountDisplay}" />
+                                            Text="{Binding SelectedReceiptDetail.TotalAmountDisplay}" />
                                     </Grid>
 
                                     <Grid Margin="0,0,0,10">
-                                        <TextBlock FontWeight="SemiBold" Text="Balance" />
+                                        <TextBlock FontWeight="SemiBold" Text="Discount Type" />
                                         <TextBlock
                                             HorizontalAlignment="Right"
-                                            Text="{Binding SelectedReceiptRecord.BalanceDisplay}" />
+                                            Text="{Binding SelectedReceiptDetail.DiscountType}" />
+                                    </Grid>
+
+                                    <Grid Margin="0,0,0,10">
+                                        <TextBlock FontWeight="SemiBold" Text="Discount Amount" />
+                                        <TextBlock
+                                            HorizontalAlignment="Right"
+                                            Text="{Binding SelectedReceiptDetail.DiscountAmountDisplay}" />
+                                    </Grid>
+
+                                    <Border
+                                        Height="1"
+                                        Margin="0,4,0,12"
+                                        Background="#DDDDDD" />
+
+                                    <Grid Margin="0,0,0,10">
+                                        <TextBlock FontWeight="Bold" Text="Billable Amount" />
+                                        <TextBlock
+                                            HorizontalAlignment="Right"
+                                            FontWeight="Bold"
+                                            Text="{Binding SelectedReceiptDetail.SubtotalAfterDiscountDisplay}" />
+                                    </Grid>
+
+                                    <Grid Margin="0,0,0,10">
+                                        <TextBlock FontWeight="SemiBold" Text="Amount Paid" />
+                                        <TextBlock
+                                            HorizontalAlignment="Right"
+                                            Text="{Binding SelectedReceiptDetail.AmountPaidDisplay}" />
+                                    </Grid>
+
+                                    <Grid Margin="0,0,0,10">
+                                        <TextBlock FontWeight="Bold" Text="Remaining Balance" />
+                                        <TextBlock
+                                            HorizontalAlignment="Right"
+                                            FontWeight="Bold"
+                                            Text="{Binding SelectedReceiptDetail.RemainingBalanceDisplay}" />
                                     </Grid>
 
                                     <Grid>
@@ -1384,27 +1467,61 @@
                                         <TextBlock
                                             HorizontalAlignment="Right"
                                             FontWeight="Bold"
-                                            Text="{Binding SelectedReceiptRecord.PaymentStatus}" />
+                                            Text="{Binding SelectedReceiptDetail.PaymentStatus}" />
                                     </Grid>
                                 </StackPanel>
                             </Grid>
+
+                            <!-- Notes -->
+                            <StackPanel Margin="0,26,0,0">
+                                <TextBlock
+                                    FontSize="16"
+                                    FontWeight="Bold"
+                                    Text="Notes" />
+
+                                <Border
+                                    Margin="0,8,0,0"
+                                    Padding="12"
+                                    Background="#F8F8F8"
+                                    BorderBrush="#E0E0E0"
+                                    BorderThickness="1">
+
+                                    <TextBlock
+                                        FontSize="13"
+                                        Foreground="#555555"
+                                        Text="{Binding SelectedReceiptDetail.Notes}"
+                                        TextWrapping="Wrap" />
+                                </Border>
+                            </StackPanel>
                         </StackPanel>
                     </ScrollViewer>
 
                     <!-- Footer -->
                     <StackPanel
                         Grid.Row="2"
-                        Margin="28,0,28,24"
+                        Margin="30,0,30,24"
                         HorizontalAlignment="Right"
                         Orientation="Horizontal">
 
                         <Button
                             Width="110"
-                            Height="40"
+                            Height="42"
                             Margin="0,0,10,0"
                             Background="#223357"
-                            Command="{Binding PrintReceiptCommand}"
-                            CommandParameter="{Binding SelectedReceiptRecord}"
+                            Command="{Binding SaveReceiptPdfCommand}"
+                            CommandParameter="{Binding SelectedReceiptDetail}"
+                            Content="Save PDF"
+                            Foreground="White"
+                            FontWeight="Bold"
+                            Style="{StaticResource SecondaryButtonStyle}" />
+
+                        <Button
+                            Width="110"
+                            Height="42"
+                            Margin="0,0,10,0"
+                            Background="#223357"
+                            Command="{Binding PrintReceiptPdfCommand}"
+                            CommandParameter="{Binding SelectedReceiptDetail}"
                             Content="Print"
                             Foreground="White"
                             FontWeight="Bold"
@@ -1412,7 +1529,7 @@
 
                         <Button
                             Width="110"
-                            Height="40"
+                            Height="42"
                             Background="White"
                             BorderBrush="#111111"
                             BorderThickness="1"
@@ -1420,7 +1537,79 @@
                             Content="Close"
                             Foreground="Black"
                             FontWeight="Bold"
-                            Style="{StaticResource SmallActionButtonStyle}" />
+                            Style="{StaticResource SecondaryButtonStyle}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+        <!-- Receipt PDF Print Preview Overlay -->
+        <Grid
+            Background="#66000000"
+            Visibility="{Binding IsReceiptPrintPreviewOpen, Converter={StaticResource BoolToVisibilityConverter}}">
+
+            <Border
+                Width="980"
+                Height="720"
+                Padding="18"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Background="White"
+                CornerRadius="18">
+
+                <Border.Effect>
+                    <DropShadowEffect
+                        BlurRadius="24"
+                        ShadowDepth="4"
+                        Opacity="0.25" />
+                </Border.Effect>
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="14" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="16" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock
+                        Grid.Row="0"
+                        FontSize="24"
+                        FontWeight="Bold"
+                        Foreground="#223357"
+                        Text="Receipt Print Preview" />
+
+                    <wv2:WebView2
+                        x:Name="ReceiptPrintWebView"
+                        Grid.Row="2"/>
+
+                    <StackPanel
+                        Grid.Row="4"
+                        HorizontalAlignment="Right"
+                        Orientation="Horizontal">
+
+                        <Button
+                            Width="120"
+                            Height="42"
+                            Margin="0,0,10,0"
+                            Background="#223357"
+                            Click="OpenReceiptPrintDialog_Click"
+                            Content="Print"
+                            Foreground="White"
+                            FontWeight="Bold"
+                            Style="{StaticResource SecondaryButtonStyle}" />
+
+                        <Button
+                            Width="120"
+                            Height="42"
+                            Background="White"
+                            BorderBrush="#111111"
+                            BorderThickness="1"
+                            Command="{Binding CloseReceiptPrintPreviewCommand}"
+                            Content="Close"
+                            Foreground="Black"
+                            FontWeight="Bold"
+                            Style="{StaticResource SecondaryButtonStyle}" />
                     </StackPanel>
                 </Grid>
             </Border>

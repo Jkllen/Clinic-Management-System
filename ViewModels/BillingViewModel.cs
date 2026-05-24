@@ -1,10 +1,15 @@
 using CommunityToolkit.Mvvm.Input;
 using CruzNeryClinic.Models;
 using CruzNeryClinic.Repositories;
-using System;
-using System.Linq;
+using CruzNeryClinic.Services;
 using System.Collections.ObjectModel;
+using System.Windows;
 using System.Windows.Input;
+using System.Windows.Controls;
+using System.Windows.Documents;
+using System.Windows.Media;
+using System.Linq;
+using System;
 
 namespace CruzNeryClinic.ViewModels
 {
@@ -39,8 +44,10 @@ namespace CruzNeryClinic.ViewModels
 
         private bool isTransactionHistoryOverlayOpen;
         private bool isReceiptOverlayOpen;
-        private BillingRecordListItem? selectedReceiptRecord;
+        private BillingReceiptDetail? selectedReceiptDetail;
 
+        private bool isReceiptPrintPreviewOpen;
+        private Uri? receiptPrintPreviewUri;
 
         private bool isPromptOpen;
         private string promptTitle = string.Empty;
@@ -157,10 +164,22 @@ namespace CruzNeryClinic.ViewModels
             set => SetProperty(ref isReceiptOverlayOpen, value);
         }
 
-        public BillingRecordListItem? SelectedReceiptRecord
+        public bool IsReceiptPrintPreviewOpen
         {
-            get => selectedReceiptRecord;
-            set => SetProperty(ref selectedReceiptRecord, value);
+            get => isReceiptPrintPreviewOpen;
+            set => SetProperty(ref isReceiptPrintPreviewOpen, value);
+        }
+
+        public Uri? ReceiptPrintPreviewUri
+        {
+            get => receiptPrintPreviewUri;
+            set => SetProperty(ref receiptPrintPreviewUri, value);
+        }
+
+        public BillingReceiptDetail? SelectedReceiptDetail
+        {
+            get => selectedReceiptDetail;
+            set => SetProperty(ref selectedReceiptDetail, value);
         }
 
         public bool HasMoreThanThreePatientBillingRecords =>
@@ -442,8 +461,12 @@ namespace CruzNeryClinic.ViewModels
         public ICommand RefreshBillingCommand { get; }
 
         public ICommand ViewReceiptCommand { get; }
-
         public ICommand PrintReceiptCommand { get; }
+
+        public ICommand PrintReceiptPdfCommand { get; }
+        public ICommand SaveReceiptPdfCommand { get; }
+
+        public ICommand CloseReceiptPrintPreviewCommand { get; }
 
         public ICommand ProcessAppointmentPaymentCommand { get; }
 
@@ -458,6 +481,7 @@ namespace CruzNeryClinic.ViewModels
         public ICommand ExpandReceiptCommand { get; }
 
         public ICommand CloseReceiptOverlayCommand { get; }
+
 
         #endregion
 
@@ -476,12 +500,17 @@ namespace CruzNeryClinic.ViewModels
             RefreshBillingCommand = new RelayCommand(LoadBillingData);
 
             ViewReceiptCommand = new RelayCommand<BillingRecordListItem>(ViewReceipt);
+            SaveReceiptPdfCommand = new RelayCommand<BillingReceiptDetail>(SaveReceiptPdf);
+            PrintReceiptPdfCommand = new RelayCommand<BillingReceiptDetail>(PrintReceiptPdf);
             PrintReceiptCommand = new RelayCommand<BillingRecordListItem>(PrintReceipt);
+
 
             LatestPatientBillingRecords = new ObservableCollection<BillingRecordListItem>();
 
             PaymentHistoryPatientResults = new ObservableCollection<BillingPatientLookupItem>();
             SelectedPatientBillingRecords = new ObservableCollection<BillingRecordListItem>();
+
+            CloseReceiptPrintPreviewCommand = new RelayCommand(CloseReceiptPrintPreview);
 
             OpenTransactionHistoryOverlayCommand = new RelayCommand(OpenTransactionHistoryOverlay);
             CloseTransactionHistoryOverlayCommand = new RelayCommand(CloseTransactionHistoryOverlay);
@@ -492,7 +521,7 @@ namespace CruzNeryClinic.ViewModels
             ProcessAppointmentPaymentCommand = new RelayCommand(ProcessAppointmentPayment);
             ClearAppointmentPaymentFormCommand = new RelayCommand(ClearAppointmentPaymentForm);
 
-            
+
             ClosePromptCommand = new RelayCommand(ClosePrompt);
 
             LoadBillingData();
@@ -631,20 +660,81 @@ namespace CruzNeryClinic.ViewModels
             SelectedBillingModule = moduleName;
         }
 
+        // This method is currently used for the "View Receipt" button (Action Section)
         private void ViewReceipt(BillingRecordListItem? billing)
         {
             if (billing == null)
                 return;
-
-            // Receipt modal will be implemented in Batch E.4.
+            
+            ExpandReceipt(billing);
         }
 
+        // This method is currently used for the "Print Receipt" button (Action Section)
+        // It prepares the receipt details and opens the print preview
         private void PrintReceipt(BillingRecordListItem? billing)
         {
             if (billing == null)
                 return;
 
-            // Printing will be implemented after receipt modal.
+            try
+            {
+                BillingReceiptDetail? detail =
+                    billingRepository.GetBillingReceiptDetail(billing.BillingId);
+
+                if (detail == null)
+                {
+                    ShowPrompt("Print Receipt", "Unable to load the selected receipt.");
+                    return;
+                }
+
+                PrintReceiptPdf(detail);
+            }
+            catch (Exception ex)
+            {
+                ShowPrompt("Print Receipt", $"Failed to prepare receipt for printing: {ex.Message}");
+            }
+        }
+
+        private void SaveReceiptPdf(BillingReceiptDetail? receipt)
+        {
+            if (receipt == null)
+            {
+                ShowPrompt("Receipt", "No receipt is selected.");
+                return;
+            }
+
+            try
+            {
+                string filePath = ReceiptPDFService.GenerateReceiptPdf(receipt);
+                ReceiptPDFService.OpenPdf(filePath);
+
+                ShowPrompt("Receipt", "PDF receipt has been generated and opened.");
+            }
+            catch (Exception ex)
+            {
+                ShowPrompt("Receipt", $"Failed to generate PDF receipt: {ex.Message}");
+            }
+        }
+
+        private void PrintReceiptPdf(BillingReceiptDetail? receipt)
+        {
+            if (receipt == null)
+            {
+                ShowPrompt("Receipt", "No receipt is selected.");
+                return;
+            }
+
+            try
+            {
+                string filePath = ReceiptPDFService.GenerateReceiptPdf(receipt);
+
+                ReceiptPrintPreviewUri = new Uri(filePath);
+                IsReceiptPrintPreviewOpen = true;
+            }
+            catch (Exception ex)
+            {
+                ShowPrompt("Print Receipt", $"Failed to prepare receipt preview: {ex.Message}");
+            }
         }
 
         private void OpenTransactionHistoryOverlay()
@@ -668,14 +758,35 @@ namespace CruzNeryClinic.ViewModels
             if (record == null)
                 return;
 
-            SelectedReceiptRecord = record;
-            IsReceiptOverlayOpen = true;
+            try
+            {
+                BillingReceiptDetail? detail =
+                    billingRepository.GetBillingReceiptDetail(record.BillingId);
+
+                if (detail == null)
+                {
+                    ShowPrompt("Receipt", "Unable to load the selected receipt.");
+                    return;
+                }
+
+                SelectedReceiptDetail = detail;
+                IsReceiptOverlayOpen = true;
+            }
+            catch (Exception ex)
+            {
+                ShowPrompt("Receipt", $"Failed to load receipt details: {ex.Message}");
+            }
+        }
+
+        private void CloseReceiptPrintPreview()
+        {
+            IsReceiptPrintPreviewOpen = false;
         }
 
         private void CloseReceiptOverlay()
         {
             IsReceiptOverlayOpen = false;
-            SelectedReceiptRecord = null;
+            SelectedReceiptDetail = null;
         }
 
         #endregion
@@ -905,7 +1016,7 @@ namespace CruzNeryClinic.ViewModels
         {
             appointmentPaymentSearchText = string.Empty;
             OnPropertyChanged(nameof(AppointmentPaymentSearchText));
-            IsAppointmentPaymentSearchPopupOpen = false;            
+            IsAppointmentPaymentSearchPopupOpen = false;
             AppointmentReceiptNumber = string.Empty;
             AppointmentPatientCode = string.Empty;
             AppointmentPatientName = string.Empty;
