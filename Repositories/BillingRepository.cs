@@ -27,6 +27,12 @@ SELECT
     p.FirstName,
     p.MiddleName,
     p.LastName,
+    CASE
+        WHEN p.IsPWD = 1 AND p.IsSeniorCitizen = 1 THEN 'PWD / Senior'
+        WHEN p.IsPWD = 1 THEN 'PWD'
+        WHEN p.IsSeniorCitizen = 1 THEN 'Senior Citizen'
+        ELSE 'Regular'
+    END AS Category,
     tr.ServiceId,
     tr.ServiceName,
     tr.DentistName,
@@ -58,6 +64,7 @@ ORDER BY tr.TreatmentDate DESC, tr.TreatmentTime DESC, tr.TreatmentRecordId DESC
                         SafeGetString(reader, "MiddleName"),
                         SafeGetString(reader, "LastName")
                     ),
+                    Category = SafeGetString(reader, "Category", "Regular"),
                     ServiceId = SafeGetNullableInt(reader, "ServiceId"),
                     ServiceName = SafeGetString(reader, "ServiceName"),
                     DentistName = SafeGetString(reader, "DentistName", "Unassigned"),
@@ -196,6 +203,133 @@ ORDER BY bt.TransactionDate DESC, bt.BillingId DESC;";
             return items;
         }
 
+        #endregion
+
+        #region Billing Patient Lookup
+        public List<BillingPatientLookupItem> SearchPatientsForBillingHistory(string keyword)
+        {
+            List<BillingPatientLookupItem> patients = new();
+
+            if (string.IsNullOrWhiteSpace(keyword))
+                return patients;
+
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+        SELECT DISTINCT
+            p.PatientId,
+            p.PatientCode,
+            p.FirstName,
+            p.MiddleName,
+            p.LastName,
+            CASE
+                WHEN COALESCE(p.IsPWD, 0) = 1 AND COALESCE(p.IsSeniorCitizen, 0) = 1 THEN 'PWD / Senior'
+                WHEN COALESCE(p.IsPWD, 0) = 1 THEN 'PWD'
+                WHEN COALESCE(p.IsSeniorCitizen, 0) = 1 THEN 'Senior Citizen'
+                ELSE 'Regular'
+            END AS Category
+        FROM Patients p
+        INNER JOIN BillingTransactions bt
+            ON bt.PatientId = p.PatientId
+        WHERE
+            COALESCE(p.IsActive, 1) = 1
+            AND (
+                p.PatientCode LIKE @Keyword
+                OR p.FirstName LIKE @Keyword
+                OR p.MiddleName LIKE @Keyword
+                OR p.LastName LIKE @Keyword
+                OR (p.LastName || ', ' || p.FirstName) LIKE @Keyword
+                OR (p.FirstName || ' ' || p.LastName) LIKE @Keyword
+            )
+        ORDER BY p.LastName, p.FirstName
+        LIMIT 8;";
+
+            command.Parameters.AddWithValue("@Keyword", $"%{keyword}%");
+
+            using SqliteDataReader reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                patients.Add(new BillingPatientLookupItem
+                {
+                    PatientId = Convert.ToInt32(reader["PatientId"]),
+                    PatientCode = SafeGetString(reader, "PatientCode"),
+                    PatientName = BuildFullName(
+                        SafeGetString(reader, "FirstName"),
+                        SafeGetString(reader, "MiddleName"),
+                        SafeGetString(reader, "LastName")
+                    ),
+                    Category = SafeGetString(reader, "Category", "Regular")
+                });
+            }
+
+            return patients;
+        }
+        public List<BillingRecordListItem> GetBillingRecordsByPatientId(int patientId)
+        {
+            List<BillingRecordListItem> records = new();
+
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+        SELECT
+            bt.BillingId,
+            bt.PatientId,
+            p.PatientCode,
+            p.FirstName,
+            p.MiddleName,
+            p.LastName,
+            bt.ReceiptNumber,
+            bt.BillingSource,
+            bt.ServiceName,
+            bt.TotalAmount,
+            bt.DiscountAmount,
+            bt.SubtotalAfterDiscount,
+            bt.AmountPaid,
+            bt.RemainingBalance,
+            bt.PaymentStatus,
+            bt.TransactionDate
+        FROM BillingTransactions bt
+        INNER JOIN Patients p
+            ON bt.PatientId = p.PatientId
+        WHERE bt.PatientId = @PatientId
+        ORDER BY bt.TransactionDate DESC, bt.BillingId DESC;";
+
+            command.Parameters.AddWithValue("@PatientId", patientId);
+
+            using SqliteDataReader reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                records.Add(new BillingRecordListItem
+                {
+                    BillingId = Convert.ToInt32(reader["BillingId"]),
+                    PatientId = Convert.ToInt32(reader["PatientId"]),
+                    PatientCode = SafeGetString(reader, "PatientCode"),
+                    PatientName = BuildFullName(
+                        SafeGetString(reader, "FirstName"),
+                        SafeGetString(reader, "MiddleName"),
+                        SafeGetString(reader, "LastName")
+                    ),
+                    ReceiptNumber = SafeGetString(reader, "ReceiptNumber"),
+                    BillingSource = SafeGetString(reader, "BillingSource"),
+                    ServiceName = SafeGetString(reader, "ServiceName"),
+                    TotalAmount = Convert.ToDecimal(reader["TotalAmount"]),
+                    DiscountAmount = Convert.ToDecimal(reader["DiscountAmount"]),
+                    SubtotalAfterDiscount = Convert.ToDecimal(reader["SubtotalAfterDiscount"]),
+                    AmountPaid = Convert.ToDecimal(reader["AmountPaid"]),
+                    RemainingBalance = Convert.ToDecimal(reader["RemainingBalance"]),
+                    PaymentStatus = SafeGetString(reader, "PaymentStatus"),
+                    TransactionDate = ParseDate(SafeGetString(reader, "TransactionDate"))
+                });
+            }
+
+            return records;
+        }
         #endregion
 
         #region Create Billing

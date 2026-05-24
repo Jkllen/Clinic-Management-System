@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.Input;
 using CruzNeryClinic.Models;
 using CruzNeryClinic.Repositories;
 using System;
+using System.Linq;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 
@@ -35,6 +36,26 @@ namespace CruzNeryClinic.ViewModels
         private bool hasAppointmentPaymentError;
         private string selectedBillingModule = "Appointment Payment";
         private string searchText = string.Empty;
+
+        private bool isTransactionHistoryOverlayOpen;
+        private bool isReceiptOverlayOpen;
+        private BillingRecordListItem? selectedReceiptRecord;
+
+
+        private bool isPromptOpen;
+        private string promptTitle = string.Empty;
+        private string promptMessage = string.Empty;
+
+        private string appointmentPaymentSearchText = string.Empty;
+        private bool isAppointmentPaymentSearchPopupOpen;
+
+        private string paymentHistorySearchText = string.Empty;
+        private bool isPaymentHistorySearchPopupOpen;
+        private BillingPatientLookupItem? selectedPaymentHistoryPatient;
+        private string paymentHistoryPatientName = string.Empty;
+        private bool hasSelectedPaymentHistoryPatient;
+
+
         private string errorMessage = string.Empty;
         private bool hasError;
 
@@ -45,11 +66,15 @@ namespace CruzNeryClinic.ViewModels
         public ObservableCollection<BillingRecordListItem> BillingRecords { get; }
 
         public ObservableCollection<AppointmentPaymentItem> AppointmentPaymentItems { get; }
+        public ObservableCollection<AppointmentPaymentItem> FilteredAppointmentPaymentItems { get; }
 
         public ObservableCollection<BalancePaymentItem> BalancePaymentItems { get; }
 
-        public ObservableCollection<string> DiscountTypeOptions { get; }
+        public ObservableCollection<BillingPatientLookupItem> PaymentHistoryPatientResults { get; }
 
+        public ObservableCollection<BillingRecordListItem> SelectedPatientBillingRecords { get; }
+
+        public ObservableCollection<BillingRecordListItem> LatestPatientBillingRecords { get; }
 
         #endregion
 
@@ -120,10 +145,108 @@ namespace CruzNeryClinic.ViewModels
                 _ => string.Empty
             };
 
+        public bool IsTransactionHistoryOverlayOpen
+        {
+            get => isTransactionHistoryOverlayOpen;
+            set => SetProperty(ref isTransactionHistoryOverlayOpen, value);
+        }
+
+        public bool IsReceiptOverlayOpen
+        {
+            get => isReceiptOverlayOpen;
+            set => SetProperty(ref isReceiptOverlayOpen, value);
+        }
+
+        public BillingRecordListItem? SelectedReceiptRecord
+        {
+            get => selectedReceiptRecord;
+            set => SetProperty(ref selectedReceiptRecord, value);
+        }
+
+        public bool HasMoreThanThreePatientBillingRecords =>
+            SelectedPatientBillingRecords.Count > 3;
+
+        public string PaymentHistorySearchText
+        {
+            get => paymentHistorySearchText;
+            set
+            {
+                if (SetProperty(ref paymentHistorySearchText, value))
+                {
+                    SearchPatientsForPaymentHistory();
+
+                    IsPaymentHistorySearchPopupOpen =
+                        !string.IsNullOrWhiteSpace(paymentHistorySearchText)
+                        && PaymentHistoryPatientResults.Count > 0;
+
+                    System.Diagnostics.Debug.WriteLine(
+                        $"Payment history search: '{paymentHistorySearchText}' | Results: {PaymentHistoryPatientResults.Count} | Popup: {IsPaymentHistorySearchPopupOpen}");
+                }
+            }
+        }
+
+        public bool IsPaymentHistorySearchPopupOpen
+        {
+            get => isPaymentHistorySearchPopupOpen;
+            set => SetProperty(ref isPaymentHistorySearchPopupOpen, value);
+        }
+
+        public BillingPatientLookupItem? SelectedPaymentHistoryPatient
+        {
+            get => selectedPaymentHistoryPatient;
+            set
+            {
+                if (SetProperty(ref selectedPaymentHistoryPatient, value))
+                {
+                    if (value == null)
+                        return;
+
+                    paymentHistorySearchText = $"{value.PatientCode} - {value.PatientName}";
+                    OnPropertyChanged(nameof(PaymentHistorySearchText));
+
+                    PaymentHistoryPatientName = value.PatientName;
+                    HasSelectedPaymentHistoryPatient = true;
+                    IsPaymentHistorySearchPopupOpen = false;
+
+                    LoadSelectedPatientBillingRecords(value.PatientId);
+                }
+            }
+        }
+
+        public string PaymentHistoryPatientName
+        {
+            get => paymentHistoryPatientName;
+            set => SetProperty(ref paymentHistoryPatientName, value);
+        }
+
+        public bool HasSelectedPaymentHistoryPatient
+        {
+            get => hasSelectedPaymentHistoryPatient;
+            set => SetProperty(ref hasSelectedPaymentHistoryPatient, value);
+        }
+
         public string SearchText
         {
             get => searchText;
             set => SetProperty(ref searchText, value);
+        }
+
+        public bool IsPromptOpen
+        {
+            get => isPromptOpen;
+            set => SetProperty(ref isPromptOpen, value);
+        }
+
+        public string PromptTitle
+        {
+            get => promptTitle;
+            set => SetProperty(ref promptTitle, value);
+        }
+
+        public string PromptMessage
+        {
+            get => promptMessage;
+            set => SetProperty(ref promptMessage, value);
         }
 
         public string ErrorMessage
@@ -145,9 +268,40 @@ namespace CruzNeryClinic.ViewModels
             {
                 if (SetProperty(ref selectedAppointmentPaymentItem, value))
                 {
+                    if (value != null)
+                    {
+                        appointmentPaymentSearchText =
+                            $"{value.PatientCode} - {value.PatientName}";
+
+                        OnPropertyChanged(nameof(AppointmentPaymentSearchText));
+                        IsAppointmentPaymentSearchPopupOpen = false;
+                    }
+
                     FillAppointmentPaymentForm(value);
                 }
             }
+        }
+
+        public string AppointmentPaymentSearchText
+        {
+            get => appointmentPaymentSearchText;
+            set
+            {
+                if (SetProperty(ref appointmentPaymentSearchText, value))
+                {
+                    FilterAppointmentPaymentItems();
+
+                    IsAppointmentPaymentSearchPopupOpen =
+                        !string.IsNullOrWhiteSpace(value)
+                        && FilteredAppointmentPaymentItems.Count > 0;
+                }
+            }
+        }
+
+        public bool IsAppointmentPaymentSearchPopupOpen
+        {
+            get => isAppointmentPaymentSearchPopupOpen;
+            set => SetProperty(ref isAppointmentPaymentSearchPopupOpen, value);
         }
 
         public string AppointmentReceiptNumber
@@ -171,7 +325,13 @@ namespace CruzNeryClinic.ViewModels
         public string AppointmentCategory
         {
             get => appointmentCategory;
-            set => SetProperty(ref appointmentCategory, value);
+            set
+            {
+                if (SetProperty(ref appointmentCategory, value))
+                {
+                    RecalculateAppointmentPayment();
+                }
+            }
         }
 
         public string AppointmentDate
@@ -199,21 +359,13 @@ namespace CruzNeryClinic.ViewModels
         public string AppointmentDiscountType
         {
             get => appointmentDiscountType;
-            set
-            {
-                if (SetProperty(ref appointmentDiscountType, value))
-                    ApplyAppointmentDiscountType();
-            }
+            set => SetProperty(ref appointmentDiscountType, value);
         }
 
         public decimal AppointmentDiscountAmount
         {
             get => appointmentDiscountAmount;
-            set
-            {
-                if (SetProperty(ref appointmentDiscountAmount, value))
-                    RecalculateAppointmentPayment();
-            }
+            set => SetProperty(ref appointmentDiscountAmount, value);
         }
 
         public decimal AppointmentPaymentAmount
@@ -244,12 +396,31 @@ namespace CruzNeryClinic.ViewModels
             set => SetProperty(ref appointmentNotes, value);
         }
 
+        public string AppointmentVatExemptSalesDisplay
+        {
+            get
+            {
+                if (!IsAppointmentPatientDiscountEligible())
+                    return "N/A";
+
+                decimal vatExemptSales = CalculateVatExemptSales(AppointmentTotalAmount);
+                return $"₱{vatExemptSales:N2}";
+            }
+        }
+
+        public string AppointmentDiscountLabel =>
+            IsAppointmentPatientDiscountEligible()
+                ? "20% Senior/PWD Discount:"
+                : "Discount:";
+
+        public string AppointmentBillableAmountDisplay =>
+            $"₱{CalculateAppointmentBillableAmount():N2}";
+
         public string AppointmentSubtotalDisplay =>
-            $"₱{Math.Max(AppointmentTotalAmount - AppointmentDiscountAmount, 0):N2}";
+            AppointmentBillableAmountDisplay;
 
         public string AppointmentBalanceDisplay =>
             $"₱{AppointmentBalance:N2}";
-
         public string AppointmentPaymentErrorMessage
         {
             get => appointmentPaymentErrorMessage;
@@ -278,6 +449,16 @@ namespace CruzNeryClinic.ViewModels
 
         public ICommand ClearAppointmentPaymentFormCommand { get; }
 
+        public ICommand ClosePromptCommand { get; }
+
+        public ICommand OpenTransactionHistoryOverlayCommand { get; }
+
+        public ICommand CloseTransactionHistoryOverlayCommand { get; }
+
+        public ICommand ExpandReceiptCommand { get; }
+
+        public ICommand CloseReceiptOverlayCommand { get; }
+
         #endregion
 
         #region Constructor
@@ -288,6 +469,7 @@ namespace CruzNeryClinic.ViewModels
 
             BillingRecords = new ObservableCollection<BillingRecordListItem>();
             AppointmentPaymentItems = new ObservableCollection<AppointmentPaymentItem>();
+            FilteredAppointmentPaymentItems = new ObservableCollection<AppointmentPaymentItem>();
             BalancePaymentItems = new ObservableCollection<BalancePaymentItem>();
 
             SelectBillingModuleCommand = new RelayCommand<string>(SelectBillingModule);
@@ -296,16 +478,22 @@ namespace CruzNeryClinic.ViewModels
             ViewReceiptCommand = new RelayCommand<BillingRecordListItem>(ViewReceipt);
             PrintReceiptCommand = new RelayCommand<BillingRecordListItem>(PrintReceipt);
 
+            LatestPatientBillingRecords = new ObservableCollection<BillingRecordListItem>();
+
+            PaymentHistoryPatientResults = new ObservableCollection<BillingPatientLookupItem>();
+            SelectedPatientBillingRecords = new ObservableCollection<BillingRecordListItem>();
+
+            OpenTransactionHistoryOverlayCommand = new RelayCommand(OpenTransactionHistoryOverlay);
+            CloseTransactionHistoryOverlayCommand = new RelayCommand(CloseTransactionHistoryOverlay);
+
+            ExpandReceiptCommand = new RelayCommand<BillingRecordListItem>(ExpandReceipt);
+            CloseReceiptOverlayCommand = new RelayCommand(CloseReceiptOverlay);
+
             ProcessAppointmentPaymentCommand = new RelayCommand(ProcessAppointmentPayment);
             ClearAppointmentPaymentFormCommand = new RelayCommand(ClearAppointmentPaymentForm);
 
-            DiscountTypeOptions = new ObservableCollection<string>
-            {
-                "None",
-                "PWD",
-                "Senior",
-                "Manual"
-            };
+            
+            ClosePromptCommand = new RelayCommand(ClosePrompt);
 
             LoadBillingData();
         }
@@ -338,14 +526,70 @@ namespace CruzNeryClinic.ViewModels
                 BillingRecords.Add(item);
         }
 
+        private void SearchPatientsForPaymentHistory()
+        {
+            PaymentHistoryPatientResults.Clear();
+
+            string keyword = PaymentHistorySearchText.Trim();
+
+            if (string.IsNullOrWhiteSpace(keyword))
+            {
+                ClearPaymentHistorySelection();
+                return;
+            }
+
+            try
+            {
+                foreach (BillingPatientLookupItem patient in billingRepository.SearchPatientsForBillingHistory(keyword))
+                {
+                    PaymentHistoryPatientResults.Add(patient);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Payment history patient search failed: {ex.Message}");
+                ShowPrompt("Payment History", $"Failed to search patients: {ex.Message}");
+            }
+        }
+
+        private void LoadSelectedPatientBillingRecords(int patientId)
+        {
+            SelectedPatientBillingRecords.Clear();
+            LatestPatientBillingRecords.Clear();
+
+            foreach (BillingRecordListItem billing in billingRepository.GetBillingRecordsByPatientId(patientId))
+                SelectedPatientBillingRecords.Add(billing);
+
+            foreach (BillingRecordListItem billing in SelectedPatientBillingRecords.Take(3))
+                LatestPatientBillingRecords.Add(billing);
+
+            OnPropertyChanged(nameof(HasMoreThanThreePatientBillingRecords));
+        }
+
+        private void ClearPaymentHistorySelection()
+        {
+            selectedPaymentHistoryPatient = null;
+            OnPropertyChanged(nameof(SelectedPaymentHistoryPatient));
+
+            PaymentHistoryPatientName = string.Empty;
+            HasSelectedPaymentHistoryPatient = false;
+            IsPaymentHistorySearchPopupOpen = false;
+
+            SelectedPatientBillingRecords.Clear();
+            LatestPatientBillingRecords.Clear();
+
+            OnPropertyChanged(nameof(HasMoreThanThreePatientBillingRecords));
+        }
+
         private void LoadAppointmentPaymentItems()
         {
             AppointmentPaymentItems.Clear();
 
             foreach (AppointmentPaymentItem item in billingRepository.GetUnbilledCompletedTreatments())
                 AppointmentPaymentItems.Add(item);
-        }
 
+            FilterAppointmentPaymentItems();
+        }
         private void LoadBalancePaymentItems()
         {
             BalancePaymentItems.Clear();
@@ -403,9 +647,92 @@ namespace CruzNeryClinic.ViewModels
             // Printing will be implemented after receipt modal.
         }
 
+        private void OpenTransactionHistoryOverlay()
+        {
+            if (!HasSelectedPaymentHistoryPatient)
+            {
+                ShowPrompt("Payment History", "Please select a patient first.");
+                return;
+            }
+
+            IsTransactionHistoryOverlayOpen = true;
+        }
+
+        private void CloseTransactionHistoryOverlay()
+        {
+            IsTransactionHistoryOverlayOpen = false;
+        }
+
+        private void ExpandReceipt(BillingRecordListItem? record)
+        {
+            if (record == null)
+                return;
+
+            SelectedReceiptRecord = record;
+            IsReceiptOverlayOpen = true;
+        }
+
+        private void CloseReceiptOverlay()
+        {
+            IsReceiptOverlayOpen = false;
+            SelectedReceiptRecord = null;
+        }
+
         #endregion
 
         #region Appointment Payment Methods
+
+        private bool IsAppointmentPatientDiscountEligible()
+        {
+            return AppointmentCategory == "PWD"
+                || AppointmentCategory == "Senior Citizen"
+                || AppointmentCategory == "PWD / Senior";
+        }
+
+        private decimal CalculateVatExemptSales(decimal grossAmount)
+        {
+            return Math.Round(grossAmount / 1.12m, 2);
+        }
+
+        private decimal CalculateSeniorPwdDiscount(decimal vatExemptSales)
+        {
+            return Math.Round(vatExemptSales * 0.20m, 2);
+        }
+
+        private decimal CalculateAppointmentBillableAmount()
+        {
+            if (AppointmentTotalAmount <= 0)
+                return 0;
+
+            if (!IsAppointmentPatientDiscountEligible())
+                return AppointmentTotalAmount;
+
+            decimal vatExemptSales = CalculateVatExemptSales(AppointmentTotalAmount);
+            decimal discount = CalculateSeniorPwdDiscount(vatExemptSales);
+
+            return Math.Round(vatExemptSales - discount, 2);
+        }
+
+        private void FilterAppointmentPaymentItems()
+        {
+            FilteredAppointmentPaymentItems.Clear();
+
+            string keyword = AppointmentPaymentSearchText.Trim();
+
+            var results = AppointmentPaymentItems.AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                results = results.Where(item =>
+                    item.PatientCode.Contains(keyword, StringComparison.OrdinalIgnoreCase)
+                    || item.PatientName.Contains(keyword, StringComparison.OrdinalIgnoreCase)
+                    || item.ServiceName.Contains(keyword, StringComparison.OrdinalIgnoreCase)
+                    || item.TreatmentDateDisplay.Contains(keyword, StringComparison.OrdinalIgnoreCase));
+            }
+
+            foreach (AppointmentPaymentItem item in results.Take(8))
+                FilteredAppointmentPaymentItems.Add(item);
+        }
 
         private void FillAppointmentPaymentForm(AppointmentPaymentItem? item)
         {
@@ -420,11 +747,11 @@ namespace CruzNeryClinic.ViewModels
             AppointmentReceiptNumber = billingRepository.GenerateReceiptNumber();
             AppointmentPatientCode = item.PatientCode;
             AppointmentPatientName = item.PatientName;
-            AppointmentCategory = string.Empty;
+            AppointmentCategory = item.Category;
             AppointmentDate = item.TreatmentDateDisplay;
             AppointmentServiceName = item.ServiceName;
 
-            AppointmentTotalAmount = item.DefaultPrice;
+            AppointmentTotalAmount = 0;
             AppointmentDiscountType = "None";
             AppointmentDiscountAmount = 0;
             AppointmentPaymentAmount = 0;
@@ -434,42 +761,46 @@ namespace CruzNeryClinic.ViewModels
             RecalculateAppointmentPayment();
         }
 
-        private void ApplyAppointmentDiscountType()
-        {
-            if (AppointmentDiscountType == "None")
-            {
-                AppointmentDiscountAmount = 0;
-                return;
-            }
-
-            if (AppointmentDiscountType is "PWD" or "Senior")
-            {
-                AppointmentDiscountAmount = Math.Round(AppointmentTotalAmount * 0.20m, 2);
-                return;
-            }
-
-            // Manual discount keeps whatever staff typed.
-            RecalculateAppointmentPayment();
-        }
-
         private void RecalculateAppointmentPayment()
         {
-            if (AppointmentDiscountAmount < 0)
-                AppointmentDiscountAmount = 0;
-
-            if (AppointmentDiscountAmount > AppointmentTotalAmount)
-                AppointmentDiscountAmount = AppointmentTotalAmount;
+            if (AppointmentTotalAmount < 0)
+                AppointmentTotalAmount = 0;
 
             if (AppointmentPaymentAmount < 0)
                 AppointmentPaymentAmount = 0;
 
-            decimal netAmount = Math.Max(AppointmentTotalAmount - AppointmentDiscountAmount, 0);
+            if (IsAppointmentPatientDiscountEligible())
+            {
+                decimal vatExemptSales = CalculateVatExemptSales(AppointmentTotalAmount);
 
-            if (AppointmentPaymentAmount > netAmount)
-                AppointmentPaymentAmount = netAmount;
+                appointmentDiscountAmount = CalculateSeniorPwdDiscount(vatExemptSales);
+                OnPropertyChanged(nameof(AppointmentDiscountAmount));
 
-            AppointmentBalance = billingRepository.CalculateBalance(netAmount, AppointmentPaymentAmount);
+                appointmentDiscountType = AppointmentCategory == "PWD / Senior"
+                    ? "PWD/Senior"
+                    : AppointmentCategory;
 
+                OnPropertyChanged(nameof(AppointmentDiscountType));
+            }
+            else
+            {
+                appointmentDiscountAmount = 0;
+                OnPropertyChanged(nameof(AppointmentDiscountAmount));
+
+                appointmentDiscountType = "None";
+                OnPropertyChanged(nameof(AppointmentDiscountType));
+            }
+
+            decimal billableAmount = CalculateAppointmentBillableAmount();
+
+            if (AppointmentPaymentAmount > billableAmount)
+                AppointmentPaymentAmount = billableAmount;
+
+            AppointmentBalance = billingRepository.CalculateBalance(billableAmount, AppointmentPaymentAmount);
+
+            OnPropertyChanged(nameof(AppointmentVatExemptSalesDisplay));
+            OnPropertyChanged(nameof(AppointmentDiscountLabel));
+            OnPropertyChanged(nameof(AppointmentBillableAmountDisplay));
             OnPropertyChanged(nameof(AppointmentSubtotalDisplay));
             OnPropertyChanged(nameof(AppointmentBalanceDisplay));
         }
@@ -496,7 +827,7 @@ namespace CruzNeryClinic.ViewModels
                 return;
             }
 
-            decimal netAmount = Math.Max(AppointmentTotalAmount - AppointmentDiscountAmount, 0);
+            decimal netAmount = CalculateAppointmentBillableAmount();
 
             if (AppointmentPaymentAmount < 0)
             {
@@ -506,7 +837,7 @@ namespace CruzNeryClinic.ViewModels
 
             if (AppointmentPaymentAmount > netAmount)
             {
-                ShowAppointmentPaymentError("Payment amount cannot be greater than the subtotal after discount.");
+                ShowAppointmentPaymentError("Payment amount cannot be greater than the billable amount.");
                 return;
             }
 
@@ -572,6 +903,9 @@ namespace CruzNeryClinic.ViewModels
 
         private void ClearAppointmentPaymentFormFieldsOnly()
         {
+            appointmentPaymentSearchText = string.Empty;
+            OnPropertyChanged(nameof(AppointmentPaymentSearchText));
+            IsAppointmentPaymentSearchPopupOpen = false;            
             AppointmentReceiptNumber = string.Empty;
             AppointmentPatientCode = string.Empty;
             AppointmentPatientName = string.Empty;
@@ -587,6 +921,9 @@ namespace CruzNeryClinic.ViewModels
             AppointmentPaymentMethod = "Cash";
             AppointmentNotes = string.Empty;
 
+            OnPropertyChanged(nameof(AppointmentVatExemptSalesDisplay));
+            OnPropertyChanged(nameof(AppointmentDiscountLabel));
+            OnPropertyChanged(nameof(AppointmentBillableAmountDisplay));
             OnPropertyChanged(nameof(AppointmentSubtotalDisplay));
             OnPropertyChanged(nameof(AppointmentBalanceDisplay));
         }
@@ -595,6 +932,8 @@ namespace CruzNeryClinic.ViewModels
         {
             AppointmentPaymentErrorMessage = message;
             HasAppointmentPaymentError = true;
+
+            ShowPrompt("Appointment Payment", message);
         }
 
         private void ClearAppointmentPaymentError()
@@ -605,13 +944,28 @@ namespace CruzNeryClinic.ViewModels
 
         #endregion
 
-
         #region Error Helpers
+
+        private void ShowPrompt(string title, string message)
+        {
+            PromptTitle = title;
+            PromptMessage = message;
+            IsPromptOpen = true;
+        }
+
+        private void ClosePrompt()
+        {
+            IsPromptOpen = false;
+            PromptTitle = string.Empty;
+            PromptMessage = string.Empty;
+        }
 
         private void ShowError(string message)
         {
             ErrorMessage = message;
             HasError = true;
+
+            ShowPrompt("Billing Notice", message);
         }
 
         private void ClearError()
