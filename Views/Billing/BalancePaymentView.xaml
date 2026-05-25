@@ -1,0 +1,601 @@
+<UserControl
+    x:Class="CruzNeryClinic.Views.Billing.BalancePaymentView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DesignHeight="520"
+    d:DesignWidth="1200"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </UserControl.Resources>
+
+    <Grid Margin="0">
+        <Grid.ColumnDefinitions>
+            <!-- Left lookup card -->
+            <ColumnDefinition Width="330" />
+
+            <!-- Gap -->
+            <ColumnDefinition Width="24" />
+
+            <!-- Right process card -->
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- =====================================================
+             LEFT CARD: Balance Payment List
+             ===================================================== -->
+        <Border
+            Grid.Column="0"
+            Padding="22"
+            Background="White"
+            BorderBrush="#DDDDDD"
+            BorderThickness="1"
+            CornerRadius="16">
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="16" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="14" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!-- Header -->
+                <StackPanel Grid.Row="0">
+                    <TextBlock
+                        FontSize="22"
+                        FontWeight="Bold"
+                        Foreground="#111111"
+                        Text="Balance Payment" />
+
+                    <TextBlock
+                        Margin="0,6,0,0"
+                        FontSize="14"
+                        Foreground="#777777"
+                        Text="Record payments for unpaid or partial billing record"
+                        TextWrapping="Wrap" />
+                </StackPanel>
+
+                <!-- Search receipt -->
+                <StackPanel Grid.Row="2">
+                    <TextBlock
+                        Margin="0,0,0,8"
+                        FontSize="16"
+                        FontWeight="Bold"
+                        Foreground="#111111"
+                        Text="Receipt Number" />
+
+                    <TextBox
+                        Height="46"
+                        FontSize="14"
+                        Style="{StaticResource ModernTextBoxStyle}"
+                        Tag="Enter receipt number"
+                        Text="{Binding BalanceSearchText, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+
+                <!-- Balance records list -->
+                <ScrollViewer
+                    Grid.Row="4"
+                    MaxHeight="390"
+                    HorizontalScrollBarVisibility="Disabled"
+                    VerticalScrollBarVisibility="Auto">
+
+                    <ScrollViewer.Resources>
+                        <Style
+                            BasedOn="{StaticResource BlueDataGridScrollBarStyle}"
+                            TargetType="{x:Type ScrollBar}" />
+                    </ScrollViewer.Resources>
+
+                    <ItemsControl ItemsSource="{Binding VisibleBalancePaymentItems}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border
+                                    Margin="0,0,0,14"
+                                    Padding="16"
+                                    Background="#EFEFF3"
+                                    CornerRadius="12">
+
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="96" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Left details -->
+                                        <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                            <TextBlock
+                                                FontSize="14"
+                                                FontWeight="Bold"
+                                                Foreground="#111111"
+                                                Text="{Binding ReceiptNumber}"
+                                                TextWrapping="Wrap" />
+
+                                            <TextBlock
+                                                Margin="0,7,0,0"
+                                                FontSize="13"
+                                                Foreground="#333333"
+                                                Text="{Binding PatientName}"
+                                                TextTrimming="CharacterEllipsis" />
+
+                                            <TextBlock
+                                                Margin="0,5,0,0"
+                                                FontSize="13"
+                                                Foreground="#333333"
+                                                Text="{Binding ServiceName}"
+                                                TextTrimming="CharacterEllipsis" />
+
+                                            <TextBlock
+                                                Margin="0,7,0,0"
+                                                FontSize="14"
+                                                FontWeight="Bold"
+                                                Foreground="#D32F2F"
+                                                Text="{Binding RemainingBalanceDisplay, Mode=OneWay}" />
+                                        </StackPanel>
+
+                                        <!-- Right status + select -->
+                                        <StackPanel
+                                            Grid.Column="1"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Center">
+
+                                            <!-- Status badge -->
+                                            <Border
+                                                Width="76"
+                                                Height="28"
+                                                Margin="0,0,0,14"
+                                                CornerRadius="12">
+
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Background" Value="#FFD6D6" />
+
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding PaymentStatus}" Value="Partial">
+                                                                <Setter Property="Background" Value="#FFEBC0" />
+                                                            </DataTrigger>
+
+                                                            <DataTrigger Binding="{Binding PaymentStatus}" Value="Paid">
+                                                                <Setter Property="Background" Value="#D9F8DF" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+
+                                                <TextBlock
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    FontSize="11"
+                                                    FontWeight="Bold"
+                                                    Text="{Binding PaymentStatus}">
+
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Foreground" Value="#C62828" />
+
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding PaymentStatus}" Value="Partial">
+                                                                    <Setter Property="Foreground" Value="#D49A00" />
+                                                                </DataTrigger>
+
+                                                                <DataTrigger Binding="{Binding PaymentStatus}" Value="Paid">
+                                                                    <Setter Property="Foreground" Value="#00A423" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </Border>
+
+                                            <!-- Select button -->
+                                            <Button
+                                                Width="86"
+                                                Height="34"
+                                                Background="White"
+                                                BorderBrush="#223357"
+                                                BorderThickness="1"
+                                                Command="{Binding DataContext.SelectBalancePaymentCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"
+                                                Content="Select"
+                                                Foreground="#223357"
+                                                FontSize="13"
+                                                FontWeight="Bold"
+                                                Style="{StaticResource SecondaryButtonStyle}" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+
+                <!-- View More / Show Less -->
+                <Button
+                    Grid.Row="5"
+                    Margin="0,2,0,0"
+                    HorizontalAlignment="Center"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Command="{Binding ToggleBalancePaymentItemsCommand}"
+                    Cursor="Hand"
+                    Visibility="{Binding HasMoreBalancePaymentItems, Converter={StaticResource BoolToVisibilityConverter}}">
+
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock
+                            FontSize="13"
+                            FontWeight="Bold"
+                            Foreground="#223357"
+                            Text="{Binding ViewMoreBalancePaymentText}" />
+
+                        <fa:IconBlock
+                            Margin="7,2,0,0"
+                            FontSize="13"
+                            Foreground="#223357"
+                            Icon="AngleDown" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+        </Border>
+
+        <!-- =====================================================
+             RIGHT CARD: Process Balance Payment
+             ===================================================== -->
+        <Border
+            Grid.Column="2"
+            Padding="26"
+            Background="White"
+            BorderBrush="#DDDDDD"
+            BorderThickness="1"
+            CornerRadius="16">
+
+            <ScrollViewer
+                HorizontalScrollBarVisibility="Disabled"
+                VerticalScrollBarVisibility="Auto">
+
+                <ScrollViewer.Resources>
+                    <Style
+                        BasedOn="{StaticResource BlueDataGridScrollBarStyle}"
+                        TargetType="{x:Type ScrollBar}" />
+                </ScrollViewer.Resources>
+
+                <Grid Margin="0,0,10,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="24" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Header -->
+                    <Grid Grid.Row="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="220" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock
+                                FontSize="22"
+                                FontWeight="Bold"
+                                Foreground="#111111"
+                                Text="Process Balance Payment" />
+
+                            <TextBlock
+                                Margin="0,6,0,0"
+                                FontSize="14"
+                                Foreground="#777777"
+                                Text="Select an unpaid or partial billing record, then enter the cash payment amount."
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+
+                        <!-- Current payment date -->
+                        <StackPanel
+                            Grid.Column="1"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            Orientation="Horizontal">
+
+                            <TextBlock
+                                Margin="0,0,12,0"
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Foreground="#111111"
+                                Text="Date" />
+
+                            <TextBlock
+                                FontSize="16"
+                                Foreground="#8A8A8A"
+                                Text="{Binding BalancePaymentDateDisplay, Mode=OneWay}" />
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Form body -->
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <!-- Form column 1 -->
+                            <ColumnDefinition Width="1*" />
+
+                            <!-- Gap -->
+                            <ColumnDefinition Width="22" />
+
+                            <!-- Form column 2 -->
+                            <ColumnDefinition Width="1*" />
+
+                            <!-- Gap -->
+                            <ColumnDefinition Width="28" />
+
+                            <!-- Summary and buttons -->
+                            <ColumnDefinition Width="245" />
+                        </Grid.ColumnDefinitions>
+
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <!-- Receipt Number -->
+                        <StackPanel Grid.Row="0" Grid.Column="0">
+                            <TextBlock
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Foreground="#111111"
+                                Text="Receipt Number" />
+
+                            <TextBox
+                                Height="46"
+                                Margin="0,8,0,0"
+                                IsReadOnly="True"
+                                Style="{StaticResource ModernTextBoxStyle}"
+                                Tag="Auto-Filled"
+                                Text="{Binding BalanceReceiptNumber}" />
+                        </StackPanel>
+
+                        <!-- Current Balance -->
+                        <StackPanel Grid.Row="0" Grid.Column="2">
+                            <TextBlock
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Foreground="#111111"
+                                Text="Current Balance" />
+
+                            <TextBox
+                                Height="46"
+                                Margin="0,5,0,0"
+                                IsReadOnly="True"
+                                Style="{StaticResource ModernTextBoxStyle}"
+                                Text="{Binding BalanceCurrentBalanceDisplay, Mode=OneWay}" />
+                        </StackPanel>
+
+                        <!-- Patient Name -->
+                        <StackPanel Grid.Row="2" Grid.Column="0">
+                            <TextBlock
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Foreground="#111111"
+                                Text="Patient Name" />
+
+                            <TextBox
+                                Height="46"
+                                Margin="0,5,0,0"
+                                IsReadOnly="True"
+                                Style="{StaticResource ModernTextBoxStyle}"
+                                Tag="Auto-Filled"
+                                Text="{Binding BalancePatientName}" />
+                        </StackPanel>
+
+                        <!-- Payment Amount -->
+                        <StackPanel Grid.Row="2" Grid.Column="2">
+                            <TextBlock
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Foreground="#111111"
+                                Text="Payment Amount *" />
+
+                            <TextBox
+                                Height="46"
+                                Margin="0,5,0,0"
+                                Style="{StaticResource ModernTextBoxStyle}"
+                                Text="{Binding BalancePaymentAmount, UpdateSourceTrigger=LostFocus, StringFormat={}{0:N2}}" />
+                        </StackPanel>
+
+                        <!-- Service / Treatment -->
+                        <StackPanel Grid.Row="4" Grid.Column="0">
+                            <TextBlock
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Foreground="#111111"
+                                Text="Service / Treatment" />
+
+                            <TextBox
+                                Height="46"
+                                Margin="0,5,0,0"
+                                IsReadOnly="True"
+                                Style="{StaticResource ModernTextBoxStyle}"
+                                Tag="Auto-Filled"
+                                Text="{Binding BalanceServiceName}" />
+                        </StackPanel>
+
+                        <!-- Remaining After Payment -->
+                        <StackPanel Grid.Row="4" Grid.Column="2">
+                            <TextBlock
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Foreground="#111111"
+                                Text="Remaining After Payment" />
+
+                            <TextBox
+                                Height="46"
+                                Margin="0,5,0,0"
+                                IsReadOnly="True"
+                                Style="{StaticResource ModernTextBoxStyle}"
+                                Text="{Binding BalanceRemainingAfterPaymentDisplay, Mode=OneWay}" />
+                        </StackPanel>
+
+                        <!-- Notes: now wider and bigger -->
+                        <StackPanel
+                            Grid.Row="6"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="3">
+
+                            <TextBlock
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Foreground="#111111"
+                                Text="Notes" />
+
+                            <TextBox
+                                Height="150"
+                                Margin="0,5,0,0"
+                                AcceptsReturn="True"
+                                BorderBrush="#BFBFBF"
+                                BorderThickness="1"
+                                Text="{Binding BalancePaymentNotes, 
+                                UpdateSourceTrigger=PropertyChanged}"
+                                Style="{StaticResource ModernTextBoxStyle}"
+                                TextWrapping="Wrap"
+                                VerticalScrollBarVisibility="Auto" />
+                        </StackPanel>
+
+                        <!-- Right summary + buttons -->
+                        <Grid Grid.Row="0" Grid.RowSpan="7" Grid.Column="4" VerticalAlignment="Top">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="24" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <!-- Payment Summary -->
+                            <Border
+                                Grid.Row="0"
+                                Padding="22"
+                                Background="#EAF5FF"
+                                BorderBrush="#B9DAFF"
+                                BorderThickness="1"
+                                CornerRadius="12">
+
+                                <StackPanel>
+                                    <TextBlock
+                                        Margin="0,0,0,18"
+                                        FontSize="16"
+                                        FontWeight="Bold"
+                                        Foreground="#223357"
+                                        Text="Payment Summary" />
+
+                                    <Grid Margin="0,0,0,14">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock
+                                            Grid.Column="0"
+                                            FontSize="14"
+                                            Foreground="#223357"
+                                            Text="Current Balance:" />
+
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            FontSize="14"
+                                            FontWeight="Bold"
+                                            Foreground="#223357"
+                                            Text="{Binding BalanceCurrentBalanceDisplay, Mode=OneWay}" />
+                                    </Grid>
+
+                                    <Grid Margin="0,0,0,16">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock
+                                            Grid.Column="0"
+                                            FontSize="14"
+                                            Foreground="#223357"
+                                            Text="Payment:" />
+
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            FontSize="14"
+                                            FontWeight="Bold"
+                                            Foreground="#223357"
+                                            Text="{Binding BalancePaymentAmountDisplay, Mode=OneWay}" />
+                                    </Grid>
+
+                                    <Border
+                                        Height="1"
+                                        Margin="0,0,0,14"
+                                        Background="#6CA6E8" />
+
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock
+                                            Grid.Column="0"
+                                            FontSize="15"
+                                            FontWeight="Bold"
+                                            Foreground="#223357"
+                                            Text="Remaining:" />
+
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            FontSize="15"
+                                            FontWeight="Bold"
+                                            Foreground="#00A423"
+                                            Text="{Binding BalanceRemainingAfterPaymentDisplay, Mode=OneWay}" />
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Buttons -->
+                            <StackPanel
+                                Grid.Row="2"
+                                HorizontalAlignment="Right"
+                                Orientation="Horizontal">
+
+                                <Button
+                                    Width="160"
+                                    Height="44"
+                                    Margin="0,0,10,0"
+                                    Background="#223357"
+                                    Command="{Binding ProcessBalancePaymentCommand}"
+                                    Foreground="White"
+                                    Style="{StaticResource SecondaryButtonStyle}">
+
+                                    <TextBlock
+                                        FontSize="14"
+                                        FontWeight="Bold"
+                                        Text="₱ Process Transaction" />
+                                </Button>
+
+                                <Button
+                                    Width="65"
+                                    Height="44"
+                                    Background="White"
+                                    BorderBrush="#111111"
+                                    BorderThickness="1"
+                                    Command="{Binding ClearBalancePaymentFormCommand}"
+                                    Content="Clear"
+                                    Foreground="Black"
+                                    FontSize="14"
+                                    FontWeight="Bold"
+                                    Style="{StaticResource SecondaryButtonStyle}" />
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </ScrollViewer>
+        </Border>
+    </Grid>
+</UserControl>

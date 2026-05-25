@@ -27,6 +27,12 @@ SELECT
     p.FirstName,
     p.MiddleName,
     p.LastName,
+    CASE
+        WHEN p.IsPWD = 1 AND p.IsSeniorCitizen = 1 THEN 'PWD / Senior'
+        WHEN p.IsPWD = 1 THEN 'PWD'
+        WHEN p.IsSeniorCitizen = 1 THEN 'Senior Citizen'
+        ELSE 'Regular'
+    END AS Category,
     tr.ServiceId,
     tr.ServiceName,
     tr.DentistName,
@@ -58,6 +64,7 @@ ORDER BY tr.TreatmentDate DESC, tr.TreatmentTime DESC, tr.TreatmentRecordId DESC
                         SafeGetString(reader, "MiddleName"),
                         SafeGetString(reader, "LastName")
                     ),
+                    Category = SafeGetString(reader, "Category", "Regular"),
                     ServiceId = SafeGetNullableInt(reader, "ServiceId"),
                     ServiceName = SafeGetString(reader, "ServiceName"),
                     DentistName = SafeGetString(reader, "DentistName", "Unassigned"),
@@ -198,6 +205,251 @@ ORDER BY bt.TransactionDate DESC, bt.BillingId DESC;";
 
         #endregion
 
+        #region Billing Receipt Details
+        public BillingReceiptDetail? GetBillingReceiptDetail(int billingId)
+        {
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+        SELECT
+            bt.BillingId,
+            bt.PatientId,
+            bt.AppointmentId,
+            bt.TreatmentRecordId,
+            bt.ReceiptNumber,
+            bt.BillingSource,
+            bt.ServiceName,
+            bt.Description,
+            bt.TotalAmount,
+            bt.DiscountType,
+            bt.DiscountAmount,
+            bt.SubtotalAfterDiscount,
+            bt.AmountPaid,
+            bt.RemainingBalance,
+            bt.PaymentStatus,
+            bt.TransactionDate,
+            bt.Notes,
+
+            p.PatientCode,
+            p.FirstName,
+            p.MiddleName,
+            p.LastName,
+            CASE
+                WHEN COALESCE(p.IsPWD, 0) = 1 AND COALESCE(p.IsSeniorCitizen, 0) = 1 THEN 'PWD / Senior'
+                WHEN COALESCE(p.IsPWD, 0) = 1 THEN 'PWD'
+                WHEN COALESCE(p.IsSeniorCitizen, 0) = 1 THEN 'Senior Citizen'
+                ELSE 'Regular'
+            END AS PatientCategory,
+
+            COALESCE((
+                SELECT pr.PaymentMethod
+                FROM PaymentRecords pr
+                WHERE pr.BillingId = bt.BillingId
+                ORDER BY pr.PaymentDate DESC, pr.PaymentRecordId DESC
+                LIMIT 1
+            ), 'Cash') AS PaymentMethod,
+
+            (
+                SELECT pr.PaymentDate
+                FROM PaymentRecords pr
+                WHERE pr.BillingId = bt.BillingId
+                ORDER BY pr.PaymentDate DESC, pr.PaymentRecordId DESC
+                LIMIT 1
+            ) AS LatestPaymentDate,
+
+            COALESCE((
+                SELECT SUM(pr.AmountPaid)
+                FROM PaymentRecords pr
+                WHERE pr.BillingId = bt.BillingId
+            ), 0) AS ActualAmountPaid
+
+        FROM BillingTransactions bt
+        INNER JOIN Patients p
+            ON p.PatientId = bt.PatientId
+        WHERE bt.BillingId = @BillingId
+        LIMIT 1;";
+
+            command.Parameters.AddWithValue("@BillingId", billingId);
+
+            using SqliteDataReader reader = command.ExecuteReader();
+
+            if (!reader.Read())
+                return null;
+
+            string firstName = SafeGetString(reader, "FirstName");
+            string middleName = SafeGetString(reader, "MiddleName");
+            string lastName = SafeGetString(reader, "LastName");
+
+            return new BillingReceiptDetail
+            {
+                BillingId = Convert.ToInt32(reader["BillingId"]),
+                PatientId = Convert.ToInt32(reader["PatientId"]),
+                AppointmentId = SafeGetNullableInt(reader, "AppointmentId"),
+                TreatmentRecordId = SafeGetNullableInt(reader, "TreatmentRecordId"),
+
+                ReceiptNumber = SafeGetString(reader, "ReceiptNumber"),
+                BillingSource = SafeGetString(reader, "BillingSource"),
+                PatientCode = SafeGetString(reader, "PatientCode"),
+                PatientName = BuildFullName(firstName, middleName, lastName),
+                PatientCategory = SafeGetString(reader, "PatientCategory", "Regular"),
+
+                ServiceName = SafeGetString(reader, "ServiceName"),
+                Description = SafeGetString(reader, "Description"),
+
+                TotalAmount = SafeGetDecimal(reader, "TotalAmount"),
+                VatExemptSales = SafeGetString(reader, "DiscountType") is "PWD" or "Senior Citizen" or "PWD/Senior"
+                    ? Math.Round(SafeGetDecimal(reader, "TotalAmount") / 1.12m, 2)
+                    : SafeGetDecimal(reader, "TotalAmount"),
+
+                DiscountType = SafeGetString(reader, "DiscountType", "None"),
+                DiscountAmount = SafeGetDecimal(reader, "DiscountAmount"),
+                SubtotalAfterDiscount = SafeGetDecimal(reader, "SubtotalAfterDiscount"),
+
+                // Use actual SUM from PaymentRecords to be safer.
+                AmountPaid = SafeGetDecimal(reader, "ActualAmountPaid"),
+
+                RemainingBalance = SafeGetDecimal(reader, "RemainingBalance"),
+                PaymentStatus = SafeGetString(reader, "PaymentStatus"),
+                PaymentMethod = SafeGetString(reader, "PaymentMethod", "Cash"),
+
+                TransactionDate = ParseDate(SafeGetString(reader, "TransactionDate")),
+                LatestPaymentDate = ParseNullableDate(SafeGetString(reader, "LatestPaymentDate")),
+                Notes = SafeGetString(reader, "Notes")
+            };
+        }
+
+
+        #endregion
+
+        #region Billing Patient Lookup
+        public List<BillingPatientLookupItem> SearchPatientsForBillingHistory(string keyword)
+        {
+            List<BillingPatientLookupItem> patients = new();
+
+            if (string.IsNullOrWhiteSpace(keyword))
+                return patients;
+
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+        SELECT DISTINCT
+            p.PatientId,
+            p.PatientCode,
+            p.FirstName,
+            p.MiddleName,
+            p.LastName,
+            CASE
+                WHEN COALESCE(p.IsPWD, 0) = 1 AND COALESCE(p.IsSeniorCitizen, 0) = 1 THEN 'PWD / Senior'
+                WHEN COALESCE(p.IsPWD, 0) = 1 THEN 'PWD'
+                WHEN COALESCE(p.IsSeniorCitizen, 0) = 1 THEN 'Senior Citizen'
+                ELSE 'Regular'
+            END AS Category
+        FROM Patients p
+        INNER JOIN BillingTransactions bt
+            ON bt.PatientId = p.PatientId
+        WHERE
+            COALESCE(p.IsActive, 1) = 1
+            AND (
+                p.PatientCode LIKE @Keyword
+                OR p.FirstName LIKE @Keyword
+                OR p.MiddleName LIKE @Keyword
+                OR p.LastName LIKE @Keyword
+                OR (p.LastName || ', ' || p.FirstName) LIKE @Keyword
+                OR (p.FirstName || ' ' || p.LastName) LIKE @Keyword
+            )
+        ORDER BY p.LastName, p.FirstName
+        LIMIT 8;";
+
+            command.Parameters.AddWithValue("@Keyword", $"%{keyword}%");
+
+            using SqliteDataReader reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                patients.Add(new BillingPatientLookupItem
+                {
+                    PatientId = Convert.ToInt32(reader["PatientId"]),
+                    PatientCode = SafeGetString(reader, "PatientCode"),
+                    PatientName = BuildFullName(
+                        SafeGetString(reader, "FirstName"),
+                        SafeGetString(reader, "MiddleName"),
+                        SafeGetString(reader, "LastName")
+                    ),
+                    Category = SafeGetString(reader, "Category", "Regular")
+                });
+            }
+
+            return patients;
+        }
+        public List<BillingRecordListItem> GetBillingRecordsByPatientId(int patientId)
+        {
+            List<BillingRecordListItem> records = new();
+
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+        SELECT
+            bt.BillingId,
+            bt.PatientId,
+            p.PatientCode,
+            p.FirstName,
+            p.MiddleName,
+            p.LastName,
+            bt.ReceiptNumber,
+            bt.BillingSource,
+            bt.ServiceName,
+            bt.TotalAmount,
+            bt.DiscountAmount,
+            bt.SubtotalAfterDiscount,
+            bt.AmountPaid,
+            bt.RemainingBalance,
+            bt.PaymentStatus,
+            bt.TransactionDate
+        FROM BillingTransactions bt
+        INNER JOIN Patients p
+            ON bt.PatientId = p.PatientId
+        WHERE bt.PatientId = @PatientId
+        ORDER BY bt.TransactionDate DESC, bt.BillingId DESC;";
+
+            command.Parameters.AddWithValue("@PatientId", patientId);
+
+            using SqliteDataReader reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                records.Add(new BillingRecordListItem
+                {
+                    BillingId = Convert.ToInt32(reader["BillingId"]),
+                    PatientId = Convert.ToInt32(reader["PatientId"]),
+                    PatientCode = SafeGetString(reader, "PatientCode"),
+                    PatientName = BuildFullName(
+                        SafeGetString(reader, "FirstName"),
+                        SafeGetString(reader, "MiddleName"),
+                        SafeGetString(reader, "LastName")
+                    ),
+                    ReceiptNumber = SafeGetString(reader, "ReceiptNumber"),
+                    BillingSource = SafeGetString(reader, "BillingSource"),
+                    ServiceName = SafeGetString(reader, "ServiceName"),
+                    TotalAmount = Convert.ToDecimal(reader["TotalAmount"]),
+                    DiscountAmount = Convert.ToDecimal(reader["DiscountAmount"]),
+                    SubtotalAfterDiscount = Convert.ToDecimal(reader["SubtotalAfterDiscount"]),
+                    AmountPaid = Convert.ToDecimal(reader["AmountPaid"]),
+                    RemainingBalance = Convert.ToDecimal(reader["RemainingBalance"]),
+                    PaymentStatus = SafeGetString(reader, "PaymentStatus"),
+                    TransactionDate = ParseDate(SafeGetString(reader, "TransactionDate"))
+                });
+            }
+
+            return records;
+        }
+        #endregion
+
         #region Create Billing
 
         public int CreateBillingTransaction(BillingTransaction billing)
@@ -291,26 +543,26 @@ SELECT last_insert_rowid();";
                 using SqliteCommand insertCommand = connection.CreateCommand();
                 insertCommand.Transaction = transaction;
                 insertCommand.CommandText = @"
-INSERT INTO PaymentRecords (
-    BillingId,
-    PatientId,
-    AmountPaid,
-    PaymentMethod,
-    PaymentDate,
-    ReceivedByUserId,
-    Notes,
-    CreatedAt
-)
-VALUES (
-    @BillingId,
-    @PatientId,
-    @AmountPaid,
-    @PaymentMethod,
-    @PaymentDate,
-    @ReceivedByUserId,
-    @Notes,
-    @CreatedAt
-);";
+        INSERT INTO PaymentRecords (
+            BillingId,
+            PatientId,
+            AmountPaid,
+            PaymentMethod,
+            PaymentDate,
+            ReceivedByUserId,
+            Notes,
+            CreatedAt
+        )
+        VALUES (
+            @BillingId,
+            @PatientId,
+            @AmountPaid,
+            @PaymentMethod,
+            @PaymentDate,
+            @ReceivedByUserId,
+            @Notes,
+            @CreatedAt
+        );";
 
                 insertCommand.Parameters.AddWithValue("@BillingId", payment.BillingId);
                 insertCommand.Parameters.AddWithValue("@PatientId", payment.PatientId);
@@ -318,7 +570,7 @@ VALUES (
                 insertCommand.Parameters.AddWithValue("@PaymentMethod", payment.PaymentMethod);
                 insertCommand.Parameters.AddWithValue("@PaymentDate", payment.PaymentDate.ToString("yyyy-MM-dd"));
                 insertCommand.Parameters.AddWithValue("@ReceivedByUserId", payment.ReceivedByUserId.HasValue ? payment.ReceivedByUserId.Value : DBNull.Value);
-                insertCommand.Parameters.AddWithValue("@Notes", payment.Notes);
+                insertCommand.Parameters.AddWithValue("@Notes", payment.Notes ?? string.Empty);
                 insertCommand.Parameters.AddWithValue("@CreatedAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
 
                 insertCommand.ExecuteNonQuery();
@@ -326,23 +578,49 @@ VALUES (
                 using SqliteCommand updateCommand = connection.CreateCommand();
                 updateCommand.Transaction = transaction;
                 updateCommand.CommandText = @"
-UPDATE BillingTransactions
-SET
-    AmountPaid = AmountPaid + @AmountPaid,
-    RemainingBalance = CASE
-        WHEN RemainingBalance - @AmountPaid < 0 THEN 0
-        ELSE RemainingBalance - @AmountPaid
-    END,
-    PaymentStatus = CASE
-        WHEN RemainingBalance - @AmountPaid <= 0 THEN 'Paid'
-        ELSE 'Partial'
-    END,
-    UpdatedAt = @UpdatedAt
-WHERE BillingId = @BillingId;";
+        UPDATE BillingTransactions
+        SET
+            AmountPaid = (
+                SELECT COALESCE(SUM(pr.AmountPaid), 0)
+                FROM PaymentRecords pr
+                WHERE pr.BillingId = @BillingId
+            ),
 
-                updateCommand.Parameters.AddWithValue("@AmountPaid", payment.AmountPaid);
-                updateCommand.Parameters.AddWithValue("@UpdatedAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            RemainingBalance = CASE
+                WHEN SubtotalAfterDiscount - (
+                    SELECT COALESCE(SUM(pr.AmountPaid), 0)
+                    FROM PaymentRecords pr
+                    WHERE pr.BillingId = @BillingId
+                ) < 0 THEN 0
+
+                ELSE SubtotalAfterDiscount - (
+                    SELECT COALESCE(SUM(pr.AmountPaid), 0)
+                    FROM PaymentRecords pr
+                    WHERE pr.BillingId = @BillingId
+                )
+            END,
+
+            PaymentStatus = CASE
+                WHEN (
+                    SELECT COALESCE(SUM(pr.AmountPaid), 0)
+                    FROM PaymentRecords pr
+                    WHERE pr.BillingId = @BillingId
+                ) <= 0 THEN 'Unpaid'
+
+                WHEN (
+                    SELECT COALESCE(SUM(pr.AmountPaid), 0)
+                    FROM PaymentRecords pr
+                    WHERE pr.BillingId = @BillingId
+                ) >= SubtotalAfterDiscount THEN 'Paid'
+
+                ELSE 'Partial'
+            END,
+
+            UpdatedAt = @UpdatedAt
+        WHERE BillingId = @BillingId;";
+
                 updateCommand.Parameters.AddWithValue("@BillingId", payment.BillingId);
+                updateCommand.Parameters.AddWithValue("@UpdatedAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
 
                 updateCommand.ExecuteNonQuery();
 
@@ -354,7 +632,6 @@ WHERE BillingId = @BillingId;";
                 throw;
             }
         }
-
         #endregion
 
         #region Helpers
@@ -417,11 +694,28 @@ WHERE BillingId = @BillingId;";
                 : DateTime.Today;
         }
 
+        private DateTime? ParseNullableDate(string? value)
+        {
+            return DateTime.TryParse(value, out DateTime date)
+                ? date
+                : null;
+        }
+
         private TimeSpan? ParseNullableTime(string? value)
         {
             return TimeSpan.TryParse(value, out TimeSpan time)
                 ? time
                 : null;
+        }
+
+        private static decimal SafeGetDecimal(SqliteDataReader reader, string columnName, decimal fallback = 0)
+        {
+            int ordinal = reader.GetOrdinal(columnName);
+
+            if (reader.IsDBNull(ordinal))
+                return fallback;
+
+            return Convert.ToDecimal(reader.GetValue(ordinal));
         }
 
         #endregion

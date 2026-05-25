@@ -20,6 +20,8 @@ namespace CruzNeryClinic.Models
 
         public string DentistName { get; set; } = "Unassigned";
 
+        public string Category { get; set; } = "Regular";
+
         public DateTime TreatmentDate { get; set; }
 
         public TimeSpan? TreatmentTime { get; set; }
@@ -35,6 +37,8 @@ namespace CruzNeryClinic.Models
                 : "-";
 
         public string DefaultPriceDisplay =>
-            $"₱{DefaultPrice:N2}";
+            DefaultPrice > 0
+                ? $"₱{DefaultPrice:N2}"
+                : "To be encoded";
     }
 }
