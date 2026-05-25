@@ -31,6 +31,9 @@ namespace CruzNeryClinic.Models
         public string DiscountType { get; set; } = "None";
 
         public decimal DiscountAmount { get; set; }
+        public decimal VatExemptSales { get; set; }
+    
+        public bool HasVatExemption => DiscountType is "PWD" or "Senior Citizen" or "PWD/Senior";
 
         public decimal SubtotalAfterDiscount { get; set; }
 
@@ -69,5 +72,7 @@ namespace CruzNeryClinic.Models
         public string AmountPaidDisplay => $"₱{AmountPaid:N2}";
 
         public string RemainingBalanceDisplay => $"₱{RemainingBalance:N2}";
+
+        public string VatExemptSalesDisplay => $"₱{VatExemptSales:N2}";
     }
 }

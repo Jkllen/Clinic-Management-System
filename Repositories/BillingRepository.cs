@@ -299,6 +299,10 @@ ORDER BY bt.TransactionDate DESC, bt.BillingId DESC;";
                 Description = SafeGetString(reader, "Description"),
 
                 TotalAmount = SafeGetDecimal(reader, "TotalAmount"),
+                VatExemptSales = SafeGetString(reader, "DiscountType") is "PWD" or "Senior Citizen" or "PWD/Senior"
+                    ? Math.Round(SafeGetDecimal(reader, "TotalAmount") / 1.12m, 2)
+                    : SafeGetDecimal(reader, "TotalAmount"),
+
                 DiscountType = SafeGetString(reader, "DiscountType", "None"),
                 DiscountAmount = SafeGetDecimal(reader, "DiscountAmount"),
                 SubtotalAfterDiscount = SafeGetDecimal(reader, "SubtotalAfterDiscount"),
@@ -539,26 +543,26 @@ SELECT last_insert_rowid();";
                 using SqliteCommand insertCommand = connection.CreateCommand();
                 insertCommand.Transaction = transaction;
                 insertCommand.CommandText = @"
-INSERT INTO PaymentRecords (
-    BillingId,
-    PatientId,
-    AmountPaid,
-    PaymentMethod,
-    PaymentDate,
-    ReceivedByUserId,
-    Notes,
-    CreatedAt
-)
-VALUES (
-    @BillingId,
-    @PatientId,
-    @AmountPaid,
-    @PaymentMethod,
-    @PaymentDate,
-    @ReceivedByUserId,
-    @Notes,
-    @CreatedAt
-);";
+        INSERT INTO PaymentRecords (
+            BillingId,
+            PatientId,
+            AmountPaid,
+            PaymentMethod,
+            PaymentDate,
+            ReceivedByUserId,
+            Notes,
+            CreatedAt
+        )
+        VALUES (
+            @BillingId,
+            @PatientId,
+            @AmountPaid,
+            @PaymentMethod,
+            @PaymentDate,
+            @ReceivedByUserId,
+            @Notes,
+            @CreatedAt
+        );";
 
                 insertCommand.Parameters.AddWithValue("@BillingId", payment.BillingId);
                 insertCommand.Parameters.AddWithValue("@PatientId", payment.PatientId);
@@ -566,7 +570,7 @@ VALUES (
                 insertCommand.Parameters.AddWithValue("@PaymentMethod", payment.PaymentMethod);
                 insertCommand.Parameters.AddWithValue("@PaymentDate", payment.PaymentDate.ToString("yyyy-MM-dd"));
                 insertCommand.Parameters.AddWithValue("@ReceivedByUserId", payment.ReceivedByUserId.HasValue ? payment.ReceivedByUserId.Value : DBNull.Value);
-                insertCommand.Parameters.AddWithValue("@Notes", payment.Notes);
+                insertCommand.Parameters.AddWithValue("@Notes", payment.Notes ?? string.Empty);
                 insertCommand.Parameters.AddWithValue("@CreatedAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
 
                 insertCommand.ExecuteNonQuery();
@@ -574,23 +578,49 @@ VALUES (
                 using SqliteCommand updateCommand = connection.CreateCommand();
                 updateCommand.Transaction = transaction;
                 updateCommand.CommandText = @"
-UPDATE BillingTransactions
-SET
-    AmountPaid = AmountPaid + @AmountPaid,
-    RemainingBalance = CASE
-        WHEN RemainingBalance - @AmountPaid < 0 THEN 0
-        ELSE RemainingBalance - @AmountPaid
-    END,
-    PaymentStatus = CASE
-        WHEN RemainingBalance - @AmountPaid <= 0 THEN 'Paid'
-        ELSE 'Partial'
-    END,
-    UpdatedAt = @UpdatedAt
-WHERE BillingId = @BillingId;";
+        UPDATE BillingTransactions
+        SET
+            AmountPaid = (
+                SELECT COALESCE(SUM(pr.AmountPaid), 0)
+                FROM PaymentRecords pr
+                WHERE pr.BillingId = @BillingId
+            ),
 
-                updateCommand.Parameters.AddWithValue("@AmountPaid", payment.AmountPaid);
-                updateCommand.Parameters.AddWithValue("@UpdatedAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            RemainingBalance = CASE
+                WHEN SubtotalAfterDiscount - (
+                    SELECT COALESCE(SUM(pr.AmountPaid), 0)
+                    FROM PaymentRecords pr
+                    WHERE pr.BillingId = @BillingId
+                ) < 0 THEN 0
+
+                ELSE SubtotalAfterDiscount - (
+                    SELECT COALESCE(SUM(pr.AmountPaid), 0)
+                    FROM PaymentRecords pr
+                    WHERE pr.BillingId = @BillingId
+                )
+            END,
+
+            PaymentStatus = CASE
+                WHEN (
+                    SELECT COALESCE(SUM(pr.AmountPaid), 0)
+                    FROM PaymentRecords pr
+                    WHERE pr.BillingId = @BillingId
+                ) <= 0 THEN 'Unpaid'
+
+                WHEN (
+                    SELECT COALESCE(SUM(pr.AmountPaid), 0)
+                    FROM PaymentRecords pr
+                    WHERE pr.BillingId = @BillingId
+                ) >= SubtotalAfterDiscount THEN 'Paid'
+
+                ELSE 'Partial'
+            END,
+
+            UpdatedAt = @UpdatedAt
+        WHERE BillingId = @BillingId;";
+
                 updateCommand.Parameters.AddWithValue("@BillingId", payment.BillingId);
+                updateCommand.Parameters.AddWithValue("@UpdatedAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
 
                 updateCommand.ExecuteNonQuery();
 
@@ -602,7 +632,6 @@ WHERE BillingId = @BillingId;";
                 throw;
             }
         }
-
         #endregion
 
         #region Helpers

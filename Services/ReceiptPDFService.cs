@@ -139,6 +139,12 @@ namespace CruzNeryClinic.Services
                             });
 
                             SummaryRow(table, "Gross Amount", receipt.TotalAmountDisplay);
+                            
+                            if (receipt.HasVatExemption)
+                            {
+                                SummaryRow(table, "VAT Exempt Sales", receipt.VatExemptSalesDisplay);
+                            }
+
                             SummaryRow(table, $"Discount ({receipt.DiscountType})", receipt.DiscountAmountDisplay);
                             SummaryRow(table, "Billable Amount", receipt.SubtotalAfterDiscountDisplay);
                             SummaryRow(table, "Amount Paid", receipt.AmountPaidDisplay);

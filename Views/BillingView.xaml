@@ -2,11 +2,12 @@
     x:Class="CruzNeryClinic.Views.BillingView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:billingViews="clr-namespace:CruzNeryClinic.Views.Billing"
+    xmlns:converters="clr-namespace:CruzNeryClinic.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
     xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:converters="clr-namespace:CruzNeryClinic.Converters"
+    xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
     d:DesignHeight="900"
     d:DesignWidth="1600"
     mc:Ignorable="d">
@@ -32,13 +33,13 @@
                 <RowDefinition Height="78" />
                 <RowDefinition Height="104" />
 
-                <!-- Recent Billing + Payment History section -->
+                <!--  Recent Billing + Payment History section  -->
                 <RowDefinition Height="360" MinHeight="220" />
 
-                <!-- Draggable splitter row -->
+                <!--  Draggable splitter row  -->
                 <RowDefinition Height="8" />
 
-                <!-- Appointment Payment section -->
+                <!--  Appointment Payment section  -->
                 <RowDefinition Height="*" MinHeight="280" />
             </Grid.RowDefinitions>
 
@@ -169,7 +170,7 @@
                 </Button>
             </Grid>
 
-            <!-- Recent billing transactions + patient payment history -->
+            <!--  Recent billing transactions + patient payment history  -->
             <Border
                 Grid.Row="2"
                 Padding="20"
@@ -182,7 +183,7 @@
                         <ColumnDefinition Width="1*" />
                     </Grid.ColumnDefinitions>
 
-                    <!-- Recent Billing Transactions -->
+                    <!--  Recent Billing Transactions  -->
                     <Grid Grid.Column="0">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -214,16 +215,51 @@
                             </DataGrid.Resources>
 
                             <DataGrid.Columns>
-                                <DataGridTextColumn Width="1*" MinWidth="120" Binding="{Binding ReceiptNumber}" Header="Receipt No." />
-                                <DataGridTextColumn Width="1*" MinWidth="105" Binding="{Binding PatientCode}" Header="Patient ID" />
-                                <DataGridTextColumn Width="1.3*" MinWidth="150" Binding="{Binding PatientName}" Header="Patient Name" />
-                                <DataGridTextColumn Width="1*" MinWidth="105" Binding="{Binding TransactionDateDisplay}" Header="Date" />
-                                <DataGridTextColumn Width="1.2*" MinWidth="135" Binding="{Binding ServiceName}" Header="Service" />
-                                <DataGridTextColumn Width="1*" MinWidth="115" Binding="{Binding TotalAmountDisplay}" Header="Total" />
-                                <DataGridTextColumn Width="1*" MinWidth="115" Binding="{Binding BalanceDisplay}" Header="Balance" />
-                                <DataGridTextColumn Width="0.9*" MinWidth="95" Binding="{Binding PaymentStatus}" Header="Status" />
+                                <DataGridTextColumn
+                                    Width="1*"
+                                    MinWidth="120"
+                                    Binding="{Binding ReceiptNumber}"
+                                    Header="Receipt No." />
+                                <DataGridTextColumn
+                                    Width="1*"
+                                    MinWidth="105"
+                                    Binding="{Binding PatientCode}"
+                                    Header="Patient ID" />
+                                <DataGridTextColumn
+                                    Width="1.3*"
+                                    MinWidth="150"
+                                    Binding="{Binding PatientName}"
+                                    Header="Patient Name" />
+                                <DataGridTextColumn
+                                    Width="1*"
+                                    MinWidth="105"
+                                    Binding="{Binding TransactionDateDisplay}"
+                                    Header="Date" />
+                                <DataGridTextColumn
+                                    Width="1.2*"
+                                    MinWidth="135"
+                                    Binding="{Binding ServiceName}"
+                                    Header="Service" />
+                                <DataGridTextColumn
+                                    Width="1*"
+                                    MinWidth="115"
+                                    Binding="{Binding TotalAmountDisplay}"
+                                    Header="Total" />
+                                <DataGridTextColumn
+                                    Width="1*"
+                                    MinWidth="115"
+                                    Binding="{Binding BalanceDisplay}"
+                                    Header="Balance" />
+                                <DataGridTextColumn
+                                    Width="0.9*"
+                                    MinWidth="95"
+                                    Binding="{Binding PaymentStatus}"
+                                    Header="Status" />
 
-                                <DataGridTemplateColumn Width="1.4*" MinWidth="170" Header="Actions">
+                                <DataGridTemplateColumn
+                                    Width="1.4*"
+                                    MinWidth="170"
+                                    Header="Actions">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
@@ -267,18 +303,16 @@
                         </DataGrid>
                     </Grid>
 
-                    <!-- Payment History for Patient -->
+                    <!--  Payment History for Patient  -->
                     <Border
                         Grid.Column="2"
                         Padding="16"
+                        Background="White"
                         BorderBrush="#D8D8D8"
                         BorderThickness="1"
-                        CornerRadius="12"
-                        Background="White">
+                        CornerRadius="12">
 
-                        <ScrollViewer
-                            HorizontalScrollBarVisibility="Disabled"
-                            VerticalScrollBarVisibility="Auto">
+                        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
 
                             <ScrollViewer.Resources>
                                 <Style BasedOn="{StaticResource BlueDataGridScrollBarStyle}" TargetType="{x:Type ScrollBar}" />
@@ -297,7 +331,7 @@
                                     FontWeight="SemiBold"
                                     Text="Patient ID or Name" />
 
-                                <!-- Patient lookup -->
+                                <!--  Patient lookup  -->
                                 <Grid
                                     Width="230"
                                     Height="42"
@@ -311,12 +345,12 @@
                                         Text="{Binding PaymentHistorySearchText, UpdateSourceTrigger=PropertyChanged}" />
 
                                     <Popup
+                                        Width="{Binding ActualWidth, ElementName=PaymentHistoryPatientSearchBox}"
                                         AllowsTransparency="True"
                                         IsOpen="{Binding IsPaymentHistorySearchPopupOpen, Mode=TwoWay}"
                                         Placement="Bottom"
                                         PlacementTarget="{Binding ElementName=PaymentHistoryPatientSearchBox}"
-                                        StaysOpen="True"
-                                        Width="{Binding ActualWidth, ElementName=PaymentHistoryPatientSearchBox}">
+                                        StaysOpen="True">
 
                                         <Border
                                             MaxHeight="220"
@@ -328,15 +362,15 @@
                                             <Border.Effect>
                                                 <DropShadowEffect
                                                     BlurRadius="16"
-                                                    ShadowDepth="3"
-                                                    Opacity="0.18" />
+                                                    Opacity="0.18"
+                                                    ShadowDepth="3" />
                                             </Border.Effect>
 
                                             <ListBox
                                                 BorderThickness="0"
                                                 ItemsSource="{Binding PaymentHistoryPatientResults}"
-                                                SelectedItem="{Binding SelectedPaymentHistoryPatient, Mode=TwoWay}"
-                                                ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                                ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                                SelectedItem="{Binding SelectedPaymentHistoryPatient, Mode=TwoWay}">
 
                                                 <ListBox.Resources>
                                                     <Style BasedOn="{StaticResource BlueDataGridScrollBarStyle}" TargetType="{x:Type ScrollBar}" />
@@ -387,7 +421,7 @@
                                     Tag="Auto-Filled"
                                     Text="{Binding PaymentHistoryPatientName, Mode=OneWay}" />
 
-                                <!-- Transaction History title only appears after patient selection -->
+                                <!--  Transaction History title only appears after patient selection  -->
                                 <TextBlock
                                     Margin="0,18,0,8"
                                     FontSize="14"
@@ -395,7 +429,7 @@
                                     Text="Transaction History"
                                     Visibility="{Binding HasSelectedPaymentHistoryPatient, Converter={StaticResource BoolToVisibilityConverter}}" />
 
-                                <!-- Transaction History list only appears after patient selection -->
+                                <!--  Transaction History list only appears after patient selection  -->
                                 <Border
                                     Padding="12"
                                     BorderBrush="#D8D8D8"
@@ -415,21 +449,19 @@
 
                                                         <Grid>
                                                             <Grid.ColumnDefinitions>
-                                                                <!-- Receipt Details -->
+                                                                <!--  Receipt Details  -->
                                                                 <ColumnDefinition Width="*" />
-                                                                <!-- Status Column-->
+                                                                <!--  Status Column  -->
                                                                 <ColumnDefinition Width="74" />
                                                             </Grid.ColumnDefinitions>
 
-                                                            <StackPanel 
-                                                                Grid.Column="0"
-                                                                Margin="0,0,8,0">
+                                                            <StackPanel Grid.Column="0" Margin="0,0,8,0">
                                                                 <TextBlock
+                                                                    MaxWidth="125"
                                                                     FontSize="13"
                                                                     FontWeight="SemiBold"
                                                                     Text="{Binding ReceiptNumber}"
-                                                                    TextWrapping="Wrap"
-                                                                    MaxWidth="125" />
+                                                                    TextWrapping="Wrap" />
 
                                                                 <TextBlock
                                                                     Margin="0,4,0,0"
@@ -444,9 +476,7 @@
                                                                     Text="{Binding ServiceName}" />
                                                             </StackPanel>
 
-                                                            <StackPanel 
-                                                                Grid.Column="1"
-                                                                HorizontalAlignment="Right">
+                                                            <StackPanel Grid.Column="1" HorizontalAlignment="Right">
                                                                 <Border
                                                                     Width="54"
                                                                     Margin="0,0,0,20"
@@ -468,11 +498,11 @@
                                                                     </Border.Style>
 
                                                                     <TextBlock
-                                                                        FontSize="10"
                                                                         HorizontalAlignment="Center"
-                                                                        TextAlignment="Center"
+                                                                        FontSize="10"
                                                                         FontWeight="SemiBold"
-                                                                        Text="{Binding PaymentStatus}">
+                                                                        Text="{Binding PaymentStatus}"
+                                                                        TextAlignment="Center">
 
                                                                         <TextBlock.Style>
                                                                             <Style TargetType="TextBlock">
@@ -526,21 +556,21 @@
                                 </Border>
                             </StackPanel>
                         </ScrollViewer>
-                    </Border>                
+                    </Border>
                 </Grid>
             </Border>
 
-            <!-- Draggable vertical resize splitter -->
+            <!--  Draggable vertical resize splitter  -->
             <GridSplitter
                 Grid.Row="3"
                 Height="8"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Center"
                 Background="Transparent"
-                ResizeDirection="Rows"
+                Cursor="SizeNS"
                 ResizeBehavior="PreviousAndNext"
-                ShowsPreview="True"
-                Cursor="SizeNS">
+                ResizeDirection="Rows"
+                ShowsPreview="True">
 
                 <GridSplitter.Template>
                     <ControlTemplate TargetType="GridSplitter">
@@ -558,470 +588,555 @@
             </GridSplitter>
 
 
-            <!-- Bottom transaction content -->
+            <!--  Bottom transaction content  -->
             <Border
                 Grid.Row="4"
                 Margin="0,16,0,0"
                 Padding="28"
                 Style="{StaticResource BillingPanelStyle}">
 
-                <ScrollViewer
-                    HorizontalScrollBarVisibility="Disabled"
-                    VerticalScrollBarVisibility="Auto">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
 
                     <ScrollViewer.Resources>
                         <Style BasedOn="{StaticResource BlueDataGridScrollBarStyle}" TargetType="{x:Type ScrollBar}" />
                     </ScrollViewer.Resources>
 
-                    <Grid Margin="0,0,14,0">
-                        <Grid.Style>
-                            <Style TargetType="Grid">
-                                <Setter Property="Visibility" Value="Collapsed" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsAppointmentPaymentSelected}" Value="True">
-                                        <Setter Property="Visibility" Value="Visible" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Grid.Style>
+                    <StackPanel Margin="0,0,14,0">
+                        <!--  Appointment Payment Section  -->
+                        <Grid>
+                            <Grid.Style>
+                                <Style TargetType="Grid">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsAppointmentPaymentSelected}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Grid.Style>
 
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="22" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="18" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="18" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="18" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="22" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="18" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="18" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="18" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
 
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="1.1*" />
-                            <ColumnDefinition Width="24" />
-                            <ColumnDefinition Width="1.1*" />
-                            <ColumnDefinition Width="24" />
-                            <ColumnDefinition Width="0.9*" />
-                            <ColumnDefinition Width="24" />
-                            <ColumnDefinition Width="0.9*" />
-                            <ColumnDefinition Width="24" />
-                            <ColumnDefinition Width="1.6*" />
-                        </Grid.ColumnDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1.1*" />
+                                <ColumnDefinition Width="24" />
+                                <ColumnDefinition Width="1.1*" />
+                                <ColumnDefinition Width="24" />
+                                <ColumnDefinition Width="0.9*" />
+                                <ColumnDefinition Width="24" />
+                                <ColumnDefinition Width="0.9*" />
+                                <ColumnDefinition Width="24" />
+                                <ColumnDefinition Width="1.6*" />
+                            </Grid.ColumnDefinitions>
 
-                        <!-- Title and completed appointment lookup -->
-                        <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="9">
-                            <TextBlock
-                                FontSize="24"
-                                FontWeight="Bold"
-                                Foreground="#111111"
-                                Text="Appointment Payment" />
-
-                            <TextBlock
-                                Margin="0,6,0,0"
-                                FontSize="15"
-                                Foreground="#777777"
-                                Text="Process payments connected to completed appointments." />
-
-                            <!-- Completed appointment lookup -->
-                            <Grid
-                                Width="390"
-                                Height="52"
-                                Margin="0,22,0,0"
-                                HorizontalAlignment="Left">
-
-                                <TextBox
-                                    x:Name="AppointmentPaymentSearchBox"
-                                    Height="52"
-                                    Style="{StaticResource SearchTextBoxStyle}"
-                                    Text="{Binding AppointmentPaymentSearchText, UpdateSourceTrigger=PropertyChanged}" />
-
-                                <fa:IconBlock
-                                    Margin="18,0,0,0"
-                                    HorizontalAlignment="Left"
-                                    VerticalAlignment="Center"
-                                    FontSize="20"
-                                    Foreground="#666666"
-                                    Icon="Search" />
+                            <!--  Title and completed appointment lookup  -->
+                            <StackPanel
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                Grid.ColumnSpan="9">
+                                <TextBlock
+                                    FontSize="24"
+                                    FontWeight="Bold"
+                                    Foreground="#111111"
+                                    Text="Appointment Payment" />
 
                                 <TextBlock
-                                    Margin="52,0,0,0"
-                                    VerticalAlignment="Center"
-                                    FontSize="17"
-                                    Foreground="#8A8A8A"
-                                    IsHitTestVisible="False"
-                                    Text="Search completed appointment">
+                                    Margin="0,6,0,0"
+                                    FontSize="15"
+                                    Foreground="#777777"
+                                    Text="Process payments connected to completed appointments." />
 
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Visibility" Value="Collapsed" />
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding AppointmentPaymentSearchText}" Value="">
-                                                    <Setter Property="Visibility" Value="Visible" />
-                                                </DataTrigger>
+                                <!--  Completed appointment lookup  -->
+                                <Grid
+                                    Width="390"
+                                    Height="52"
+                                    Margin="0,22,0,0"
+                                    HorizontalAlignment="Left">
 
-                                                <DataTrigger Binding="{Binding AppointmentPaymentSearchText}" Value="{x:Null}">
-                                                    <Setter Property="Visibility" Value="Visible" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
+                                    <TextBox
+                                        x:Name="AppointmentPaymentSearchBox"
+                                        Height="52"
+                                        Style="{StaticResource SearchTextBoxStyle}"
+                                        Text="{Binding AppointmentPaymentSearchText, UpdateSourceTrigger=PropertyChanged}" />
 
-                                <Popup
-                                    AllowsTransparency="True"
-                                    IsOpen="{Binding IsAppointmentPaymentSearchPopupOpen, Mode=TwoWay}"
-                                    Placement="Bottom"
-                                    PlacementTarget="{Binding ElementName=AppointmentPaymentSearchBox}"
-                                    StaysOpen="True"
-                                    Width="{Binding ActualWidth, ElementName=AppointmentPaymentSearchBox}">
+                                    <fa:IconBlock
+                                        Margin="18,0,0,0"
+                                        HorizontalAlignment="Left"
+                                        VerticalAlignment="Center"
+                                        FontSize="20"
+                                        Foreground="#666666"
+                                        Icon="Search" />
+
+                                    <TextBlock
+                                        Margin="52,0,0,0"
+                                        VerticalAlignment="Center"
+                                        FontSize="17"
+                                        Foreground="#8A8A8A"
+                                        IsHitTestVisible="False"
+                                        Text="Search completed appointment">
+
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding AppointmentPaymentSearchText}" Value="">
+                                                        <Setter Property="Visibility" Value="Visible" />
+                                                    </DataTrigger>
+
+                                                    <DataTrigger Binding="{Binding AppointmentPaymentSearchText}" Value="{x:Null}">
+                                                        <Setter Property="Visibility" Value="Visible" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+
+                                    <Popup
+                                        Width="{Binding ActualWidth, ElementName=AppointmentPaymentSearchBox}"
+                                        AllowsTransparency="True"
+                                        IsOpen="{Binding IsAppointmentPaymentSearchPopupOpen, Mode=TwoWay}"
+                                        Placement="Bottom"
+                                        PlacementTarget="{Binding ElementName=AppointmentPaymentSearchBox}"
+                                        StaysOpen="True">
+
+                                        <Border
+                                            MaxHeight="250"
+                                            Background="White"
+                                            BorderBrush="#D8D8D8"
+                                            BorderThickness="1"
+                                            CornerRadius="8">
+
+                                            <Border.Effect>
+                                                <DropShadowEffect
+                                                    BlurRadius="16"
+                                                    Opacity="0.18"
+                                                    ShadowDepth="3" />
+                                            </Border.Effect>
+
+                                            <ListBox
+                                                BorderThickness="0"
+                                                ItemsSource="{Binding FilteredAppointmentPaymentItems}"
+                                                ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                                SelectedItem="{Binding SelectedAppointmentPaymentItem, Mode=TwoWay}">
+
+                                                <ListBox.Resources>
+                                                    <Style BasedOn="{StaticResource BlueDataGridScrollBarStyle}" TargetType="{x:Type ScrollBar}" />
+
+                                                    <Style TargetType="{x:Type ListBoxItem}">
+                                                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                                        <Setter Property="Cursor" Value="Hand" />
+                                                        <Setter Property="Padding" Value="0" />
+                                                        <Setter Property="Template">
+                                                            <Setter.Value>
+                                                                <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                                                                    <Border x:Name="ItemBorder" Background="Transparent">
+                                                                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center" />
+                                                                    </Border>
+
+                                                                    <ControlTemplate.Triggers>
+                                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                                            <Setter TargetName="ItemBorder" Property="Background" Value="#EAF5FF" />
+                                                                        </Trigger>
+
+                                                                        <Trigger Property="IsSelected" Value="True">
+                                                                            <Setter TargetName="ItemBorder" Property="Background" Value="#DDF0FF" />
+                                                                        </Trigger>
+                                                                    </ControlTemplate.Triggers>
+                                                                </ControlTemplate>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </Style>
+                                                </ListBox.Resources>
+
+                                                <ListBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border Padding="12,10">
+                                                            <StackPanel>
+                                                                <TextBlock
+                                                                    FontSize="14"
+                                                                    FontWeight="Bold"
+                                                                    Foreground="#111111">
+                                                                    <TextBlock.Text>
+                                                                        <MultiBinding StringFormat="{}{0} - {1}">
+                                                                            <Binding Path="PatientCode" />
+                                                                            <Binding Path="PatientName" />
+                                                                        </MultiBinding>
+                                                                    </TextBlock.Text>
+                                                                </TextBlock>
+
+                                                                <TextBlock
+                                                                    Margin="0,3,0,0"
+                                                                    FontSize="12"
+                                                                    Foreground="#777777">
+                                                                    <TextBlock.Text>
+                                                                        <MultiBinding StringFormat="{}{0} • {1}">
+                                                                            <Binding Path="ServiceName" />
+                                                                            <Binding Path="TreatmentDateDisplay" />
+                                                                        </MultiBinding>
+                                                                    </TextBlock.Text>
+                                                                </TextBlock>
+                                                            </StackPanel>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ListBox.ItemTemplate>
+                                            </ListBox>
+                                        </Border>
+                                    </Popup>
+                                </Grid>
+                            </StackPanel>
+
+                            <!--  Row 2  -->
+                            <StackPanel Grid.Row="2" Grid.Column="0">
+                                <TextBlock
+                                    FontSize="16"
+                                    FontWeight="Bold"
+                                    Text="Patient ID" />
+                                <TextBox
+                                    Height="52"
+                                    Margin="0,8,0,0"
+                                    IsReadOnly="True"
+                                    Style="{StaticResource ModernTextBoxStyle}"
+                                    Tag="Auto-Filled"
+                                    Text="{Binding AppointmentPatientCode, Mode=OneWay}" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="2" Grid.Column="2">
+                                <TextBlock
+                                    FontSize="16"
+                                    FontWeight="Bold"
+                                    Text="Category" />
+                                <TextBox
+                                    Height="52"
+                                    Margin="0,8,0,0"
+                                    IsReadOnly="True"
+                                    Style="{StaticResource ModernTextBoxStyle}"
+                                    Tag="Auto-Filled"
+                                    Text="{Binding AppointmentCategory, Mode=OneWay}" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="2" Grid.Column="4">
+                                <TextBlock
+                                    FontSize="16"
+                                    FontWeight="Bold"
+                                    Text="Total Amount *" />
+                                <TextBox
+                                    Height="52"
+                                    Margin="0,8,0,0"
+                                    Style="{StaticResource ModernTextBoxStyle}"
+                                    Text="{Binding AppointmentTotalAmount, Converter={StaticResource PesoCurrencyConverter}, UpdateSourceTrigger=LostFocus}" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="2" Grid.Column="6">
+                                <TextBlock
+                                    FontSize="16"
+                                    FontWeight="Bold"
+                                    Text="Payment Amount *" />
+                                <TextBox
+                                    Height="52"
+                                    Margin="0,8,0,0"
+                                    Style="{StaticResource ModernTextBoxStyle}"
+                                    Text="{Binding AppointmentPaymentAmount, Converter={StaticResource PesoCurrencyConverter}, UpdateSourceTrigger=LostFocus}" />
+                            </StackPanel>
+
+                            <!--  Summary box  -->
+                            <Border
+                                Grid.Row="2"
+                                Grid.RowSpan="3"
+                                Grid.Column="8"
+                                Padding="22"
+                                Background="#EAF5FF"
+                                BorderBrush="#B9DAFF"
+                                BorderThickness="1"
+                                CornerRadius="12">
+
+                                <StackPanel>
+                                    <Grid>
+                                        <TextBlock Foreground="#223357" Text="Total Amount:" />
+                                        <TextBlock
+                                            HorizontalAlignment="Right"
+                                            FontWeight="Bold"
+                                            Foreground="#223357"
+                                            Text="{Binding AppointmentTotalAmount, StringFormat=₱ {0:N2}}" />
+                                    </Grid>
+
+                                    <Grid Margin="0,14,0,0">
+                                        <Grid.Style>
+                                            <Style TargetType="Grid">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding AppointmentDiscountType}" Value="PWD">
+                                                        <Setter Property="Visibility" Value="Visible" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding AppointmentDiscountType}" Value="Senior Citizen">
+                                                        <Setter Property="Visibility" Value="Visible" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding AppointmentDiscountType}" Value="PWD/Senior">
+                                                        <Setter Property="Visibility" Value="Visible" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Grid.Style>
+
+                                        <TextBlock Foreground="#223357" Text="VAT Exempt Sales:" />
+
+                                        <TextBlock
+                                            HorizontalAlignment="Right"
+                                            FontWeight="Bold"
+                                            Foreground="#223357"
+                                            Text="{Binding AppointmentVatExemptSalesDisplay}" />
+                                    </Grid>
+
+                                    <Grid Margin="0,14,0,0">
+                                        <TextBlock Foreground="#223357" Text="{Binding AppointmentDiscountLabel}" />
+                                        <TextBlock
+                                            HorizontalAlignment="Right"
+                                            FontWeight="Bold"
+                                            Foreground="#00A423"
+                                            Text="{Binding AppointmentDiscountAmount, StringFormat=-₱ {0:N2}}" />
+                                    </Grid>
+
+                                    <Grid Margin="0,14,0,0">
+                                        <TextBlock Foreground="#223357" Text="Payment:" />
+                                        <TextBlock
+                                            HorizontalAlignment="Right"
+                                            FontWeight="Bold"
+                                            Foreground="#223357"
+                                            Text="{Binding AppointmentPaymentAmount, StringFormat=-₱ {0:N2}}" />
+                                    </Grid>
 
                                     <Border
-                                        MaxHeight="250"
-                                        Background="White"
-                                        BorderBrush="#D8D8D8"
-                                        BorderThickness="1"
-                                        CornerRadius="8">
+                                        Height="1"
+                                        Margin="0,18,0,14"
+                                        Background="#223357" />
 
-                                        <Border.Effect>
-                                            <DropShadowEffect
-                                                BlurRadius="16"
-                                                ShadowDepth="3"
-                                                Opacity="0.18" />
-                                        </Border.Effect>
+                                    <Grid>
+                                        <TextBlock
+                                            FontWeight="Bold"
+                                            Foreground="#223357"
+                                            Text="Balance:" />
 
-                                        <ListBox
-                                            BorderThickness="0"
-                                            ItemsSource="{Binding FilteredAppointmentPaymentItems}"
-                                            SelectedItem="{Binding SelectedAppointmentPaymentItem, Mode=TwoWay}"
-                                            ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                        <TextBlock
+                                            HorizontalAlignment="Right"
+                                            FontWeight="Bold"
+                                            Foreground="#00A423"
+                                            Text="{Binding AppointmentBalanceDisplay}" />
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
 
-                                            <ListBox.Resources>
-                                                <Style BasedOn="{StaticResource BlueDataGridScrollBarStyle}" TargetType="{x:Type ScrollBar}" />
-
-                                                <Style TargetType="{x:Type ListBoxItem}">
-                                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                                                    <Setter Property="Cursor" Value="Hand" />
-                                                    <Setter Property="Padding" Value="0" />
-                                                    <Setter Property="Template">
-                                                        <Setter.Value>
-                                                            <ControlTemplate TargetType="{x:Type ListBoxItem}">
-                                                                <Border
-                                                                    x:Name="ItemBorder"
-                                                                    Background="Transparent">
-                                                                    <ContentPresenter
-                                                                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                                                        VerticalAlignment="Center" />
-                                                                </Border>
-
-                                                                <ControlTemplate.Triggers>
-                                                                    <Trigger Property="IsMouseOver" Value="True">
-                                                                        <Setter TargetName="ItemBorder" Property="Background" Value="#EAF5FF" />
-                                                                    </Trigger>
-
-                                                                    <Trigger Property="IsSelected" Value="True">
-                                                                        <Setter TargetName="ItemBorder" Property="Background" Value="#DDF0FF" />
-                                                                    </Trigger>
-                                                                </ControlTemplate.Triggers>
-                                                            </ControlTemplate>
-                                                        </Setter.Value>
-                                                    </Setter>
-                                                </Style>
-                                            </ListBox.Resources>
-
-                                            <ListBox.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Border Padding="12,10">
-                                                        <StackPanel>
-                                                            <TextBlock
-                                                                FontSize="14"
-                                                                FontWeight="Bold"
-                                                                Foreground="#111111">
-                                                                <TextBlock.Text>
-                                                                    <MultiBinding StringFormat="{}{0} - {1}">
-                                                                        <Binding Path="PatientCode" />
-                                                                        <Binding Path="PatientName" />
-                                                                    </MultiBinding>
-                                                                </TextBlock.Text>
-                                                            </TextBlock>
-
-                                                            <TextBlock
-                                                                Margin="0,3,0,0"
-                                                                FontSize="12"
-                                                                Foreground="#777777">
-                                                                <TextBlock.Text>
-                                                                    <MultiBinding StringFormat="{}{0} • {1}">
-                                                                        <Binding Path="ServiceName" />
-                                                                        <Binding Path="TreatmentDateDisplay" />
-                                                                    </MultiBinding>
-                                                                </TextBlock.Text>
-                                                            </TextBlock>
-                                                        </StackPanel>
-                                                    </Border>
-                                                </DataTemplate>
-                                            </ListBox.ItemTemplate>
-                                        </ListBox>
-                                    </Border>
-                                </Popup>
-                            </Grid>
-                        </StackPanel>
-
-                        <!-- Row 2 -->
-                        <StackPanel Grid.Row="2" Grid.Column="0">
-                            <TextBlock FontSize="16" FontWeight="Bold" Text="Patient ID" />
-                            <TextBox
-                                Height="52"
-                                Margin="0,8,0,0"
-                                IsReadOnly="True"
-                                Style="{StaticResource ModernTextBoxStyle}"
-                                Tag="Auto-Filled"
-                                Text="{Binding AppointmentPatientCode, Mode=OneWay}" />
-                        </StackPanel>
-
-                        <StackPanel Grid.Row="2" Grid.Column="2">
-                            <TextBlock FontSize="16" FontWeight="Bold" Text="Category" />
-                            <TextBox
-                                Height="52"
-                                Margin="0,8,0,0"
-                                IsReadOnly="True"
-                                Style="{StaticResource ModernTextBoxStyle}"
-                                Tag="Auto-Filled"
-                                Text="{Binding AppointmentCategory, Mode=OneWay}" />
-                        </StackPanel>
-
-                        <StackPanel Grid.Row="2" Grid.Column="4">
-                            <TextBlock FontSize="16" FontWeight="Bold" Text="Total Amount *" />
-                            <TextBox
-                                Height="52"
-                                Margin="0,8,0,0"
-                                Style="{StaticResource ModernTextBoxStyle}"
-                                Text="{Binding AppointmentTotalAmount, Converter={StaticResource PesoCurrencyConverter}, UpdateSourceTrigger=LostFocus}" />
-                        </StackPanel>
-
-                        <StackPanel Grid.Row="2" Grid.Column="6">
-                            <TextBlock FontSize="16" FontWeight="Bold" Text="Payment Amount *" />
-                            <TextBox
-                                Height="52"
-                                Margin="0,8,0,0"
-                                Style="{StaticResource ModernTextBoxStyle}"
-                                Text="{Binding AppointmentPaymentAmount, Converter={StaticResource PesoCurrencyConverter}, UpdateSourceTrigger=LostFocus}" />
-                        </StackPanel>
-
-                        <!-- Summary box -->
-                        <Border
-                            Grid.Row="2"
-                            Grid.RowSpan="3"
-                            Grid.Column="8"
-                            Padding="22"
-                            Background="#EAF5FF"
-                            BorderBrush="#B9DAFF"
-                            BorderThickness="1"
-                            CornerRadius="12">
-
-                            <StackPanel>
-                                <Grid>
-                                    <TextBlock Foreground="#223357" Text="Total Amount:" />
-                                    <TextBlock
-                                        HorizontalAlignment="Right"
-                                        FontWeight="Bold"
-                                        Foreground="#223357"
-                                        Text="{Binding AppointmentTotalAmount, StringFormat=₱ {0:N2}}" />
-                                </Grid>
-
-                                <Grid Margin="0,14,0,0">
-                                    <TextBlock Foreground="#223357" Text="{Binding AppointmentDiscountLabel}" />
-                                    <TextBlock
-                                        HorizontalAlignment="Right"
-                                        FontWeight="Bold"
-                                        Foreground="#00A423"
-                                        Text="{Binding AppointmentDiscountAmount, StringFormat=₱ {0:N2}}" />
-                                </Grid>
-
-                                <Grid Margin="0,14,0,0">
-                                    <TextBlock Foreground="#223357" Text="Payment:" />
-                                    <TextBlock
-                                        HorizontalAlignment="Right"
-                                        FontWeight="Bold"
-                                        Foreground="#223357"
-                                        Text="{Binding AppointmentPaymentAmount, StringFormat=₱ {0:N2}}" />
-                                </Grid>
-
-                                <Border
-                                    Height="1"
-                                    Margin="0,18,0,14"
-                                    Background="#223357" />
-
-                                <Grid>
-                                    <TextBlock
-                                        FontWeight="Bold"
-                                        Foreground="#223357"
-                                        Text="Balance:" />
-
-                                    <TextBlock
-                                        HorizontalAlignment="Right"
-                                        FontWeight="Bold"
-                                        Foreground="#00A423"
-                                        Text="{Binding AppointmentBalanceDisplay}" />
-                                </Grid>
+                            <!--  Row 4  -->
+                            <StackPanel Grid.Row="4" Grid.Column="0">
+                                <TextBlock
+                                    FontSize="16"
+                                    FontWeight="Bold"
+                                    Text="Patient Name" />
+                                <TextBox
+                                    Height="52"
+                                    Margin="0,8,0,0"
+                                    IsReadOnly="True"
+                                    Style="{StaticResource ModernTextBoxStyle}"
+                                    Tag="Auto-Filled"
+                                    Text="{Binding AppointmentPatientName, Mode=OneWay}" />
                             </StackPanel>
-                        </Border>
 
-                        <!-- Row 4 -->
-                        <StackPanel Grid.Row="4" Grid.Column="0">
-                            <TextBlock FontSize="16" FontWeight="Bold" Text="Patient Name" />
-                            <TextBox
-                                Height="52"
-                                Margin="0,8,0,0"
-                                IsReadOnly="True"
-                                Style="{StaticResource ModernTextBoxStyle}"
-                                Tag="Auto-Filled"
-                                Text="{Binding AppointmentPatientName, Mode=OneWay}" />
-                        </StackPanel>
-
-                        <StackPanel Grid.Row="4" Grid.Column="2">
-                            <TextBlock FontSize="16" FontWeight="Bold" Text="Discount Amount" />
-                            <TextBox
-                                Height="52"
-                                Margin="0,8,0,0"
-                                IsReadOnly="True"
-                                Style="{StaticResource ModernTextBoxStyle}"
-                                Tag="Auto-Filled"
-                                Text="{Binding AppointmentDiscountAmount, Converter={StaticResource PesoCurrencyConverter}, UpdateSourceTrigger=LostFocus}" />
-                        </StackPanel>
-
-                        <Border
-                            Grid.Row="4"
-                            Grid.Column="4"
-                            Grid.ColumnSpan="3"
-                            Height="52"
-                            Margin="0,31,0,0"
-                            Padding="20,0"
-                            Background="#EEEEEE"
-                            CornerRadius="8">
-
-                            <Grid>
+                            <StackPanel Grid.Row="4" Grid.Column="2">
                                 <TextBlock
-                                    VerticalAlignment="Center"
-                                    FontSize="15"
-                                    Foreground="#888888"
-                                    Text="Billable Amount:" />
+                                    FontSize="16"
+                                    FontWeight="Bold"
+                                    Text="Discount Amount" />
+                                <TextBox
+                                    Height="52"
+                                    Margin="0,8,0,0"
+                                    IsReadOnly="True"
+                                    Style="{StaticResource ModernTextBoxStyle}"
+                                    Tag="Auto-Filled"
+                                    Text="{Binding AppointmentDiscountAmount, Converter={StaticResource PesoCurrencyConverter}, UpdateSourceTrigger=LostFocus}" />
+                            </StackPanel>
 
+                            <Border
+                                Grid.Row="4"
+                                Grid.Column="4"
+                                Grid.ColumnSpan="3"
+                                Height="52"
+                                Margin="0,31,0,0"
+                                Padding="20,0"
+                                Background="#EEEEEE"
+                                CornerRadius="8">
+
+                                <Grid>
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        FontSize="15"
+                                        Foreground="#888888"
+                                        Text="Billable Amount:" />
+
+                                    <TextBlock
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Center"
+                                        FontSize="15"
+                                        Foreground="#888888"
+                                        Text="{Binding AppointmentSubtotalDisplay}" />
+                                </Grid>
+                            </Border>
+
+                            <!--  Row 6  -->
+                            <StackPanel Grid.Row="6" Grid.Column="0">
                                 <TextBlock
-                                    HorizontalAlignment="Right"
-                                    VerticalAlignment="Center"
-                                    FontSize="15"
-                                    Foreground="#888888"
-                                    Text="{Binding AppointmentSubtotalDisplay}" />
-                            </Grid>
-                        </Border>
+                                    FontSize="16"
+                                    FontWeight="Bold"
+                                    Text="Service / Treatment" />
+                                <TextBox
+                                    Height="52"
+                                    Margin="0,8,0,0"
+                                    IsReadOnly="True"
+                                    Style="{StaticResource ModernTextBoxStyle}"
+                                    Tag="Auto-Filled"
+                                    Text="{Binding AppointmentServiceName, Mode=OneWay}" />
+                            </StackPanel>
 
-                        <!-- Row 6 -->
-                        <StackPanel Grid.Row="6" Grid.Column="0">
-                            <TextBlock FontSize="16" FontWeight="Bold" Text="Service / Treatment" />
-                            <TextBox
-                                Height="52"
-                                Margin="0,8,0,0"
-                                IsReadOnly="True"
-                                Style="{StaticResource ModernTextBoxStyle}"
-                                Tag="Auto-Filled"
-                                Text="{Binding AppointmentServiceName, Mode=OneWay}" />
-                        </StackPanel>
-
-                        <StackPanel Grid.Row="6" Grid.Column="2">
-                            <TextBlock FontSize="16" FontWeight="Bold" Text="Date" />
-                            <TextBox
-                                Height="52"
-                                Margin="0,8,0,0"
-                                IsReadOnly="True"
-                                Style="{StaticResource ModernTextBoxStyle}"
-                                Tag="Auto-Filled"
-                                Text="{Binding AppointmentDate, Mode=OneWay}" />
-                        </StackPanel>
-
-                        <StackPanel Grid.Row="6" Grid.Column="4" Grid.ColumnSpan="3">
-                            <TextBlock FontSize="16" FontWeight="Bold" Text="Receipt Number" />
-                            <TextBox
-                                Height="52"
-                                Margin="0,8,0,0"
-                                IsReadOnly="True"
-                                Style="{StaticResource ModernTextBoxStyle}"
-                                Text="{Binding AppointmentReceiptNumber, Mode=OneWay}" />
-                        </StackPanel>
-
-                        <!-- Notes and action buttons -->
-                        <StackPanel
-                            Grid.Row="6"
-                            Grid.RowSpan="3"
-                            Grid.Column="8">
-
-                            <TextBlock
-                                FontSize="16"
-                                FontWeight="Bold"
-                                Text="Notes" />
-
-                            <TextBox
-                                Height="120"
-                                Margin="0,8,0,0"
-                                AcceptsReturn="True"
-                                Style="{StaticResource ModernTextBoxStyle}"
-                                Text="{Binding AppointmentNotes, UpdateSourceTrigger=PropertyChanged}"
-                                TextWrapping="Wrap" />
+                            <StackPanel Grid.Row="6" Grid.Column="2">
+                                <TextBlock
+                                    FontSize="16"
+                                    FontWeight="Bold"
+                                    Text="Date" />
+                                <TextBox
+                                    Height="52"
+                                    Margin="0,8,0,0"
+                                    IsReadOnly="True"
+                                    Style="{StaticResource ModernTextBoxStyle}"
+                                    Tag="Auto-Filled"
+                                    Text="{Binding AppointmentDate, Mode=OneWay}" />
+                            </StackPanel>
 
                             <StackPanel
-                                Margin="0,14,0,0"
-                                HorizontalAlignment="Right"
-                                Orientation="Horizontal">
-
-                                <Button
-                                    Width="190"
-                                    Height="46"
-                                    Margin="0,0,14,0"
-                                    Background="#223357"
-                                    Command="{Binding ProcessAppointmentPaymentCommand}"
-                                    Foreground="White"
-                                    Style="{StaticResource SecondaryButtonStyle}">
-
-                                    <TextBlock
-                                        FontSize="14"
-                                        FontWeight="Bold"
-                                        Text="₱ Process Transaction" />
-                                </Button>
-
-                                <Button
-                                    Width="84"
-                                    Height="46"
-                                    Background="White"
-                                    BorderBrush="#111111"
-                                    BorderThickness="1"
-                                    Command="{Binding ClearAppointmentPaymentFormCommand}"
-                                    Content="Clear"
-                                    FontSize="14"
-                                    Foreground="Black"
-                                    Style="{StaticResource OutlineActionButtonStyle}" />
+                                Grid.Row="6"
+                                Grid.Column="4"
+                                Grid.ColumnSpan="3">
+                                <TextBlock
+                                    FontSize="16"
+                                    FontWeight="Bold"
+                                    Text="Receipt Number" />
+                                <TextBox
+                                    Height="52"
+                                    Margin="0,8,0,0"
+                                    IsReadOnly="True"
+                                    Style="{StaticResource ModernTextBoxStyle}"
+                                    Text="{Binding AppointmentReceiptNumber, Mode=OneWay}" />
                             </StackPanel>
-                        </StackPanel>
 
-                        <!-- Row 8 -->
-                        <StackPanel Grid.Row="8" Grid.Column="0">
-                            <TextBlock FontSize="16" FontWeight="Bold" Text="Appointment Type" />
-                            <TextBox
-                                Height="52"
-                                Margin="0,8,0,0"
-                                IsReadOnly="True"
-                                Style="{StaticResource ModernTextBoxStyle}"
-                                Tag="Auto-Filled"
-                                Text="Completed Appointment" />
-                        </StackPanel>
-                    </Grid>
+                            <!--  Notes and action buttons  -->
+                            <StackPanel
+                                Grid.Row="6"
+                                Grid.RowSpan="3"
+                                Grid.Column="8">
+
+                                <TextBlock
+                                    FontSize="16"
+                                    FontWeight="Bold"
+                                    Text="Notes" />
+
+                                <TextBox
+                                    Height="120"
+                                    Margin="0,8,0,0"
+                                    AcceptsReturn="True"
+                                    Style="{StaticResource ModernTextBoxStyle}"
+                                    Text="{Binding AppointmentNotes, UpdateSourceTrigger=PropertyChanged}"
+                                    TextWrapping="Wrap" />
+
+                                <StackPanel
+                                    Margin="0,14,0,0"
+                                    HorizontalAlignment="Right"
+                                    Orientation="Horizontal">
+
+                                    <Button
+                                        Width="190"
+                                        Height="46"
+                                        Margin="0,0,14,0"
+                                        Background="#223357"
+                                        Command="{Binding ProcessAppointmentPaymentCommand}"
+                                        Foreground="White"
+                                        Style="{StaticResource SecondaryButtonStyle}">
+
+                                        <TextBlock
+                                            FontSize="14"
+                                            FontWeight="Bold"
+                                            Text="₱ Process Transaction" />
+                                    </Button>
+
+                                    <Button
+                                        Width="84"
+                                        Height="46"
+                                        Background="White"
+                                        BorderBrush="#111111"
+                                        BorderThickness="1"
+                                        Command="{Binding ClearAppointmentPaymentFormCommand}"
+                                        Content="Clear"
+                                        FontSize="14"
+                                        Foreground="Black"
+                                        Style="{StaticResource OutlineActionButtonStyle}" />
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!--  Row 8  -->
+                            <StackPanel Grid.Row="8" Grid.Column="0">
+                                <TextBlock
+                                    FontSize="16"
+                                    FontWeight="Bold"
+                                    Text="Appointment Type" />
+                                <TextBox
+                                    Height="52"
+                                    Margin="0,8,0,0"
+                                    IsReadOnly="True"
+                                    Style="{StaticResource ModernTextBoxStyle}"
+                                    Tag="Auto-Filled"
+                                    Text="Completed Appointment" />
+                            </StackPanel>
+                        </Grid>
+                        <!--  Balance Payment  -->
+                        <billingViews:BalancePaymentView>
+                            <billingViews:BalancePaymentView.Style>
+                                <Style TargetType="billingViews:BalancePaymentView">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsBalancePaymentSelected}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </billingViews:BalancePaymentView.Style>
+                        </billingViews:BalancePaymentView>
+
+                        <!--  Manual Transaction  -->
+                        <billingViews:ManualTransactionView>
+                            <billingViews:ManualTransactionView.Style>
+                                <Style TargetType="billingViews:ManualTransactionView">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsManualTransactionSelected}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </billingViews:ManualTransactionView.Style>
+                        </billingViews:ManualTransactionView>
+                    </StackPanel>
                 </ScrollViewer>
             </Border>
 
         </Grid>
 
-        <!-- Full Transaction History Overlay -->
-        <Grid
-            Background="#66000000"
-            Visibility="{Binding IsTransactionHistoryOverlayOpen, Converter={StaticResource BoolToVisibilityConverter}}">
+        <!--  Full Transaction History Overlay  -->
+        <Grid Background="#66000000" Visibility="{Binding IsTransactionHistoryOverlayOpen, Converter={StaticResource BoolToVisibilityConverter}}">
 
             <Border
                 Width="720"
@@ -1035,8 +1150,8 @@
                 <Border.Effect>
                     <DropShadowEffect
                         BlurRadius="24"
-                        ShadowDepth="4"
-                        Opacity="0.25" />
+                        Opacity="0.25"
+                        ShadowDepth="4" />
                 </Border.Effect>
 
                 <Grid>
@@ -1064,8 +1179,8 @@
 
                     <ScrollViewer
                         Grid.Row="2"
-                        VerticalScrollBarVisibility="Auto"
-                        HorizontalScrollBarVisibility="Disabled">
+                        HorizontalScrollBarVisibility="Disabled"
+                        VerticalScrollBarVisibility="Auto">
 
                         <ScrollViewer.Resources>
                             <Style BasedOn="{StaticResource BlueDataGridScrollBarStyle}" TargetType="{x:Type ScrollBar}" />
@@ -1135,11 +1250,11 @@
                                                     </Border.Style>
 
                                                     <TextBlock
-                                                        FontSize="11"
                                                         HorizontalAlignment="Center"
-                                                        TextAlignment="Center"
+                                                        FontSize="11"
                                                         FontWeight="SemiBold"
-                                                        Text="{Binding PaymentStatus}">
+                                                        Text="{Binding PaymentStatus}"
+                                                        TextAlignment="Center">
 
                                                         <TextBlock.Style>
                                                             <Style TargetType="TextBlock">
@@ -1182,17 +1297,15 @@
                         Background="#223357"
                         Command="{Binding CloseTransactionHistoryOverlayCommand}"
                         Content="Close"
-                        Foreground="White"
                         FontWeight="Bold"
+                        Foreground="White"
                         Style="{StaticResource SmallActionButtonStyle}" />
                 </Grid>
             </Border>
         </Grid>
 
-        <!-- Receipt Detail Overlay -->
-        <Grid
-            Background="#66000000"
-            Visibility="{Binding IsReceiptOverlayOpen, Converter={StaticResource BoolToVisibilityConverter}}">
+        <!--  Receipt Detail Overlay  -->
+        <Grid Background="#66000000" Visibility="{Binding IsReceiptOverlayOpen, Converter={StaticResource BoolToVisibilityConverter}}">
 
             <Border
                 Width="820"
@@ -1206,8 +1319,8 @@
                 <Border.Effect>
                     <DropShadowEffect
                         BlurRadius="24"
-                        ShadowDepth="4"
-                        Opacity="0.25" />
+                        Opacity="0.25"
+                        ShadowDepth="4" />
                 </Border.Effect>
 
                 <Grid>
@@ -1217,7 +1330,7 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
-                    <!-- Header -->
+                    <!--  Header  -->
                     <Border
                         Grid.Row="0"
                         Background="#223357"
@@ -1231,9 +1344,7 @@
                                 Foreground="White"
                                 Text="Dental Receipt" />
 
-                            <StackPanel
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="Center">
+                            <StackPanel HorizontalAlignment="Right" VerticalAlignment="Center">
 
                                 <TextBlock
                                     FontSize="12"
@@ -1251,7 +1362,7 @@
                         </Grid>
                     </Border>
 
-                    <!-- Body -->
+                    <!--  Body  -->
                     <ScrollViewer
                         Grid.Row="1"
                         Padding="30"
@@ -1264,7 +1375,7 @@
 
                         <StackPanel>
 
-                            <!-- Info blocks -->
+                            <!--  Info blocks  -->
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -1272,11 +1383,9 @@
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
 
-                                <!-- Patient Information -->
+                                <!--  Patient Information  -->
                                 <StackPanel Grid.Column="0">
-                                    <Border
-                                        Padding="12"
-                                        Background="#F3F7FA">
+                                    <Border Padding="12" Background="#F3F7FA">
                                         <TextBlock
                                             FontSize="16"
                                             FontWeight="Bold"
@@ -1284,9 +1393,7 @@
                                     </Border>
 
                                     <StackPanel Margin="0,14,0,0">
-                                        <TextBlock
-                                            FontSize="14"
-                                            Text="{Binding SelectedReceiptDetail.PatientName}" />
+                                        <TextBlock FontSize="14" Text="{Binding SelectedReceiptDetail.PatientName}" />
 
                                         <TextBlock
                                             Margin="0,6,0,0"
@@ -1302,11 +1409,9 @@
                                     </StackPanel>
                                 </StackPanel>
 
-                                <!-- Transaction Information -->
+                                <!--  Transaction Information  -->
                                 <StackPanel Grid.Column="2">
-                                    <Border
-                                        Padding="12"
-                                        Background="#F3F7FA">
+                                    <Border Padding="12" Background="#F3F7FA">
                                         <TextBlock
                                             FontSize="16"
                                             FontWeight="Bold"
@@ -1314,9 +1419,7 @@
                                     </Border>
 
                                     <StackPanel Margin="0,14,0,0">
-                                        <TextBlock
-                                            FontSize="14"
-                                            Text="{Binding SelectedReceiptDetail.TransactionDateDisplay}" />
+                                        <TextBlock FontSize="14" Text="{Binding SelectedReceiptDetail.TransactionDateDisplay}" />
 
                                         <TextBlock
                                             Margin="0,6,0,0"
@@ -1350,7 +1453,7 @@
                                 Margin="0,28,0,20"
                                 Background="#DDDDDD" />
 
-                            <!-- Service / Treatment -->
+                            <!--  Service / Treatment  -->
                             <TextBlock
                                 FontSize="19"
                                 FontWeight="Bold"
@@ -1399,7 +1502,7 @@
                                 </Border>
                             </Grid>
 
-                            <!-- Billing Summary -->
+                            <!--  Billing Summary  -->
                             <Grid Margin="0,30,0,0">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -1415,23 +1518,22 @@
 
                                     <Grid Margin="0,0,0,10">
                                         <TextBlock FontWeight="SemiBold" Text="Gross Amount" />
-                                        <TextBlock
-                                            HorizontalAlignment="Right"
-                                            Text="{Binding SelectedReceiptDetail.TotalAmountDisplay}" />
+                                        <TextBlock HorizontalAlignment="Right" Text="{Binding SelectedReceiptDetail.TotalAmountDisplay}" />
+                                    </Grid>
+
+                                    <Grid Margin="0,0,0,10" Visibility="{Binding SelectedReceiptDetail.HasVatExemption, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        <TextBlock FontWeight="SemiBold" Text="VAT Exempt Sales" />
+                                        <TextBlock HorizontalAlignment="Right" Text="{Binding SelectedReceiptDetail.VatExemptSalesDisplay}" />
                                     </Grid>
 
                                     <Grid Margin="0,0,0,10">
                                         <TextBlock FontWeight="SemiBold" Text="Discount Type" />
-                                        <TextBlock
-                                            HorizontalAlignment="Right"
-                                            Text="{Binding SelectedReceiptDetail.DiscountType}" />
+                                        <TextBlock HorizontalAlignment="Right" Text="{Binding SelectedReceiptDetail.DiscountType}" />
                                     </Grid>
 
                                     <Grid Margin="0,0,0,10">
                                         <TextBlock FontWeight="SemiBold" Text="Discount Amount" />
-                                        <TextBlock
-                                            HorizontalAlignment="Right"
-                                            Text="{Binding SelectedReceiptDetail.DiscountAmountDisplay}" />
+                                        <TextBlock HorizontalAlignment="Right" Text="{Binding SelectedReceiptDetail.DiscountAmountDisplay}" />
                                     </Grid>
 
                                     <Border
@@ -1449,9 +1551,7 @@
 
                                     <Grid Margin="0,0,0,10">
                                         <TextBlock FontWeight="SemiBold" Text="Amount Paid" />
-                                        <TextBlock
-                                            HorizontalAlignment="Right"
-                                            Text="{Binding SelectedReceiptDetail.AmountPaidDisplay}" />
+                                        <TextBlock HorizontalAlignment="Right" Text="{Binding SelectedReceiptDetail.AmountPaidDisplay}" />
                                     </Grid>
 
                                     <Grid Margin="0,0,0,10">
@@ -1472,7 +1572,7 @@
                                 </StackPanel>
                             </Grid>
 
-                            <!-- Notes -->
+                            <!--  Notes  -->
                             <StackPanel Margin="0,26,0,0">
                                 <TextBlock
                                     FontSize="16"
@@ -1496,7 +1596,7 @@
                         </StackPanel>
                     </ScrollViewer>
 
-                    <!-- Footer -->
+                    <!--  Footer  -->
                     <StackPanel
                         Grid.Row="2"
                         Margin="30,0,30,24"
@@ -1511,8 +1611,8 @@
                             Command="{Binding SaveReceiptPdfCommand}"
                             CommandParameter="{Binding SelectedReceiptDetail}"
                             Content="Save PDF"
-                            Foreground="White"
                             FontWeight="Bold"
+                            Foreground="White"
                             Style="{StaticResource SecondaryButtonStyle}" />
 
                         <Button
@@ -1523,8 +1623,8 @@
                             Command="{Binding PrintReceiptPdfCommand}"
                             CommandParameter="{Binding SelectedReceiptDetail}"
                             Content="Print"
-                            Foreground="White"
                             FontWeight="Bold"
+                            Foreground="White"
                             Style="{StaticResource SecondaryButtonStyle}" />
 
                         <Button
@@ -1535,17 +1635,15 @@
                             BorderThickness="1"
                             Command="{Binding CloseReceiptOverlayCommand}"
                             Content="Close"
-                            Foreground="Black"
                             FontWeight="Bold"
+                            Foreground="Black"
                             Style="{StaticResource SecondaryButtonStyle}" />
                     </StackPanel>
                 </Grid>
             </Border>
         </Grid>
-        <!-- Receipt PDF Print Preview Overlay -->
-        <Grid
-            Background="#66000000"
-            Visibility="{Binding IsReceiptPrintPreviewOpen, Converter={StaticResource BoolToVisibilityConverter}}">
+        <!--  Receipt PDF Print Preview Overlay  -->
+        <Grid Background="#66000000" Visibility="{Binding IsReceiptPrintPreviewOpen, Converter={StaticResource BoolToVisibilityConverter}}">
 
             <Border
                 Width="980"
@@ -1559,8 +1657,8 @@
                 <Border.Effect>
                     <DropShadowEffect
                         BlurRadius="24"
-                        ShadowDepth="4"
-                        Opacity="0.25" />
+                        Opacity="0.25"
+                        ShadowDepth="4" />
                 </Border.Effect>
 
                 <Grid>
@@ -1579,9 +1677,7 @@
                         Foreground="#223357"
                         Text="Receipt Print Preview" />
 
-                    <wv2:WebView2
-                        x:Name="ReceiptPrintWebView"
-                        Grid.Row="2"/>
+                    <wv2:WebView2 x:Name="ReceiptPrintWebView" Grid.Row="2" />
 
                     <StackPanel
                         Grid.Row="4"
@@ -1595,8 +1691,8 @@
                             Background="#223357"
                             Click="OpenReceiptPrintDialog_Click"
                             Content="Print"
-                            Foreground="White"
                             FontWeight="Bold"
+                            Foreground="White"
                             Style="{StaticResource SecondaryButtonStyle}" />
 
                         <Button
@@ -1607,18 +1703,16 @@
                             BorderThickness="1"
                             Command="{Binding CloseReceiptPrintPreviewCommand}"
                             Content="Close"
-                            Foreground="Black"
                             FontWeight="Bold"
+                            Foreground="Black"
                             Style="{StaticResource SecondaryButtonStyle}" />
                     </StackPanel>
                 </Grid>
             </Border>
         </Grid>
 
-        <!-- Center Prompt Overlay -->
-        <Grid
-            Background="#66000000"
-            Visibility="{Binding IsPromptOpen, Converter={StaticResource BoolToVisibilityConverter}}">
+        <!--  Center Prompt Overlay  -->
+        <Grid Background="#66000000" Visibility="{Binding IsPromptOpen, Converter={StaticResource BoolToVisibilityConverter}}">
 
             <Border
                 Width="420"
@@ -1631,8 +1725,8 @@
                 <Border.Effect>
                     <DropShadowEffect
                         BlurRadius="24"
-                        ShadowDepth="4"
-                        Opacity="0.25" />
+                        Opacity="0.25"
+                        ShadowDepth="4" />
                 </Border.Effect>
 
                 <StackPanel>
@@ -1656,11 +1750,14 @@
                         Background="#223357"
                         Command="{Binding ClosePromptCommand}"
                         Content="OK"
-                        Foreground="White"
                         FontWeight="Bold"
+                        Foreground="White"
                         Style="{StaticResource SecondaryButtonStyle}" />
                 </StackPanel>
             </Border>
         </Grid>
+
+
+
     </Grid>
 </UserControl>

@@ -67,6 +67,24 @@ namespace CruzNeryClinic.ViewModels
         private bool hasError;
 
         #endregion
+        
+        #region Backing Fields for Balance Payment Module
+
+        private BalancePaymentItem? selectedBalancePaymentItem;
+
+        private string balanceSearchText = string.Empty;
+
+        private string balanceReceiptNumber = string.Empty;
+        private string balancePatientName = string.Empty;
+        private string balanceServiceName = string.Empty;
+
+        private decimal balanceCurrentBalance;
+        private decimal balancePaymentAmount;
+        private decimal balanceRemainingAfterPayment;
+
+        private string balancePaymentNotes = string.Empty;
+
+        #endregion
 
         #region Collections
 
@@ -76,6 +94,7 @@ namespace CruzNeryClinic.ViewModels
         public ObservableCollection<AppointmentPaymentItem> FilteredAppointmentPaymentItems { get; }
 
         public ObservableCollection<BalancePaymentItem> BalancePaymentItems { get; }
+        public ObservableCollection<BalancePaymentItem> FilteredBalancePaymentItems { get; }
 
         public ObservableCollection<BillingPatientLookupItem> PaymentHistoryPatientResults { get; }
 
@@ -454,6 +473,118 @@ namespace CruzNeryClinic.ViewModels
 
         #endregion
 
+        #region Balance Payment Properties
+
+        public BalancePaymentItem? SelectedBalancePaymentItem
+        {
+            get => selectedBalancePaymentItem;
+            set
+            {
+                if (SetProperty(ref selectedBalancePaymentItem, value))
+                    FillBalancePaymentForm(value);
+            }
+        }
+
+        public string BalanceSearchText
+        {
+            get => balanceSearchText;
+            set
+            {
+                if (SetProperty(ref balanceSearchText, value))
+                    FilterBalancePaymentItems();
+            }
+        }
+
+        public string BalancePaymentDateDisplay =>
+            DateTime.Today.ToString("MM/dd/yyyy");
+
+        public string BalanceReceiptNumber
+        {
+            get => balanceReceiptNumber;
+            set => SetProperty(ref balanceReceiptNumber, value);
+        }
+
+        public string BalancePatientName
+        {
+            get => balancePatientName;
+            set => SetProperty(ref balancePatientName, value);
+        }
+
+        public string BalanceServiceName
+        {
+            get => balanceServiceName;
+            set => SetProperty(ref balanceServiceName, value);
+        }
+
+        public decimal BalanceCurrentBalance
+        {
+            get => balanceCurrentBalance;
+            set
+            {
+                if (SetProperty(ref balanceCurrentBalance, value))
+                    OnPropertyChanged(nameof(BalanceCurrentBalanceDisplay));
+            }
+        }
+
+        public decimal BalancePaymentAmount
+        {
+            get => balancePaymentAmount;
+            set
+            {
+                if (SetProperty(ref balancePaymentAmount, value))
+                    RecalculateBalancePayment();
+            }
+        }
+
+        public decimal BalanceRemainingAfterPayment
+        {
+            get => balanceRemainingAfterPayment;
+            set
+            {
+                if (SetProperty(ref balanceRemainingAfterPayment, value))
+                    OnPropertyChanged(nameof(BalanceRemainingAfterPaymentDisplay));
+            }
+        }
+
+        public string BalancePaymentNotes
+        {
+            get => balancePaymentNotes;
+            set => SetProperty(ref balancePaymentNotes, value);
+        }
+
+        public string BalanceCurrentBalanceDisplay =>
+            $"₱{BalanceCurrentBalance:N2}";
+
+        public string BalancePaymentAmountDisplay =>
+            $"₱{BalancePaymentAmount:N2}";
+
+        public string BalanceRemainingAfterPaymentDisplay =>
+            $"₱{BalanceRemainingAfterPayment:N2}";
+
+        private bool showAllBalancePaymentItems;
+
+        public bool ShowAllBalancePaymentItems
+        {
+            get => showAllBalancePaymentItems;
+            set
+            {
+                if (SetProperty(ref showAllBalancePaymentItems, value))
+                {
+                    OnPropertyChanged(nameof(HasMoreBalancePaymentItems));
+                    OnPropertyChanged(nameof(ViewMoreBalancePaymentText));
+                }
+            }
+        }
+
+        public ObservableCollection<BalancePaymentItem> VisibleBalancePaymentItems { get; }
+
+        public bool HasMoreBalancePaymentItems =>
+            FilteredBalancePaymentItems.Count > 3;
+
+        public string ViewMoreBalancePaymentText =>
+            ShowAllBalancePaymentItems ? "Show Less" : "View More";
+        #endregion
+
         #region Commands
 
         public ICommand SelectBillingModuleCommand { get; }
@@ -482,7 +613,14 @@ namespace CruzNeryClinic.ViewModels
 
         public ICommand CloseReceiptOverlayCommand { get; }
 
+        // Balance Payment Commands
+        public ICommand SelectBalancePaymentCommand { get; }
 
+        public ICommand ProcessBalancePaymentCommand { get; }
+
+        public ICommand ClearBalancePaymentFormCommand { get; }
+
+        public ICommand ToggleBalancePaymentItemsCommand { get; }
         #endregion
 
         #region Constructor
@@ -494,7 +632,16 @@ namespace CruzNeryClinic.ViewModels
             BillingRecords = new ObservableCollection<BillingRecordListItem>();
             AppointmentPaymentItems = new ObservableCollection<AppointmentPaymentItem>();
             FilteredAppointmentPaymentItems = new ObservableCollection<AppointmentPaymentItem>();
+            VisibleBalancePaymentItems = new ObservableCollection<BalancePaymentItem>();
+
+            ToggleBalancePaymentItemsCommand = new RelayCommand(() =>
+            {
+                ShowAllBalancePaymentItems = !ShowAllBalancePaymentItems;
+                RefreshVisibleBalancePaymentItems();
+            });
+
             BalancePaymentItems = new ObservableCollection<BalancePaymentItem>();
+            FilteredBalancePaymentItems = new ObservableCollection<BalancePaymentItem>();
 
             SelectBillingModuleCommand = new RelayCommand<string>(SelectBillingModule);
             RefreshBillingCommand = new RelayCommand(LoadBillingData);
@@ -520,6 +667,10 @@ namespace CruzNeryClinic.ViewModels
 
             ProcessAppointmentPaymentCommand = new RelayCommand(ProcessAppointmentPayment);
             ClearAppointmentPaymentFormCommand = new RelayCommand(ClearAppointmentPaymentForm);
+
+            SelectBalancePaymentCommand = new RelayCommand<BalancePaymentItem>(SelectBalancePayment);
+            ProcessBalancePaymentCommand = new RelayCommand(ProcessBalancePayment);
+            ClearBalancePaymentFormCommand = new RelayCommand(ClearBalancePaymentForm);
 
 
             ClosePromptCommand = new RelayCommand(ClosePrompt);
@@ -625,6 +776,8 @@ namespace CruzNeryClinic.ViewModels
 
             foreach (BalancePaymentItem item in billingRepository.GetBillingsWithBalance())
                 BalancePaymentItems.Add(item);
+            
+            FilterBalancePaymentItems();
         }
 
         private void RefreshSelectedModuleData()
@@ -1051,6 +1204,166 @@ namespace CruzNeryClinic.ViewModels
         {
             AppointmentPaymentErrorMessage = string.Empty;
             HasAppointmentPaymentError = false;
+        }
+
+        #endregion
+
+        #region Balance Payment Methods
+        private void FilterBalancePaymentItems()
+        {
+            FilteredBalancePaymentItems.Clear();
+
+            string keyword = BalanceSearchText.Trim();
+
+            IEnumerable<BalancePaymentItem> results = BalancePaymentItems;
+
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                results = results.Where(item =>
+                    item.ReceiptNumber.Contains(keyword, StringComparison.OrdinalIgnoreCase)
+                    || item.PatientCode.Contains(keyword, StringComparison.OrdinalIgnoreCase)
+                    || item.PatientName.Contains(keyword, StringComparison.OrdinalIgnoreCase)
+                    || item.ServiceName.Contains(keyword, StringComparison.OrdinalIgnoreCase)
+                    || item.PaymentStatus.Contains(keyword, StringComparison.OrdinalIgnoreCase));
+            }
+
+            foreach (BalancePaymentItem item in results)
+                FilteredBalancePaymentItems.Add(item);
+
+            // When searching, collapse back to the first 3 matching results.
+            ShowAllBalancePaymentItems = false;
+
+            RefreshVisibleBalancePaymentItems();
+        }
+
+        private void RefreshVisibleBalancePaymentItems()
+        {
+            VisibleBalancePaymentItems.Clear();
+
+            IEnumerable<BalancePaymentItem> visibleItems = ShowAllBalancePaymentItems
+                ? FilteredBalancePaymentItems
+                : FilteredBalancePaymentItems.Take(3);
+
+            foreach (BalancePaymentItem item in visibleItems)
+                VisibleBalancePaymentItems.Add(item);
+
+            OnPropertyChanged(nameof(HasMoreBalancePaymentItems));
+            OnPropertyChanged(nameof(ViewMoreBalancePaymentText));
+        }
+
+        private void SelectBalancePayment(BalancePaymentItem? item)
+        {
+            if (item == null)
+                return;
+
+            SelectedBalancePaymentItem = item;
+        }
+
+        private void FillBalancePaymentForm(BalancePaymentItem? item)
+        {
+            if (item == null)
+            {
+                ClearBalancePaymentFormFieldsOnly();
+                return;
+            }
+
+            BalanceReceiptNumber = item.ReceiptNumber;
+            BalancePatientName = item.PatientName;
+            BalanceServiceName = item.ServiceName;
+            BalanceCurrentBalance = item.RemainingBalance;
+
+            BalancePaymentAmount = 0;
+            BalancePaymentNotes = string.Empty;
+
+            OnPropertyChanged(nameof(BalancePaymentDateDisplay));
+
+            RecalculateBalancePayment();
+        }
+
+        private void RecalculateBalancePayment()
+        {
+            if (BalancePaymentAmount < 0)
+                BalancePaymentAmount = 0;
+
+            if (BalancePaymentAmount > BalanceCurrentBalance)
+                BalancePaymentAmount = BalanceCurrentBalance;
+
+            BalanceRemainingAfterPayment = Math.Max(BalanceCurrentBalance - BalancePaymentAmount, 0);
+
+            OnPropertyChanged(nameof(BalanceCurrentBalanceDisplay));
+            OnPropertyChanged(nameof(BalancePaymentAmountDisplay));
+            OnPropertyChanged(nameof(BalanceRemainingAfterPaymentDisplay));
+        }
+
+        private void ProcessBalancePayment()
+        {
+            if (SelectedBalancePaymentItem == null)
+            {
+                ShowPrompt("Balance Payment", "Please select a billing record with existing balance.");
+                return;
+            }
+
+            if (BalancePaymentAmount <= 0)
+            {
+                ShowPrompt("Balance Payment", "Please enter a valid payment amount.");
+                return;
+            }
+
+            if (BalancePaymentAmount > BalanceCurrentBalance)
+            {
+                ShowPrompt("Balance Payment", "Payment amount cannot be greater than the current balance.");
+                return;
+            }
+
+            try
+            {
+                PaymentRecord payment = new()
+                {
+                    BillingId = SelectedBalancePaymentItem.BillingId,
+                    PatientId = SelectedBalancePaymentItem.PatientId,
+                    AmountPaid = BalancePaymentAmount,
+                    PaymentMethod = "Cash",
+                    PaymentDate = DateTime.Today,
+                    ReceivedByUserId = null,
+                    Notes = BalancePaymentNotes
+                };
+
+                billingRepository.AddPaymentRecord(payment);
+
+                LoadBillingData();
+                ClearBalancePaymentForm();
+
+                SelectedBillingModule = "Balance Payment";
+
+                ShowPrompt("Balance Payment", "Payment has been recorded successfully.");
+            }
+            catch (Exception ex)
+            {
+                ShowPrompt("Balance Payment", $"Failed to record balance payment: {ex.Message}");
+            }
+        }
+
+        private void ClearBalancePaymentForm()
+        {
+            SelectedBalancePaymentItem = null;
+            ClearBalancePaymentFormFieldsOnly();
+        }
+
+        private void ClearBalancePaymentFormFieldsOnly()
+        {
+            BalanceReceiptNumber = string.Empty;
+            BalancePatientName = string.Empty;
+            BalanceServiceName = string.Empty;
+
+            BalanceCurrentBalance = 0;
+            BalancePaymentAmount = 0;
+            BalanceRemainingAfterPayment = 0;
+            BalancePaymentNotes = string.Empty;
+
+            OnPropertyChanged(nameof(BalancePaymentDateDisplay));
+            OnPropertyChanged(nameof(BalanceCurrentBalanceDisplay));
+            OnPropertyChanged(nameof(BalancePaymentAmountDisplay));
+            OnPropertyChanged(nameof(BalanceRemainingAfterPaymentDisplay));
         }
 
         #endregion
