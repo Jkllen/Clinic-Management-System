@@ -43,12 +43,13 @@ namespace CruzNeryClinic.ViewModels
             {
                 "Dashboard" => CreateDashboardView(),
                 "ManageUsers" => CreateUserManagementView(),
-                "Patients" => CreatePlaceholderView("Patients Screen Next"),
-                "Appointment" => CreatePlaceholderView("Appointment Screen Next"),
-                "Billing" => CreatePlaceholderView("Billing Screen Next"),
+                "Patients" => CreatePatientManagementView(),
+                "Appointment" => CreateAppointmentManagementView(),
+                "Billing" => CreateBillingView(),
                 "Inventory" => CreateInventoryView(),
                 "Maintenance" => CreatePlaceholderView("Maintenance Screen Next"),
                 "Reports" => CreatePlaceholderView("Reports Screen Next"),
+                "Help" => CreateHelpView(),
                 _ => CreateDashboardView()
             };
         }
@@ -64,7 +65,7 @@ namespace CruzNeryClinic.ViewModels
             DashboardViewModel dashboardViewModel = new DashboardViewModel();
 
             // This makes Dashboard "View All" buttons navigate through the shell.
-            // Because it uses NavigateTo(), the sidebar selected item also updates.
+            // It uses NavigateTo(), the sidebar selected item also updates.
             dashboardViewModel.NavigationRequested += NavigateTo;
 
             DashboardView dashboardView = new DashboardView
@@ -97,6 +98,58 @@ namespace CruzNeryClinic.ViewModels
             };
 
             return inventoryView;
+        }
+
+        private PatientManagementView CreatePatientManagementView()
+        {
+            return new PatientManagementView
+            {
+                DataContext = new PatientManagementViewModel()
+            };
+        }
+
+        private AppointmentManagementView CreateAppointmentManagementView()
+        {
+            AppointmentManagementViewModel appointmentViewModel = new AppointmentManagementViewModel();
+
+            appointmentViewModel.AddPatientRequested += NavigateToPatientsAndOpenAddPatient;
+
+            return new AppointmentManagementView
+            {
+                DataContext = appointmentViewModel
+            };
+        }
+
+        private BillingView CreateBillingView()
+        {
+            return new BillingView
+            {
+                DataContext = new BillingViewModel()
+            };
+        }
+
+        private HelpView CreateHelpView()
+        {
+            return new HelpView
+            {
+                DataContext = new HelpViewModel()
+            };
+        }
+
+        private void NavigateToPatientsAndOpenAddPatient()
+        {
+            SelectedModule = "Patients";
+
+            PatientManagementViewModel patientViewModel = new PatientManagementViewModel();
+
+            PatientManagementView patientManagementView = new PatientManagementView
+            {
+                DataContext = patientViewModel
+            };
+
+            CurrentModuleView = patientManagementView;
+
+            patientViewModel.OpenAddPatientOverlayFromNavigation();
         }
 
         private UserControl CreatePlaceholderView(string text)

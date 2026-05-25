@@ -10,6 +10,12 @@ namespace CruzNeryClinic.Repositories
     public class InventoryRepository
     {
         public List<InventoryItem> GetAllItems()
+            => QueryItems("WHERE IsActive = 1");
+
+        public List<InventoryItem> GetArchivedItems()
+            => QueryItems("WHERE IsActive = 0");
+
+        private List<InventoryItem> QueryItems(string whereClause)
         {
             var items = new List<InventoryItem>();
 
@@ -17,7 +23,9 @@ namespace CruzNeryClinic.Repositories
             connection.Open();
 
             using SqliteCommand command = connection.CreateCommand();
-            command.CommandText = "SELECT ItemId, ItemName, Quantity, UnitPrice, MinimumThreshold, IsActive, LastRestock, UpdatedAt, ItemCreated, Note FROM InventoryItems;";
+            command.CommandText =
+                $"SELECT ItemId, ItemName, Quantity, UnitPrice, MinimumThreshold, IsActive, " +
+                $"LastRestock, UpdatedAt, ItemCreated, Note FROM InventoryItems {whereClause};";
 
             using SqliteDataReader reader = command.ExecuteReader();
             while (reader.Read())
@@ -167,6 +175,12 @@ namespace CruzNeryClinic.Repositories
         }
 
         public List<RecentItemUsage> GetRecentUsages(int count = 5)
+            => QueryUsages($"ORDER BY UsageId DESC LIMIT {count}");
+
+        public List<RecentItemUsage> GetAllUsages()
+            => QueryUsages("ORDER BY UsageId DESC");
+
+        private List<RecentItemUsage> QueryUsages(string orderClause)
         {
             var list = new List<RecentItemUsage>();
 
@@ -174,17 +188,21 @@ namespace CruzNeryClinic.Repositories
             connection.Open();
 
             using SqliteCommand command = connection.CreateCommand();
-            command.CommandText = $"SELECT ItemId, ItemName, QuantityUsed, UsageDate FROM InventoryUsage ORDER BY UsageId DESC LIMIT {count};";
+            command.CommandText =
+                $"SELECT UsageId, ItemId, ItemName, QuantityUsed, UsageDate, IFNULL(Notes,'') " +
+                $"FROM InventoryUsage {orderClause};";
 
             using SqliteDataReader reader = command.ExecuteReader();
             while (reader.Read())
             {
                 list.Add(new RecentItemUsage
                 {
-                    ItemId       = $"INV-{reader.GetInt32(0):D3}",
-                    ItemName     = reader.GetString(1),
-                    QuantityUsed = reader.GetInt32(2),
-                    Date         = DateTime.Parse(reader.GetString(3))
+                    UsageId      = reader.GetInt32(0),
+                    ItemId       = $"INV-{reader.GetInt32(1):D3}",
+                    ItemName     = reader.GetString(2),
+                    QuantityUsed = reader.GetInt32(3),
+                    Date         = DateTime.Parse(reader.GetString(4)),
+                    Notes        = reader.GetString(5)
                 });
             }
 
@@ -192,6 +210,12 @@ namespace CruzNeryClinic.Repositories
         }
 
         public List<RecentRestockItem> GetRecentRestocks(int count = 5)
+            => QueryRestocks($"ORDER BY RestockId DESC LIMIT {count}");
+
+        public List<RecentRestockItem> GetAllRestocks()
+            => QueryRestocks("ORDER BY RestockId DESC");
+
+        private List<RecentRestockItem> QueryRestocks(string orderClause)
         {
             var list = new List<RecentRestockItem>();
 
@@ -199,22 +223,45 @@ namespace CruzNeryClinic.Repositories
             connection.Open();
 
             using SqliteCommand command = connection.CreateCommand();
-            command.CommandText = $"SELECT ItemId, ItemName, UnitPrice, QuantityAdded, RestockedDate FROM InventoryRestocks ORDER BY RestockId DESC LIMIT {count};";
+            command.CommandText =
+                $"SELECT RestockId, ItemId, ItemName, QuantityAdded, RestockedDate, " +
+                $"IFNULL(Supplier,''), UnitPrice, IFNULL(Note,'') " +
+                $"FROM InventoryRestocks {orderClause};";
 
             using SqliteDataReader reader = command.ExecuteReader();
             while (reader.Read())
             {
                 list.Add(new RecentRestockItem
                 {
-                    ItemId     = $"INV-{reader.GetInt32(0):D3}",
-                    ItemName   = reader.GetString(1),
-                    UnitPrice  = Convert.ToDecimal(reader.GetDouble(2)),
+                    RestockId  = reader.GetInt32(0),
+                    ItemId     = $"INV-{reader.GetInt32(1):D3}",
+                    ItemName   = reader.GetString(2),
                     StockAdded = reader.GetInt32(3),
-                    Date       = DateTime.Parse(reader.GetString(4))
+                    Date       = DateTime.Parse(reader.GetString(4)),
+                    Supplier   = reader.GetString(5),
+                    UnitPrice  = Convert.ToDecimal(reader.GetDouble(6)),
+                    Notes      = reader.GetString(7)
                 });
             }
 
             return list;
+        }
+
+        public void RestoreItem(int itemId, string timestamp)
+        {
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+                UPDATE InventoryItems
+                SET IsActive = 1,
+                    UpdatedAt = @UpdatedAt
+                WHERE ItemId = @ItemId;";
+
+            command.Parameters.AddWithValue("@ItemId", itemId);
+            command.Parameters.AddWithValue("@UpdatedAt", timestamp);
+            command.ExecuteNonQuery();
         }
 
         public void LogItemUsage(int itemId, string itemName, int quantityUsed, string usageDate,

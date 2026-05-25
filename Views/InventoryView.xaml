@@ -580,7 +580,7 @@
                                     Icon="ClipboardList" />
                             </Border>
                             <StackPanel Margin="10,0,0,0" VerticalAlignment="Center" MaxWidth="300">
-                                <TextBlock FontSize="16" FontWeight="SemiBold" Text="Recent Item Usage" />
+                                <TextBlock FontSize="20" FontWeight="SemiBold" Text="Recent Item Usage" />
                                 <TextBlock
                                     FontSize="11"
                                     Foreground="#7A7A7A"
@@ -890,7 +890,7 @@
                 </Button>
             </Grid>
 
-            <!--  Row 3 – Inventory DataGrid + Help Button (overlapping)  -->
+            <!--  Row 3 – Inventory DataGrid  -->
             <Grid Grid.Row="3" Margin="0,0,0,18">
 
                 <!--  Main table container  -->
@@ -927,6 +927,17 @@
                             ScrollViewer.VerticalScrollBarVisibility="Auto"
                             SelectedItem="{Binding SelectedInventoryItem, Mode=TwoWay}"
                             Style="{StaticResource DashboardDataGridStyle}">
+
+                            <DataGrid.RowStyle>
+                                <Style TargetType="DataGridRow">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsActive}" Value="False">
+                                            <Setter Property="Background" Value="#F0F0F0" />
+                                            <Setter Property="Foreground" Value="#999999" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGrid.RowStyle>
 
                             <DataGrid.Resources>
                                 <Style BasedOn="{StaticResource BlueDataGridScrollBarStyle}" TargetType="{x:Type ScrollBar}" />
@@ -1024,50 +1035,112 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
 
-                                <!--  Actions: View | Edit | Archive  -->
+                                <!--  Actions: View | Edit | Archive  (active)  /  Restore  (inactive)  -->
                                 <DataGridTemplateColumn
                                     Width="1.4*"
                                     MinWidth="140"
                                     Header="Actions">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <StackPanel
-                                                HorizontalAlignment="Center"
-                                                VerticalAlignment="Center"
-                                                Orientation="Horizontal">
+                                            <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
 
-                                                <!--  View Details  -->
+                                                <!--  Active row buttons  -->
+                                                <StackPanel Orientation="Horizontal">
+                                                    <StackPanel.Style>
+                                                        <Style TargetType="StackPanel">
+                                                            <Setter Property="Visibility" Value="Visible" />
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsActive}" Value="False">
+                                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </StackPanel.Style>
+
+                                                    <!--  View Details  -->
+                                                    <Button
+                                                        Margin="0,0,6,0"
+                                                        Background="#223357"
+                                                        Command="{Binding DataContext.ViewItemCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                        CommandParameter="{Binding}"
+                                                        Style="{StaticResource IconSquareButtonStyle}"
+                                                        ToolTip="View Details">
+                                                        <fa:IconBlock FontSize="15" Foreground="White" Icon="FileAlt" />
+                                                    </Button>
+
+                                                    <!--  Edit  -->
+                                                    <Button
+                                                        Margin="0,0,6,0"
+                                                        Background="#22C84A"
+                                                        Command="{Binding DataContext.EditItemCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                        CommandParameter="{Binding}"
+                                                        Style="{StaticResource IconSquareButtonStyle}"
+                                                        ToolTip="Edit Item">
+                                                        <fa:IconBlock FontSize="15" Foreground="White" Icon="Edit" />
+                                                    </Button>
+
+                                                    <!--  Archive  -->
+                                                    <Button
+                                                        Background="#E31D1D"
+                                                        Command="{Binding DataContext.ArchiveItemCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                        CommandParameter="{Binding}"
+                                                        Style="{StaticResource IconSquareButtonStyle}"
+                                                        ToolTip="Archive Item">
+                                                        <fa:IconBlock FontSize="15" Foreground="White" Icon="BoxArchive" />
+                                                    </Button>
+                                                </StackPanel>
+
+                                                <!--  Inactive row – Restore button  -->
                                                 <Button
-                                                    Margin="0,0,6,0"
-                                                    Background="#223357"
-                                                    Command="{Binding DataContext.ViewItemCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                    Height="30"
+                                                    Padding="14,0"
+                                                    Command="{Binding DataContext.RestoreItemCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                     CommandParameter="{Binding}"
-                                                    Style="{StaticResource IconSquareButtonStyle}"
-                                                    ToolTip="View Details">
-                                                    <fa:IconBlock FontSize="15" Foreground="White" Icon="FileAlt" />
+                                                    Cursor="Hand"
+                                                    ToolTip="Restore Item">
+                                                    <Button.Style>
+                                                        <Style TargetType="Button">
+                                                            <Setter Property="Visibility" Value="Collapsed" />
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsActive}" Value="False">
+                                                                    <Setter Property="Visibility" Value="Visible" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Button.Style>
+                                                    <Button.Template>
+                                                        <ControlTemplate TargetType="Button">
+                                                            <Border
+                                                                x:Name="RestoreBorder"
+                                                                Background="#22C84A"
+                                                                CornerRadius="8"
+                                                                Padding="{TemplateBinding Padding}">
+                                                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                                    <fa:IconBlock
+                                                                        Margin="0,0,6,0"
+                                                                        FontSize="12"
+                                                                        Foreground="White"
+                                                                        Icon="RotateLeft" />
+                                                                    <TextBlock
+                                                                        FontSize="12"
+                                                                        FontWeight="SemiBold"
+                                                                        Foreground="White"
+                                                                        Text="Restore" />
+                                                                </StackPanel>
+                                                            </Border>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter TargetName="RestoreBorder" Property="Opacity" Value="0.82" />
+                                                                </Trigger>
+                                                                <Trigger Property="IsPressed" Value="True">
+                                                                    <Setter TargetName="RestoreBorder" Property="Opacity" Value="0.65" />
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </Button.Template>
                                                 </Button>
 
-                                                <!--  Edit  -->
-                                                <Button
-                                                    Margin="0,0,6,0"
-                                                    Background="#22C84A"
-                                                    Command="{Binding DataContext.EditItemCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                    CommandParameter="{Binding}"
-                                                    Style="{StaticResource IconSquareButtonStyle}"
-                                                    ToolTip="Edit Item">
-                                                    <fa:IconBlock FontSize="15" Foreground="White" Icon="Edit" />
-                                                </Button>
-
-                                                <!--  Archive  -->
-                                                <Button
-                                                    Background="#E31D1D"
-                                                    Command="{Binding DataContext.ArchiveItemCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                    CommandParameter="{Binding}"
-                                                    Style="{StaticResource IconSquareButtonStyle}"
-                                                    ToolTip="Archive Item">
-                                                    <fa:IconBlock FontSize="15" Foreground="White" Icon="BoxArchive" />
-                                                </Button>
-                                            </StackPanel>
+                                            </Grid>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
@@ -1076,30 +1149,501 @@
                         </DataGrid>
                     </Grid>
                 </Border>
+                
+            </Grid>
+        </Grid>
 
-                <!--  Help button – floats over the bottom-right of the table  -->
-                <Button
-                    Margin="0,0,16,16"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Bottom"
-                    Panel.ZIndex="10"
-                    Style="{StaticResource HelpButtonStyle}">
-                    <StackPanel Orientation="Horizontal">
-                        <fa:IconBlock
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!--  Usage History Overlay                              -->
+        <!-- ═══════════════════════════════════════════════════ -->
+        <Grid Panel.ZIndex="43" Visibility="{Binding IsUsageHistoryOpen, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Border Background="#88000000" />
+            <Border
+                Width="950"
+                MaxHeight="800"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Background="White"
+                BorderBrush="#DADADA"
+                BorderThickness="1"
+                CornerRadius="14">
+
+                <Grid Margin="34,24,34,24">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="68" />
+                        <RowDefinition Height="60" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="64" />
+                    </Grid.RowDefinitions>
+
+                    <!--  Header  -->
+                    <Grid Grid.Row="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="1" />
+                        </Grid.RowDefinitions>
+                        <StackPanel Grid.Row="0" VerticalAlignment="Center">
+                            <TextBlock FontSize="22" FontWeight="Bold" Foreground="Black" Text="Item Usage History" />
+                            <TextBlock FontSize="13" Foreground="#7A7A7A" Text="Complete log of all recorded item usages" />
+                        </StackPanel>
+                        <Button
+                            Grid.Row="0"
+                            Width="42"
+                            Height="42"
+                            HorizontalAlignment="Right"
                             VerticalAlignment="Center"
-                            FontSize="36"
-                            Foreground="White"
-                            Icon="QuestionCircle" />
+                            Command="{Binding CloseUsageHistoryCommand}"
+                            Style="{StaticResource IconButtonStyle}">
+                            <fa:IconBlock FontSize="22" Foreground="#444444" Icon="Times" />
+                        </Button>
+                        <Border Grid.Row="1" Background="#E0E0E0" />
+                    </Grid>
+
+                    <!--  Search bar  -->
+                    <Grid Grid.Row="1" VerticalAlignment="Center">
+                        <Grid x:Name="UsageHistorySearchBox" Width="320" HorizontalAlignment="Left" Height="44">
+                            <TextBox
+                                Style="{StaticResource SearchTextBoxStyle}"
+                                Text="{Binding UsageHistorySearch, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock
+                                Margin="51,0,0,0"
+                                VerticalAlignment="Center"
+                                FontSize="14"
+                                Foreground="#8A8A8A"
+                                IsHitTestVisible="False"
+                                Text="Search by item name or ID">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding UsageHistorySearch}" Value="">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding UsageHistorySearch}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <fa:IconBlock
+                                Margin="16,0,0,0"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                FontSize="16"
+                                Foreground="Black"
+                                Icon="Search" />
+                        </Grid>
+                    </Grid>
+
+                    <!--  Usage DataGrid  -->
+                    <Border Grid.Row="2" Padding="0,0,0,4" Style="{StaticResource LargePanelStyle}">
+                        <DataGrid
+                            CanUserResizeRows="False"
+                            CellStyle="{StaticResource DashboardDataGridCellStyle}"
+                            ColumnHeaderStyle="{StaticResource DashboardDataGridColumnHeaderStyle}"
+                            ItemsSource="{Binding UsageHistoryItems}"
+                            MinRowHeight="40"
+                            RowHeight="44"
+                            ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                            ScrollViewer.VerticalScrollBarVisibility="Auto"
+                            Style="{StaticResource DashboardDataGridStyle}">
+                            <DataGrid.Resources>
+                                <Style BasedOn="{StaticResource BlueDataGridScrollBarStyle}" TargetType="{x:Type ScrollBar}" />
+                            </DataGrid.Resources>
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Width="0.65*" MinWidth="80"  Binding="{Binding UsageIdDisplay}" Header="Usage ID" />
+                                <DataGridTextColumn Width="0.75*" MinWidth="90"  Binding="{Binding ItemId}"        Header="Item ID" />
+                                <DataGridTextColumn Width="1.6*"  MinWidth="140" Binding="{Binding ItemName}"      Header="Item Name" />
+                                <DataGridTextColumn Width="0.75*" MinWidth="90"  Binding="{Binding QuantityUsed}"  Header="Qty Used" />
+                                <DataGridTextColumn Width="0.9*"  MinWidth="100" Binding="{Binding Date, StringFormat=MM/dd/yyyy}" Header="Date" />
+                                <DataGridTextColumn Width="1.8*"  MinWidth="150" Binding="{Binding Notes}"         Header="Notes" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+
+                    <!--  Close button  -->
+                    <StackPanel Grid.Row="3" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Button Width="130" Height="44" Command="{Binding CloseUsageHistoryCommand}" Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="CloseBorder" Background="#223357" CornerRadius="22">
+                                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="15" FontWeight="Bold" Foreground="White" Text="Close" />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="CloseBorder" Property="Opacity" Value="0.85" /></Trigger>
+                                        <Trigger Property="IsPressed" Value="True"><Setter TargetName="CloseBorder" Property="Opacity" Value="0.7" /></Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!--  Restock History Overlay                            -->
+        <!-- ═══════════════════════════════════════════════════ -->
+        <Grid Panel.ZIndex="44" Visibility="{Binding IsRestockHistoryOpen, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Border Background="#88000000" />
+            <Border
+                Width="950"
+                MaxHeight="800"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Background="White"
+                BorderBrush="#DADADA"
+                BorderThickness="1"
+                CornerRadius="14">
+
+                <Grid Margin="34,24,34,24">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="68" />
+                        <RowDefinition Height="60" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="64" />
+                    </Grid.RowDefinitions>
+
+                    <!--  Header  -->
+                    <Grid Grid.Row="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="1" />
+                        </Grid.RowDefinitions>
+                        <StackPanel Grid.Row="0" VerticalAlignment="Center">
+                            <TextBlock FontSize="22" FontWeight="Bold" Foreground="Black" Text="Restock History" />
+                            <TextBlock FontSize="13" Foreground="#7A7A7A" Text="Complete log of all item restocks" />
+                        </StackPanel>
+                        <Button
+                            Grid.Row="0"
+                            Width="42"
+                            Height="42"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Command="{Binding CloseRestockHistoryCommand}"
+                            Style="{StaticResource IconButtonStyle}">
+                            <fa:IconBlock FontSize="22" Foreground="#444444" Icon="Times" />
+                        </Button>
+                        <Border Grid.Row="1" Background="#E0E0E0" />
+                    </Grid>
+
+                    <!--  Search bar  -->
+                    <Grid Grid.Row="1" VerticalAlignment="Center">
+                        <Grid Width="320" HorizontalAlignment="Left" Height="44">
+                            <TextBox
+                                Style="{StaticResource SearchTextBoxStyle}"
+                                Text="{Binding RestockHistorySearch, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock
+                                Margin="51,0,0,0"
+                                VerticalAlignment="Center"
+                                FontSize="14"
+                                Foreground="#8A8A8A"
+                                IsHitTestVisible="False"
+                                Text="Search by item name or ID">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding RestockHistorySearch}" Value="">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding RestockHistorySearch}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <fa:IconBlock
+                                Margin="16,0,0,0"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                FontSize="16"
+                                Foreground="Black"
+                                Icon="Search" />
+                        </Grid>
+                    </Grid>
+
+                    <!--  Restock DataGrid  -->
+                    <Border Grid.Row="2" Padding="0,0,0,4" Style="{StaticResource LargePanelStyle}">
+                        <DataGrid
+                            CanUserResizeRows="False"
+                            CellStyle="{StaticResource DashboardDataGridCellStyle}"
+                            ColumnHeaderStyle="{StaticResource DashboardDataGridColumnHeaderStyle}"
+                            ItemsSource="{Binding RestockHistoryItems}"
+                            MinRowHeight="40"
+                            RowHeight="44"
+                            ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                            ScrollViewer.VerticalScrollBarVisibility="Auto"
+                            Style="{StaticResource DashboardDataGridStyle}">
+                            <DataGrid.Resources>
+                                <Style BasedOn="{StaticResource BlueDataGridScrollBarStyle}" TargetType="{x:Type ScrollBar}" />
+                            </DataGrid.Resources>
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Width="0.65*" MinWidth="80"  Binding="{Binding RestockIdDisplay}"                              Header="Restock ID" />
+                                <DataGridTextColumn Width="0.75*" MinWidth="90"  Binding="{Binding ItemId}"                                        Header="Item ID" />
+                                <DataGridTextColumn Width="1.4*"  MinWidth="130" Binding="{Binding ItemName}"                                       Header="Item Name" />
+                                <DataGridTextColumn Width="0.7*"  MinWidth="85"  Binding="{Binding StockAdded}"                                     Header="Stock Added" />
+                                <DataGridTextColumn Width="0.85*" MinWidth="95"  Binding="{Binding UnitPrice, StringFormat=&#x20B1;{0:N2}}"         Header="Unit Price" />
+                                <DataGridTextColumn Width="1.0*"  MinWidth="110" Binding="{Binding Supplier}"                                       Header="Supplier" />
+                                <DataGridTextColumn Width="0.9*"  MinWidth="100" Binding="{Binding Date, StringFormat=MM/dd/yyyy}"                  Header="Date" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+
+                    <!--  Close button  -->
+                    <StackPanel Grid.Row="3" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Button Width="130" Height="44" Command="{Binding CloseRestockHistoryCommand}" Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="CloseBorder" Background="#223357" CornerRadius="22">
+                                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="15" FontWeight="Bold" Foreground="White" Text="Close" />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="CloseBorder" Property="Opacity" Value="0.85" /></Trigger>
+                                        <Trigger Property="IsPressed" Value="True"><Setter TargetName="CloseBorder" Property="Opacity" Value="0.7" /></Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!--  Item Information Overlay (View Details)            -->
+        <!-- ═══════════════════════════════════════════════════ -->
+        <Grid Panel.ZIndex="45" Visibility="{Binding IsViewOverlayOpen, Converter={StaticResource BoolToVisibilityConverter}}">
+
+            <Border Background="#88000000" />
+
+            <Border
+                Width="600"
+                Height="Auto"
+                MaxHeight="860"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Background="White"
+                BorderBrush="#DADADA"
+                BorderThickness="1"
+                CornerRadius="14">
+
+                <Grid Margin="34,24,34,24">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="68" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="60" />
+                    </Grid.RowDefinitions>
+
+                    <!--  Header  -->
+                    <Grid Grid.Row="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="1" />
+                        </Grid.RowDefinitions>
                         <TextBlock
-                            Margin="12,0,0,0"
+                            Grid.Row="0"
                             VerticalAlignment="Center"
                             FontSize="26"
                             FontWeight="Bold"
-                            Foreground="White"
-                            Text="HELP" />
+                            Foreground="Black"
+                            Text="Item Information" />
+                        <Button
+                            Grid.Row="0"
+                            Width="42"
+                            Height="42"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Command="{Binding CloseViewOverlayCommand}"
+                            Style="{StaticResource IconButtonStyle}">
+                            <fa:IconBlock FontSize="22" Foreground="#444444" Icon="Times" />
+                        </Button>
+                        <Border Grid.Row="1" Background="#E0E0E0" />
+                    </Grid>
+
+                    <!--  Fields (all read-only)  -->
+                    <ScrollViewer Grid.Row="1" Margin="0,14,0,0" MaxHeight="620" VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+
+                            <!--  Item Name + Item Id  -->
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Item Name :" />
+                                    <Border Height="46" Background="White" BorderBrush="#C8DCF0" BorderThickness="1" CornerRadius="14">
+                                        <TextBlock Margin="16,0" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="13" Foreground="#111111" Text="{Binding ViewItemName}" />
+                                    </Border>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Item Id :" />
+                                    <Border Height="46" Background="White" BorderBrush="#C8DCF0" BorderThickness="1" CornerRadius="14">
+                                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13" FontWeight="SemiBold" Foreground="#111111" Text="{Binding ViewItemId}" />
+                                    </Border>
+                                </StackPanel>
+                            </Grid>
+
+                            <!--  Current Stock + Unit Price + Stock Status badge  -->
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Current Stock :" />
+                                    <Border Height="46" Background="White" BorderBrush="#C8DCF0" BorderThickness="1" CornerRadius="14">
+                                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13" Foreground="#111111" Text="{Binding ViewItemStock}" />
+                                    </Border>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Unit Price :" />
+                                    <Border Height="46" Background="White" BorderBrush="#C8DCF0" BorderThickness="1" CornerRadius="14">
+                                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13" Foreground="#111111" Text="{Binding ViewItemPrice}" />
+                                    </Border>
+                                </StackPanel>
+                                <StackPanel Grid.Column="3" Margin="12,0,0,0" VerticalAlignment="Bottom">
+                                    <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Stock Status :" />
+                                    <Border Height="46" MinWidth="100" Padding="14,0" CornerRadius="14">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="#D1FAE5" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ViewItemStockStatus}" Value="Low Stock">
+                                                        <Setter Property="Background" Value="#FEF3C7" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding ViewItemStockStatus}" Value="Out of Stock">
+                                                        <Setter Property="Background" Value="#FEE2E2" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12" FontWeight="SemiBold" Text="{Binding ViewItemStockStatus}">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Foreground" Value="#065F46" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding ViewItemStockStatus}" Value="Low Stock">
+                                                            <Setter Property="Foreground" Value="#92400E" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding ViewItemStockStatus}" Value="Out of Stock">
+                                                            <Setter Property="Foreground" Value="#991B1B" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Border>
+                                </StackPanel>
+                            </Grid>
+
+                            <!--  Date Added + Last Restock + Item Status badge  -->
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Item Date Added :" />
+                                    <Border Height="46" Background="White" BorderBrush="#C8DCF0" BorderThickness="1" CornerRadius="14">
+                                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13" Foreground="#111111" Text="{Binding ViewItemDateAdded}" />
+                                    </Border>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Last Restock :" />
+                                    <Border Height="46" Background="White" BorderBrush="#C8DCF0" BorderThickness="1" CornerRadius="14">
+                                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13" Foreground="#111111" Text="{Binding ViewItemLastRestock}" />
+                                    </Border>
+                                </StackPanel>
+                                <StackPanel Grid.Column="3" Margin="12,0,0,0" VerticalAlignment="Bottom">
+                                    <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Item Status :" />
+                                    <Border Height="46" MinWidth="100" Padding="14,0" CornerRadius="14">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="#D1FAE5" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ViewItemActiveStatus}" Value="Inactive">
+                                                        <Setter Property="Background" Value="#FEE2E2" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12" FontWeight="SemiBold" Text="{Binding ViewItemActiveStatus}">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Foreground" Value="#065F46" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding ViewItemActiveStatus}" Value="Inactive">
+                                                            <Setter Property="Foreground" Value="#991B1B" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Border>
+                                </StackPanel>
+                            </Grid>
+
+                            <!--  Low Stock Threshold  -->
+                            <StackPanel Margin="0,0,0,12">
+                                <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Low Stock Threshold :" />
+                                <Border Height="46" Background="White" BorderBrush="#C8DCF0" BorderThickness="1" CornerRadius="14">
+                                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13" Foreground="#111111" Text="{Binding ViewItemThreshold}" />
+                                </Border>
+                            </StackPanel>
+
+                            <!--  Notes  -->
+                            <StackPanel Margin="0,0,0,4">
+                                <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Notes :" />
+                                <Border
+                                    MinHeight="80"
+                                    Padding="14,10"
+                                    Background="White"
+                                    BorderBrush="#C8DCF0"
+                                    BorderThickness="1"
+                                    CornerRadius="10">
+                                    <TextBlock
+                                        FontSize="13"
+                                        Foreground="#111111"
+                                        Text="{Binding ViewItemNotes}"
+                                        TextWrapping="Wrap" />
+                                </Border>
+                            </StackPanel>
+
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!--  Close button  -->
+                    <StackPanel Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Bottom">
+                        <Button Width="130" Height="44" Command="{Binding CloseViewOverlayCommand}" Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="CloseBorder" Background="#223357" CornerRadius="22">
+                                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="White" Text="Close" />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="CloseBorder" Property="Opacity" Value="0.85" />
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter TargetName="CloseBorder" Property="Opacity" Value="0.7" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
                     </StackPanel>
-                </Button>
-            </Grid>
+
+                </Grid>
+            </Border>
         </Grid>
 
         <!-- Add / Edit Item Overlay -->
@@ -1994,68 +2538,271 @@
         </Grid>
 
         <!-- ═══════════════════════════════════════════════════ -->
-        <!--  Success Prompt Overlay                             -->
+        <!--  Confirmation Dialog Overlay                        -->
         <!-- ═══════════════════════════════════════════════════ -->
-        <Grid Panel.ZIndex="60" Visibility="{Binding IsSuccessPromptVisible, Converter={StaticResource BoolToVisibilityConverter}}">
-            <Border Background="#88FFFFFF" />
+        <Grid Panel.ZIndex="70" Visibility="{Binding IsConfirmDialogVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Border Background="#88000000" />
             <Border
-                Width="290"
-                Height="200"
-                Padding="20"
+                Width="420"
+                Height="Auto"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 Background="White"
-                BorderBrush="#9A9A9A"
+                BorderBrush="#DADADA"
                 BorderThickness="1"
-                CornerRadius="8">
-                <StackPanel>
-                    <StackPanel Orientation="Horizontal">
-                        <fa:IconBlock
-                            Margin="0,0,10,0"
-                            FontSize="22"
-                            Foreground="#19C929"
-                            Icon="CheckSquare" />
-                        <TextBlock FontSize="16" FontWeight="SemiBold" Text="{Binding SuccessMessage}" />
-                    </StackPanel>
+                CornerRadius="14">
+                <StackPanel Margin="28,24,28,24">
 
+                    <!--  Title  -->
                     <TextBlock
-                        Margin="32,10,0,0"
-                        FontSize="12"
-                        Foreground="#777777"
+                        FontSize="18"
+                        FontWeight="Bold"
+                        Foreground="#111111"
+                        Text="{Binding ConfirmTitle}" />
+
+                    <!--  Subtitle  -->
+                    <TextBlock
+                        Margin="0,6,0,18"
+                        FontSize="13"
+                        Foreground="#555555"
+                        Text="{Binding ConfirmSubtitle}"
+                        TextWrapping="Wrap" />
+
+                    <!--  Field rows  -->
+                    <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="130" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" FontSize="13" FontWeight="SemiBold" Text="{Binding ConfirmField1Label}" />
+                        <TextBlock Grid.Column="1" FontSize="13" Foreground="#333333" Text="{Binding ConfirmField1Value}" />
+                    </Grid>
+
+                    <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="130" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" FontSize="13" FontWeight="SemiBold" Text="{Binding ConfirmField2Label}" />
+                        <TextBlock Grid.Column="1" FontSize="13" Foreground="#333333" Text="{Binding ConfirmField2Value}" />
+                    </Grid>
+
+                    <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="130" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" FontSize="13" FontWeight="SemiBold" Text="{Binding ConfirmField3Label}" />
+                        <TextBlock Grid.Column="1" FontSize="13" Foreground="#333333" Text="{Binding ConfirmField3Value}" />
+                    </Grid>
+
+                    <Grid Margin="0,0,0,24">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="130" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" FontSize="13" FontWeight="SemiBold" Text="{Binding ConfirmField4Label}" />
+                        <TextBlock Grid.Column="1" FontSize="13" Foreground="#333333" Text="{Binding ConfirmField4Value}" />
+                    </Grid>
+
+                    <!--  Buttons  -->
+                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+
+                        <!--  Go Back – outlined  -->
+                        <Button
+                            Width="120"
+                            Height="40"
+                            Margin="0,0,12,0"
+                            Command="{Binding GoBackConfirmCommand}"
+                            Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border
+                                        x:Name="GoBackBorder"
+                                        Background="White"
+                                        BorderBrush="#BBBBBB"
+                                        BorderThickness="1.5"
+                                        CornerRadius="20">
+                                        <TextBlock
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            FontSize="14"
+                                            FontWeight="SemiBold"
+                                            Foreground="#333333"
+                                            Text="Go Back" />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="GoBackBorder" Property="Background" Value="#F5F5F5" />
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter TargetName="GoBackBorder" Property="Opacity" Value="0.75" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+
+                        <!--  Confirm – dark blue  -->
+                        <Button
+                            Width="120"
+                            Height="40"
+                            Command="{Binding FinalConfirmCommand}"
+                            Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border
+                                        x:Name="ConfirmBtnBorder"
+                                        Background="#073C98"
+                                        CornerRadius="20">
+                                        <TextBlock
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            FontSize="14"
+                                            FontWeight="SemiBold"
+                                            Foreground="White"
+                                            Text="Confirm" />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="ConfirmBtnBorder" Property="Opacity" Value="0.85" />
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter TargetName="ConfirmBtnBorder" Property="Opacity" Value="0.7" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!--  Completion Dialog Overlay                          -->
+        <!-- ═══════════════════════════════════════════════════ -->
+        <Grid Panel.ZIndex="80" Visibility="{Binding IsSuccessPromptVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Border Background="#AAFFFFFF" />
+            <Border
+                Width="330"
+                Height="Auto"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Background="White"
+                BorderBrush="#E0E0E0"
+                BorderThickness="1"
+                CornerRadius="14">
+                <StackPanel Margin="28,30,28,28" HorizontalAlignment="Center">
+
+                    <!--  Green circle checkmark  -->
+                    <Border
+                        Width="70"
+                        Height="70"
+                        HorizontalAlignment="Center"
+                        Background="Transparent"
+                        BorderBrush="#22C84A"
+                        BorderThickness="3"
+                        CornerRadius="35">
+                        <fa:IconBlock
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            FontSize="34"
+                            Foreground="#22C84A"
+                            Icon="Check" />
+                    </Border>
+
+                    <!--  Completed!  -->
+                    <TextBlock
+                        Margin="0,18,0,6"
+                        HorizontalAlignment="Center"
+                        FontSize="22"
+                        FontWeight="Bold"
+                        Foreground="#111111"
+                        Text="Completed!" />
+
+                    <!--  Sub-message  -->
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        FontSize="14"
+                        Foreground="#555555"
                         Text="{Binding SuccessSubMessage}"
                         TextWrapping="Wrap" />
 
-                    <TextBlock
-                        Margin="32,12,0,0"
-                        FontSize="11"
-                        FontStyle="Italic"
-                        Foreground="#999999"
-                        Text="You may now close this window or continue managing inventory."
-                        TextWrapping="Wrap" />
-
+                    <!--  Buttons  -->
                     <StackPanel
-                        Margin="0,18,0,0"
-                        HorizontalAlignment="Right"
+                        Margin="0,24,0,0"
+                        HorizontalAlignment="Center"
                         Orientation="Horizontal">
+
+                        <!--  Exit – outlined  -->
                         <Button
-                            Width="70"
-                            Height="30"
+                            Width="90"
+                            Height="40"
                             Margin="0,0,12,0"
-                            Background="#999999"
                             Command="{Binding CloseSuccessPromptCommand}"
-                            Content="Close"
-                            FontWeight="Bold"
-                            Foreground="White"
-                            Style="{StaticResource PrimaryButtonStyle}" />
+                            Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border
+                                        x:Name="ExitBorder"
+                                        Background="White"
+                                        BorderBrush="#BBBBBB"
+                                        BorderThickness="1.5"
+                                        CornerRadius="20">
+                                        <TextBlock
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            FontSize="14"
+                                            FontWeight="SemiBold"
+                                            Foreground="#333333"
+                                            Text="Exit" />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="ExitBorder" Property="Background" Value="#F5F5F5" />
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter TargetName="ExitBorder" Property="Opacity" Value="0.75" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+
+                        <!--  Action – dark blue  -->
                         <Button
-                            Width="120"
-                            Height="30"
-                            Background="#223357"
-                            Command="{Binding AddAnotherItemCommand}"
-                            Content="Add another?"
-                            FontWeight="Bold"
-                            Foreground="White"
-                            Style="{StaticResource PrimaryButtonStyle}" />
+                            Width="150"
+                            Height="40"
+                            Command="{Binding SuccessActionCommand}"
+                            Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border
+                                        x:Name="ActionBorder"
+                                        Background="#073C98"
+                                        CornerRadius="20">
+                                        <TextBlock
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            FontSize="13"
+                                            FontWeight="SemiBold"
+                                            Foreground="White"
+                                            Text="{Binding SuccessActionLabel}" />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="ActionBorder" Property="Opacity" Value="0.85" />
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter TargetName="ActionBorder" Property="Opacity" Value="0.7" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+
                     </StackPanel>
                 </StackPanel>
             </Border>

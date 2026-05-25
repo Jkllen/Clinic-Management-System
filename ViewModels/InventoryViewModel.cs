@@ -38,6 +38,7 @@ namespace CruzNeryClinic.ViewModels
         // ── Collections ──────────────────────────────────────────────────────
 
         private List<InventoryItem> _allItems = new();
+        private List<InventoryItem> _archivedItems = new();
 
         public ObservableCollection<InventoryItem> InventoryItems { get; set; } = new();
         public ObservableCollection<RecentItemUsage> RecentItemUsages { get; set; } = new();
@@ -54,7 +55,7 @@ namespace CruzNeryClinic.ViewModels
 
         public ObservableCollection<string> FilterOptions { get; set; } = new()
         {
-            "All", "In Stock", "Low Stock", "Out of Stock", "Active", "Inactive"
+            "All", "In Stock", "Low Stock", "Out of Stock", "Inactive"
         };
 
         private string _selectedFilterOption = "All";
@@ -166,6 +167,150 @@ namespace CruzNeryClinic.ViewModels
             set => SetProperty(ref _hasItemOverlayError, value);
         }
 
+        // ── Confirmation Dialog ──────────────────────────────────────────────
+
+        private bool _isConfirmDialogVisible;
+        public bool IsConfirmDialogVisible
+        {
+            get => _isConfirmDialogVisible;
+            set => SetProperty(ref _isConfirmDialogVisible, value);
+        }
+
+        private string _confirmTitle = "";
+        public string ConfirmTitle
+        {
+            get => _confirmTitle;
+            set => SetProperty(ref _confirmTitle, value);
+        }
+
+        private string _confirmSubtitle = "";
+        public string ConfirmSubtitle
+        {
+            get => _confirmSubtitle;
+            set => SetProperty(ref _confirmSubtitle, value);
+        }
+
+        private string _confirmField1Label = "";
+        public string ConfirmField1Label { get => _confirmField1Label; set => SetProperty(ref _confirmField1Label, value); }
+        private string _confirmField1Value = "";
+        public string ConfirmField1Value { get => _confirmField1Value; set => SetProperty(ref _confirmField1Value, value); }
+
+        private string _confirmField2Label = "";
+        public string ConfirmField2Label { get => _confirmField2Label; set => SetProperty(ref _confirmField2Label, value); }
+        private string _confirmField2Value = "";
+        public string ConfirmField2Value { get => _confirmField2Value; set => SetProperty(ref _confirmField2Value, value); }
+
+        private string _confirmField3Label = "";
+        public string ConfirmField3Label { get => _confirmField3Label; set => SetProperty(ref _confirmField3Label, value); }
+        private string _confirmField3Value = "";
+        public string ConfirmField3Value { get => _confirmField3Value; set => SetProperty(ref _confirmField3Value, value); }
+
+        private string _confirmField4Label = "";
+        public string ConfirmField4Label { get => _confirmField4Label; set => SetProperty(ref _confirmField4Label, value); }
+        private string _confirmField4Value = "";
+        public string ConfirmField4Value { get => _confirmField4Value; set => SetProperty(ref _confirmField4Value, value); }
+
+        // ── Usage History overlay ────────────────────────────────────────────
+
+        private bool _isUsageHistoryOpen;
+        public bool IsUsageHistoryOpen
+        {
+            get => _isUsageHistoryOpen;
+            set => SetProperty(ref _isUsageHistoryOpen, value);
+        }
+
+        private List<RecentItemUsage> _allUsageHistory = new();
+        public ObservableCollection<RecentItemUsage> UsageHistoryItems { get; } = new();
+
+        private string _usageHistorySearch = "";
+        public string UsageHistorySearch
+        {
+            get => _usageHistorySearch;
+            set { if (SetProperty(ref _usageHistorySearch, value)) ApplyUsageHistoryFilter(); }
+        }
+
+        private void ApplyUsageHistoryFilter()
+        {
+            UsageHistoryItems.Clear();
+            var q = UsageHistorySearch.Trim();
+            var view = string.IsNullOrWhiteSpace(q)
+                ? _allUsageHistory
+                : _allUsageHistory.Where(u =>
+                    u.ItemId.Contains(q, StringComparison.OrdinalIgnoreCase) ||
+                    u.ItemName.Contains(q, StringComparison.OrdinalIgnoreCase));
+            foreach (var u in view) UsageHistoryItems.Add(u);
+        }
+
+        // ── Restock History overlay ──────────────────────────────────────────
+
+        private bool _isRestockHistoryOpen;
+        public bool IsRestockHistoryOpen
+        {
+            get => _isRestockHistoryOpen;
+            set => SetProperty(ref _isRestockHistoryOpen, value);
+        }
+
+        private List<RecentRestockItem> _allRestockHistory = new();
+        public ObservableCollection<RecentRestockItem> RestockHistoryItems { get; } = new();
+
+        private string _restockHistorySearch = "";
+        public string RestockHistorySearch
+        {
+            get => _restockHistorySearch;
+            set { if (SetProperty(ref _restockHistorySearch, value)) ApplyRestockHistoryFilter(); }
+        }
+
+        private void ApplyRestockHistoryFilter()
+        {
+            RestockHistoryItems.Clear();
+            var q = RestockHistorySearch.Trim();
+            var view = string.IsNullOrWhiteSpace(q)
+                ? _allRestockHistory
+                : _allRestockHistory.Where(r =>
+                    r.ItemId.Contains(q, StringComparison.OrdinalIgnoreCase) ||
+                    r.ItemName.Contains(q, StringComparison.OrdinalIgnoreCase));
+            foreach (var r in view) RestockHistoryItems.Add(r);
+        }
+
+        // ── View Item overlay ────────────────────────────────────────────────
+
+        private bool _isViewOverlayOpen;
+        public bool IsViewOverlayOpen
+        {
+            get => _isViewOverlayOpen;
+            set => SetProperty(ref _isViewOverlayOpen, value);
+        }
+
+        private string _viewItemName = "";
+        public string ViewItemName { get => _viewItemName; set => SetProperty(ref _viewItemName, value); }
+
+        private string _viewItemId = "";
+        public string ViewItemId { get => _viewItemId; set => SetProperty(ref _viewItemId, value); }
+
+        private string _viewItemStock = "";
+        public string ViewItemStock { get => _viewItemStock; set => SetProperty(ref _viewItemStock, value); }
+
+        private string _viewItemPrice = "";
+        public string ViewItemPrice { get => _viewItemPrice; set => SetProperty(ref _viewItemPrice, value); }
+
+        private string _viewItemStockStatus = "";
+        public string ViewItemStockStatus { get => _viewItemStockStatus; set => SetProperty(ref _viewItemStockStatus, value); }
+
+        private string _viewItemDateAdded = "";
+        public string ViewItemDateAdded { get => _viewItemDateAdded; set => SetProperty(ref _viewItemDateAdded, value); }
+
+        private string _viewItemLastRestock = "";
+        public string ViewItemLastRestock { get => _viewItemLastRestock; set => SetProperty(ref _viewItemLastRestock, value); }
+
+        private string _viewItemActiveStatus = "";
+        public string ViewItemActiveStatus { get => _viewItemActiveStatus; set => SetProperty(ref _viewItemActiveStatus, value); }
+
+        private string _viewItemThreshold = "";
+        public string ViewItemThreshold { get => _viewItemThreshold; set => SetProperty(ref _viewItemThreshold, value); }
+
+        private string _viewItemNotes = "";
+        public string ViewItemNotes { get => _viewItemNotes; set => SetProperty(ref _viewItemNotes, value); }
+
         // ── Success prompt ───────────────────────────────────────────────────
 
         private bool _isSuccessPromptVisible;
@@ -175,18 +320,18 @@ namespace CruzNeryClinic.ViewModels
             set => SetProperty(ref _isSuccessPromptVisible, value);
         }
 
-        private string _successMessage = "";
-        public string SuccessMessage
-        {
-            get => _successMessage;
-            set => SetProperty(ref _successMessage, value);
-        }
-
         private string _successSubMessage = "";
         public string SuccessSubMessage
         {
             get => _successSubMessage;
             set => SetProperty(ref _successSubMessage, value);
+        }
+
+        private string _successActionLabel = "";
+        public string SuccessActionLabel
+        {
+            get => _successActionLabel;
+            set => SetProperty(ref _successActionLabel, value);
         }
 
         // ── Error ────────────────────────────────────────────────────────────
@@ -205,6 +350,11 @@ namespace CruzNeryClinic.ViewModels
             set => SetProperty(ref _hasError, value);
         }
 
+        // ── Private state ─────────────────────────────────────────────────────
+
+        private string _currentOperation = "";
+        private Action? _pendingFinalConfirm;
+
         // ── Commands ─────────────────────────────────────────────────────────
 
         public ICommand AddNewItemCommand { get; }
@@ -213,12 +363,18 @@ namespace CruzNeryClinic.ViewModels
         public ICommand LogItemUsageCommand { get; }
         public ICommand RestockItemCommand { get; }
         public ICommand ViewAllUsagesCommand { get; }
+        public ICommand CloseUsageHistoryCommand { get; }
         public ICommand ViewAllRestocksCommand { get; }
+        public ICommand CloseRestockHistoryCommand { get; }
         public ICommand CloseSuccessPromptCommand { get; }
-        public ICommand AddAnotherItemCommand { get; }
+        public ICommand SuccessActionCommand { get; }
+        public ICommand GoBackConfirmCommand { get; }
+        public ICommand FinalConfirmCommand { get; }
         public ICommand ViewItemCommand { get; }
+        public ICommand CloseViewOverlayCommand { get; }
         public ICommand EditItemCommand { get; }
         public ICommand ArchiveItemCommand { get; }
+        public ICommand RestoreItemCommand { get; }
         public ICommand CloseRestockOverlayCommand { get; }
         public ICommand ConfirmRestockCommand { get; }
         public ICommand CloseUsageOverlayCommand { get; }
@@ -241,14 +397,20 @@ namespace CruzNeryClinic.ViewModels
             ConfirmRestockCommand      = new RelayCommand(ConfirmRestock);
             CloseUsageOverlayCommand   = new RelayCommand(CloseUsageOverlay);
             ConfirmUsageCommand        = new RelayCommand(ConfirmUsage);
-            ViewAllUsagesCommand      = new RelayCommand(() => MessageBox.Show("View all usages – coming soon."));
-            ViewAllRestocksCommand    = new RelayCommand(() => MessageBox.Show("View all restocks – coming soon."));
+            ViewAllUsagesCommand      = new RelayCommand(OpenUsageHistory);
+            CloseUsageHistoryCommand  = new RelayCommand(() => { IsUsageHistoryOpen = false; UsageHistorySearch = ""; });
+            ViewAllRestocksCommand    = new RelayCommand(OpenRestockHistory);
+            CloseRestockHistoryCommand = new RelayCommand(() => { IsRestockHistoryOpen = false; RestockHistorySearch = ""; });
             CloseSuccessPromptCommand = new RelayCommand(() => IsSuccessPromptVisible = false);
-            AddAnotherItemCommand     = new RelayCommand(() => { IsSuccessPromptVisible = false; OpenAddOverlay(); });
+            SuccessActionCommand      = new RelayCommand(SuccessAction);
+            GoBackConfirmCommand      = new RelayCommand(GoBackConfirm);
+            FinalConfirmCommand       = new RelayCommand(FinalConfirm);
 
             ViewItemCommand           = new RelayCommand<InventoryItem>(ViewItem);
+            CloseViewOverlayCommand   = new RelayCommand(() => IsViewOverlayOpen = false);
             EditItemCommand           = new RelayCommand<InventoryItem>(OpenEditOverlay);
             ArchiveItemCommand        = new RelayCommand<InventoryItem>(ArchiveItem);
+            RestoreItemCommand        = new RelayCommand<InventoryItem>(RestoreItem);
 
             LoadInventoryFromDatabase();
         }
@@ -261,19 +423,26 @@ namespace CruzNeryClinic.ViewModels
 
             try
             {
-                _allItems = _repository.GetAllItems();
+                _allItems      = _repository.GetAllItems();
+                _archivedItems = _repository.GetArchivedItems();
             }
             catch (Exception ex)
             {
-                ErrorMessage = $"Failed to read items from database: {ex.Message}";
-                HasError = true;
-                _allItems = new List<InventoryItem>();
+                ErrorMessage   = $"Failed to read items from database: {ex.Message}";
+                HasError       = true;
+                _allItems      = new List<InventoryItem>();
+                _archivedItems = new List<InventoryItem>();
             }
 
             ApplyView();
 
             RecentItemUsages.Clear();
+            foreach (var u in _repository.GetRecentUsages(5))
+                RecentItemUsages.Add(u);
+
             RecentRestockItems.Clear();
+            foreach (var r in _repository.GetRecentRestocks(5))
+                RecentRestockItems.Add(r);
         }
 
         private void RefreshCounts()
@@ -281,6 +450,7 @@ namespace CruzNeryClinic.ViewModels
             TotalItems      = _allItems.Count;
             LowStockCount   = _allItems.Count(i => i.QuantityInStock > 0 && i.QuantityInStock <= i.MinimumStockLevel);
             OutOfStockCount = _allItems.Count(i => i.QuantityInStock == 0);
+            // _allItems is active-only, so all three counts reflect only active inventory
         }
 
         private void ApplyView()
@@ -296,16 +466,28 @@ namespace CruzNeryClinic.ViewModels
                     i.ItemName.Contains(q, StringComparison.OrdinalIgnoreCase));
             }
 
-            // Filter
-            view = SelectedFilterOption switch
+            // Filter — active items only unless "Inactive" is selected
+            if (SelectedFilterOption == "Inactive")
             {
-                "In Stock"     => view.Where(i => i.Status == "In Stock"),
-                "Low Stock"    => view.Where(i => i.Status == "Low Stock"),
-                "Out of Stock" => view.Where(i => i.Status == "Out of Stock"),
-                "Active"       => view.Where(i => i.IsActive),
-                "Inactive"     => view.Where(i => !i.IsActive),
-                _              => view
-            };
+                view = _archivedItems.AsEnumerable();
+                if (!string.IsNullOrWhiteSpace(SearchText))
+                {
+                    string q = SearchText.Trim();
+                    view = view.Where(i =>
+                        i.ItemId.Contains(q, StringComparison.OrdinalIgnoreCase) ||
+                        i.ItemName.Contains(q, StringComparison.OrdinalIgnoreCase));
+                }
+            }
+            else
+            {
+                view = SelectedFilterOption switch
+                {
+                    "In Stock"     => view.Where(i => i.Status == "In Stock"),
+                    "Low Stock"    => view.Where(i => i.Status == "Low Stock"),
+                    "Out of Stock" => view.Where(i => i.Status == "Out of Stock"),
+                    _              => view
+                };
+            }
 
             // Sort
             view = SelectedSortOption switch
@@ -326,7 +508,6 @@ namespace CruzNeryClinic.ViewModels
 
             RefreshCounts();
         }
-
 
         // ── Command handlers ─────────────────────────────────────────────────
 
@@ -402,51 +583,86 @@ namespace CruzNeryClinic.ViewModels
 
             HasItemOverlayError = false;
 
-            // Compute database text tags based on calculation
-            string stockStatus = stock == 0 ? "Out of Stock" : (stock <= threshold ? "Low Stock" : "In Stock");
+            string stockStatus  = stock == 0 ? "Out of Stock" : (stock <= threshold ? "Low Stock" : "In Stock");
             string timeStampStr = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 
-            try
+            if (EditIsAddMode)
             {
-                if (SaveButtonLabel == "Add Item")
-                {
-                    _repository.AddItem(EditItemName.Trim(), stock, Convert.ToDouble(price), threshold, stockStatus, EditNotes.Trim(), timeStampStr);
-                    SuccessMessage    = "Item Added!";
-                    SuccessSubMessage = $"{EditItemName.Trim()} has been added to inventory.";
-                }
-                else
-                {
-                    _repository.UpdateItem(_editingItemId, EditItemName.Trim(), stock, Convert.ToDouble(price), threshold, stockStatus, EditNotes.Trim(), timeStampStr);
-                    SuccessMessage    = "Item Updated!";
-                    SuccessSubMessage = $"{EditItemName.Trim()} has been updated.";
-                }
+                string name  = EditItemName.Trim();
+                string notes = EditNotes.Trim();
 
-                // Sync view data instantly with the SQL state 
-                LoadInventoryFromDatabase();
+                _currentOperation  = "additem";
+                ConfirmTitle       = "Add New Item?";
+                ConfirmSubtitle    = "Are you sure you want to add this item to inventory?";
+                ConfirmField1Label = "Item Name :";
+                ConfirmField1Value = name;
+                ConfirmField2Label = "Item Id:";
+                ConfirmField2Value = PreviewItemId;
+                ConfirmField3Label = "Stock :";
+                ConfirmField3Value = stock.ToString();
+                ConfirmField4Label = "Unit Price:";
+                ConfirmField4Value = $"₱{price:N2}";
+                SuccessActionLabel = "Add New Item";
+
+                _pendingFinalConfirm = () => ExecuteAddItem(name, stock, price, threshold, stockStatus, notes, timeStampStr);
 
                 IsItemOverlayOpen      = false;
+                IsConfirmDialogVisible = true;
+            }
+            else
+            {
+                // Edit mode – save directly, no confirmation
+                try
+                {
+                    _repository.UpdateItem(_editingItemId, EditItemName.Trim(), stock, Convert.ToDouble(price), threshold, stockStatus, EditNotes.Trim(), timeStampStr);
+                    LoadInventoryFromDatabase();
+                    IsItemOverlayOpen = false;
+                }
+                catch (Exception ex)
+                {
+                    ItemOverlayErrorMessage = $"Database error: {ex.Message}";
+                    HasItemOverlayError = true;
+                }
+            }
+        }
+
+        private void ExecuteAddItem(string name, int stock, decimal price, int threshold, string stockStatus, string notes, string timeStampStr)
+        {
+            try
+            {
+                _repository.AddItem(name, stock, Convert.ToDouble(price), threshold, stockStatus, notes, timeStampStr);
+                LoadInventoryFromDatabase();
+                IsConfirmDialogVisible = false;
+                SuccessSubMessage      = "Item added successfully.";
                 IsSuccessPromptVisible = true;
             }
             catch (Exception ex)
             {
+                IsConfirmDialogVisible  = false;
+                IsItemOverlayOpen       = true;
                 ItemOverlayErrorMessage = $"Database error: {ex.Message}";
-                HasItemOverlayError = true;
+                HasItemOverlayError     = true;
             }
         }
 
         private void ViewItem(InventoryItem? item)
         {
             if (item == null) return;
-            MessageBox.Show(
-                $"Name:       {item.ItemName}\n" +
-                $"Stock:      {item.QuantityInStock}\n" +
-                $"Unit Price: ₱{item.UnitPrice:N2}\n" +
-                $"Min Level:  {item.MinimumStockLevel}\n" +
-                $"Note:       {item.Note}\n" +
-                $"Active:     {(item.IsActive ? "Yes" : "No")}",
-                "Item Details",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+
+            ViewItemName        = item.ItemName;
+            ViewItemId          = item.ItemId;
+            ViewItemStock       = item.QuantityInStock.ToString();
+            ViewItemPrice       = $"₱{item.UnitPrice:N2}";
+            ViewItemStockStatus = item.Status;
+            ViewItemDateAdded   = DateTime.TryParse(item.ItemCreated, out var created)
+                ? created.ToString("MM/dd/yyyy") : "—";
+            ViewItemLastRestock = item.LastRestock.HasValue
+                ? item.LastRestock.Value.ToString("MM/dd/yyyy") : "—";
+            ViewItemActiveStatus = item.IsActive ? "Active" : "Inactive";
+            ViewItemThreshold   = item.MinimumStockLevel.ToString();
+            ViewItemNotes       = item.Note;
+
+            IsViewOverlayOpen = true;
         }
 
         // ── ARCHIVE ITEM (Soft Deactivate) ───────────────────────────────────
@@ -474,11 +690,89 @@ namespace CruzNeryClinic.ViewModels
             }
         }
 
+        private void RestoreItem(InventoryItem? item)
+        {
+            if (item == null) return;
+
+            try
+            {
+                _repository.RestoreItem(item.RawItemId, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                LoadInventoryFromDatabase();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to restore item: {ex.Message}", "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         private void CloseOverlay()
         {
             IsItemOverlayOpen       = false;
             HasItemOverlayError     = false;
             ItemOverlayErrorMessage = "";
+        }
+
+        // ── Confirm / Success dialog handlers ────────────────────────────────
+
+        private void GoBackConfirm()
+        {
+            IsConfirmDialogVisible = false;
+            switch (_currentOperation)
+            {
+                case "usage":   IsUsageOverlayOpen   = true; break;
+                case "restock": IsRestockOverlayOpen = true; break;
+                case "additem": IsItemOverlayOpen    = true; break;
+            }
+        }
+
+        private void FinalConfirm()
+        {
+            _pendingFinalConfirm?.Invoke();
+        }
+
+        private void SuccessAction()
+        {
+            IsSuccessPromptVisible = false;
+            switch (_currentOperation)
+            {
+                case "usage":   OpenUsageOverlay();   break;
+                case "restock": OpenRestockOverlay(); break;
+                case "additem": OpenAddOverlay();     break;
+            }
+        }
+
+        // ── History overlay handlers ─────────────────────────────────────────
+
+        private void OpenUsageHistory()
+        {
+            try
+            {
+                _allUsageHistory = _repository.GetAllUsages();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to load usage history: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            UsageHistorySearch = "";
+            ApplyUsageHistoryFilter();
+            IsUsageHistoryOpen = true;
+        }
+
+        private void OpenRestockHistory()
+        {
+            try
+            {
+                _allRestockHistory = _repository.GetAllRestocks();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to load restock history: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            RestockHistorySearch = "";
+            ApplyRestockHistoryFilter();
+            IsRestockHistoryOpen = true;
         }
 
         // ── Edit overlay – extra read-only display fields ────────────────────
@@ -776,29 +1070,54 @@ namespace CruzNeryClinic.ViewModels
 
             HasRestockError = false;
 
+            var item          = _restockSelectedItem;
+            var capturedQty   = qty;
+            var capturedDate  = RestockDate.Value;
+            var capturedPrice = unitPrice;
+
+            _currentOperation  = "restock";
+            ConfirmTitle       = "Restock Item?";
+            ConfirmSubtitle    = "Are you sure you want to restock this item?";
+            ConfirmField1Label = "Item Name :";
+            ConfirmField1Value = item.ItemName;
+            ConfirmField2Label = "Item Id:";
+            ConfirmField2Value = item.ItemId;
+            ConfirmField3Label = "Stock Added:";
+            ConfirmField3Value = capturedQty.ToString();
+            ConfirmField4Label = "Restock Date:";
+            ConfirmField4Value = capturedDate.ToString("MM/dd/yyyy");
+            SuccessActionLabel = "Restock Another";
+
+            _pendingFinalConfirm = () => ExecuteRestock(item, capturedQty, capturedDate, capturedPrice);
+
+            IsRestockOverlayOpen   = false;
+            IsConfirmDialogVisible = true;
+        }
+
+        private void ExecuteRestock(InventoryItem item, int qty, DateTime date, decimal unitPrice)
+        {
             try
             {
                 _repository.RestockItem(
-                    _restockSelectedItem.RawItemId,
-                    _restockSelectedItem.ItemName,
-                    qty,
-                    RestockDate.Value.ToString("yyyy-MM-dd"),
+                    item.RawItemId, item.ItemName, qty,
+                    date.ToString("yyyy-MM-dd"),
                     RestockSupplier.Trim(),
                     Convert.ToDouble(unitPrice),
                     RestockNotes.Trim(),
-                    _restockSelectedItem.QuantityInStock,
-                    _restockSelectedItem.MinimumStockLevel);
+                    item.QuantityInStock,
+                    item.MinimumStockLevel);
 
                 LoadInventoryFromDatabase();
-                IsRestockOverlayOpen   = false;
-                SuccessMessage         = "Item Restocked!";
-                SuccessSubMessage      = $"{_restockSelectedItem.ItemName} restocked with {qty} unit(s).";
+                IsConfirmDialogVisible = false;
+                SuccessSubMessage      = "Item restocked successfully.";
                 IsSuccessPromptVisible = true;
             }
             catch (Exception ex)
             {
-                RestockErrorMessage = $"Database error: {ex.Message}";
-                HasRestockError = true;
+                IsConfirmDialogVisible = false;
+                IsRestockOverlayOpen   = true;
+                RestockErrorMessage    = $"Database error: {ex.Message}";
+                HasRestockError        = true;
             }
         }
 
@@ -855,45 +1174,76 @@ namespace CruzNeryClinic.ViewModels
 
             HasUsageError = false;
 
+            var item         = _usageSelectedItem;
+            var capturedQty  = qty;
+            var capturedDate = UsageDate.Value;
+
+            _currentOperation  = "usage";
+            ConfirmTitle       = "Log Item Usage?";
+            ConfirmSubtitle    = "Are you sure you want to log the usage of this item?";
+            ConfirmField1Label = "Item Name :";
+            ConfirmField1Value = item.ItemName;
+            ConfirmField2Label = "Item Id:";
+            ConfirmField2Value = item.ItemId;
+            ConfirmField3Label = "Quantity Used:";
+            ConfirmField3Value = capturedQty.ToString();
+            ConfirmField4Label = "Usage Date:";
+            ConfirmField4Value = capturedDate.ToString("MM/dd/yyyy");
+            SuccessActionLabel = "Logged New Item";
+
+            _pendingFinalConfirm = () => ExecuteUsage(item, capturedQty, capturedDate);
+
+            IsUsageOverlayOpen     = false;
+            IsConfirmDialogVisible = true;
+        }
+
+        private void ExecuteUsage(InventoryItem item, int qty, DateTime date)
+        {
             try
             {
                 _repository.LogItemUsage(
-                    _usageSelectedItem.RawItemId,
-                    _usageSelectedItem.ItemName,
-                    qty,
-                    UsageDate.Value.ToString("yyyy-MM-dd"),
+                    item.RawItemId, item.ItemName, qty,
+                    date.ToString("yyyy-MM-dd"),
                     UsageNotes.Trim(),
-                    _usageSelectedItem.QuantityInStock,
-                    _usageSelectedItem.MinimumStockLevel);
+                    item.QuantityInStock,
+                    item.MinimumStockLevel);
 
                 LoadInventoryFromDatabase();
-                IsUsageOverlayOpen     = false;
-                SuccessMessage         = "Usage Recorded!";
-                SuccessSubMessage      = $"{qty} unit(s) of {_usageSelectedItem.ItemName} recorded.";
+                IsConfirmDialogVisible = false;
+                SuccessSubMessage      = "Item logged successfully.";
                 IsSuccessPromptVisible = true;
             }
             catch (Exception ex)
             {
-                UsageErrorMessage = $"Database error: {ex.Message}";
-                HasUsageError = true;
+                IsConfirmDialogVisible = false;
+                IsUsageOverlayOpen     = true;
+                UsageErrorMessage      = $"Database error: {ex.Message}";
+                HasUsageError          = true;
             }
         }
     }
 
     public class RecentItemUsage
     {
+        public int UsageId { get; set; }
+        public string UsageIdDisplay => $"USG-{UsageId:D3}";
         public string ItemId { get; set; } = "";
         public string ItemName { get; set; } = "";
         public int QuantityUsed { get; set; }
         public DateTime Date { get; set; }
+        public string Notes { get; set; } = "";
     }
 
     public class RecentRestockItem
     {
+        public int RestockId { get; set; }
+        public string RestockIdDisplay => $"RST-{RestockId:D3}";
         public string ItemId { get; set; } = "";
         public string ItemName { get; set; } = "";
         public decimal UnitPrice { get; set; }
         public int StockAdded { get; set; }
+        public string Supplier { get; set; } = "";
         public DateTime Date { get; set; }
+        public string Notes { get; set; } = "";
     }
 }

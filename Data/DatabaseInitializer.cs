@@ -138,9 +138,9 @@ CREATE TABLE IF NOT EXISTS Patients (
     MiddleName TEXT,
     LastName TEXT NOT NULL,
 
-    PhoneNumber TEXT,
-    BirthDate TEXT,
-    Gender TEXT CHECK(Gender IN ('Male', 'Female', 'Other')),
+    PhoneNumber TEXT NOT NULL,
+    BirthDate TEXT NOT NULL,
+    Gender TEXT NOT NULL CHECK(Gender IN ('Male', 'Female', 'Other')),
 
     Address TEXT,
 
@@ -148,15 +148,32 @@ CREATE TABLE IF NOT EXISTS Patients (
     IsPWD INTEGER NOT NULL DEFAULT 0,
     IsSeniorCitizen INTEGER NOT NULL DEFAULT 0,
 
-    -- These fields can be encrypted later using AES-GCM.
-    MedicalHistoryEncrypted TEXT,
-    DentalHistoryEncrypted TEXT,
-    NotesEncrypted TEXT,
+    -- Initial service/treatment shown in Patient Management list.
+    InitialTreatment TEXT,
 
     IsActive INTEGER NOT NULL DEFAULT 1,
 
     CreatedAt TEXT NOT NULL,
     UpdatedAt TEXT
+);
+
+CREATE TABLE IF NOT EXISTS PatientHistories (
+    PatientHistoryId INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    PatientId INTEGER NOT NULL UNIQUE,
+
+    HasMedicalCondition INTEGER NOT NULL DEFAULT 0,
+    MedicalConditionNotes TEXT,
+    AllergyNotes TEXT,
+    CurrentMedication TEXT,
+    RequiresMedicalClearance INTEGER NOT NULL DEFAULT 0,
+    ClearanceNotes TEXT,
+    InitialTreatmentNotes TEXT,
+
+    CreatedAt TEXT NOT NULL,
+    UpdatedAt TEXT,
+
+    FOREIGN KEY (PatientId) REFERENCES Patients(PatientId)
 );
 
 CREATE TABLE IF NOT EXISTS Services (
@@ -177,11 +194,12 @@ CREATE TABLE IF NOT EXISTS Appointments (
 
     PatientId INTEGER NOT NULL,
 
-    -- Walk-In or Scheduled based on your appointment UI.
+    -- Walk-In or Scheduled.
     AppointmentType TEXT NOT NULL CHECK(AppointmentType IN ('Walk-In', 'Scheduled')),
 
-    -- Regular, PWD, or Senior.
-    Category TEXT NOT NULL DEFAULT 'Regular' CHECK(Category IN ('Regular', 'PWD', 'Senior')),
+    -- Auto-filled from patient record.
+    Category TEXT NOT NULL DEFAULT 'Regular'
+        CHECK(Category IN ('Regular', 'PWD', 'Senior')),
 
     ServiceId INTEGER,
     ServiceName TEXT NOT NULL,
@@ -190,20 +208,33 @@ CREATE TABLE IF NOT EXISTS Appointments (
     DentistUserId INTEGER,
     DentistName TEXT DEFAULT 'Unassigned',
 
+    -- For scheduled patients: reserved date/time.
+    -- For walk-ins: today's date and current time.
     AppointmentDate TEXT NOT NULL,
-    AppointmentTime TEXT,
+    AppointmentTime TEXT NOT NULL,
 
-    -- Used for queue display.
+    -- Actual arrival time. For walk-ins, this is usually the same as AppointmentTime.
+    ArrivalTime TEXT,
+
     QueueNumber INTEGER,
 
-    -- High is usually for PWD/Senior or scheduled priority.
-    Priority TEXT NOT NULL DEFAULT 'Normal' CHECK(Priority IN ('Normal', 'High')),
+    -- Urgent is a table action, not part of the add forms.
+    IsUrgent INTEGER NOT NULL DEFAULT 0,
 
-    -- Used by appointment table and billing flow.
-    Status TEXT NOT NULL DEFAULT 'Waiting'
-        CHECK(Status IN ('Waiting', 'In Treatment', 'Completed', 'Cancelled', 'No Show')),
+    -- Scheduled = scheduled priority, Urgent = emergency/priority override, Normal = regular queue.
+    Priority TEXT NOT NULL DEFAULT 'Normal'
+        CHECK(Priority IN ('Normal', 'Scheduled', 'Urgent')),
+
+    -- Scheduled appointments stay Scheduled until staff marks them arrived.
+    Status TEXT NOT NULL DEFAULT 'Scheduled'
+        CHECK(Status IN ('Scheduled', 'Waiting', 'In Treatment', 'Completed', 'Cancelled', 'No Show')),
 
     Notes TEXT,
+
+    StartedAt TEXT,
+    CompletedAt TEXT,
+    CancelledAt TEXT,
+    CancellationReason TEXT,
 
     CreatedByUserId INTEGER,
     CreatedAt TEXT NOT NULL,
@@ -215,16 +246,51 @@ CREATE TABLE IF NOT EXISTS Appointments (
     FOREIGN KEY (CreatedByUserId) REFERENCES Users(UserId)
 );
 
-CREATE TABLE IF NOT EXISTS BillingTransactions (
-    BillingId INTEGER PRIMARY KEY AUTOINCREMENT,
+CREATE TABLE IF NOT EXISTS TreatmentRecords (
+    TreatmentRecordId INTEGER PRIMARY KEY AUTOINCREMENT,
 
-    -- Billing is usually created from a completed appointment.
     PatientId INTEGER NOT NULL,
     AppointmentId INTEGER,
 
+    ServiceId INTEGER,
+    ServiceName TEXT NOT NULL,
+
+    DentistUserId INTEGER,
+    DentistName TEXT DEFAULT 'Unassigned',
+
+    TreatmentDate TEXT NOT NULL,
+    TreatmentTime TEXT,
+
+    TreatmentNotes TEXT,
+
+    CreatedAt TEXT NOT NULL,
+    UpdatedAt TEXT,
+
+    FOREIGN KEY (PatientId) REFERENCES Patients(PatientId),
+    FOREIGN KEY (AppointmentId) REFERENCES Appointments(AppointmentId),
+    FOREIGN KEY (ServiceId) REFERENCES Services(ServiceId),
+    FOREIGN KEY (DentistUserId) REFERENCES Users(UserId)
+);
+
+CREATE TABLE IF NOT EXISTS BillingTransactions (
+    BillingId INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    PatientId INTEGER NOT NULL,
+
+    -- Optional links depending on source.
+    AppointmentId INTEGER,
+    TreatmentRecordId INTEGER,
+
+    -- Appointment = created from completed appointment/treatment record.
+    -- Manual = manually created by staff.
+    BillingSource TEXT NOT NULL DEFAULT 'Manual'
+        CHECK(BillingSource IN ('Appointment', 'Manual')),
+
     ReceiptNumber TEXT NOT NULL UNIQUE,
 
+    ServiceId INTEGER,
     ServiceName TEXT NOT NULL,
+    Description TEXT,
 
     TotalAmount REAL NOT NULL DEFAULT 0,
     DiscountType TEXT NOT NULL DEFAULT 'None',
@@ -236,9 +302,6 @@ CREATE TABLE IF NOT EXISTS BillingTransactions (
     AmountPaid REAL NOT NULL DEFAULT 0,
     RemainingBalance REAL NOT NULL DEFAULT 0,
 
-    PaymentMethod TEXT NOT NULL DEFAULT 'Cash',
-
-    -- Supports installment/partial payments.
     PaymentStatus TEXT NOT NULL DEFAULT 'Unpaid'
         CHECK(PaymentStatus IN ('Unpaid', 'Partial', 'Paid')),
 
@@ -252,15 +315,16 @@ CREATE TABLE IF NOT EXISTS BillingTransactions (
 
     FOREIGN KEY (PatientId) REFERENCES Patients(PatientId),
     FOREIGN KEY (AppointmentId) REFERENCES Appointments(AppointmentId),
+    FOREIGN KEY (TreatmentRecordId) REFERENCES TreatmentRecords(TreatmentRecordId),
+    FOREIGN KEY (ServiceId) REFERENCES Services(ServiceId),
     FOREIGN KEY (CreatedByUserId) REFERENCES Users(UserId)
 );
 
 CREATE TABLE IF NOT EXISTS PaymentRecords (
     PaymentRecordId INTEGER PRIMARY KEY AUTOINCREMENT,
 
-    -- One billing transaction can have many payment records.
-    -- This is important for partial payments/installments.
     BillingId INTEGER NOT NULL,
+    PatientId INTEGER NOT NULL,
 
     AmountPaid REAL NOT NULL,
     PaymentMethod TEXT NOT NULL DEFAULT 'Cash',
@@ -272,6 +336,7 @@ CREATE TABLE IF NOT EXISTS PaymentRecords (
     CreatedAt TEXT NOT NULL,
 
     FOREIGN KEY (BillingId) REFERENCES BillingTransactions(BillingId),
+    FOREIGN KEY (PatientId) REFERENCES Patients(PatientId),
     FOREIGN KEY (ReceivedByUserId) REFERENCES Users(UserId)
 );
 
@@ -371,14 +436,32 @@ CREATE INDEX IF NOT EXISTS idx_security_questions_active ON SecurityQuestions(Is
 CREATE INDEX IF NOT EXISTS idx_patients_code ON Patients(PatientCode);
 CREATE INDEX IF NOT EXISTS idx_patients_name ON Patients(LastName, FirstName);
 CREATE INDEX IF NOT EXISTS idx_patients_pwd_senior ON Patients(IsPWD, IsSeniorCitizen);
+CREATE INDEX IF NOT EXISTS idx_patients_created_active ON Patients(CreatedAt, IsActive);
+CREATE INDEX IF NOT EXISTS idx_patients_contact ON Patients(PhoneNumber);
+CREATE INDEX IF NOT EXISTS idx_patient_histories_patient ON PatientHistories(PatientId);
+
 
 CREATE INDEX IF NOT EXISTS idx_appointments_date ON Appointments(AppointmentDate);
 CREATE INDEX IF NOT EXISTS idx_appointments_status ON Appointments(Status);
 CREATE INDEX IF NOT EXISTS idx_appointments_patient ON Appointments(PatientId);
+CREATE INDEX IF NOT EXISTS idx_appointments_type ON Appointments(AppointmentType);
+CREATE INDEX IF NOT EXISTS idx_appointments_datetime ON Appointments(AppointmentDate, AppointmentTime);
+CREATE INDEX IF NOT EXISTS idx_appointments_queue ON Appointments(AppointmentDate, Status, IsUrgent, AppointmentType, AppointmentTime);
+
+CREATE INDEX IF NOT EXISTS idx_treatment_records_patient ON TreatmentRecords(PatientId);
+CREATE INDEX IF NOT EXISTS idx_treatment_records_appointment ON TreatmentRecords(AppointmentId);
+CREATE INDEX IF NOT EXISTS idx_treatment_records_date ON TreatmentRecords(TreatmentDate);
 
 CREATE INDEX IF NOT EXISTS idx_billing_patient ON BillingTransactions(PatientId);
 CREATE INDEX IF NOT EXISTS idx_billing_status ON BillingTransactions(PaymentStatus);
 CREATE INDEX IF NOT EXISTS idx_billing_receipt ON BillingTransactions(ReceiptNumber);
+CREATE INDEX IF NOT EXISTS idx_billing_source ON BillingTransactions(BillingSource);
+CREATE INDEX IF NOT EXISTS idx_billing_treatment_record ON BillingTransactions(TreatmentRecordId);
+CREATE INDEX IF NOT EXISTS idx_billing_appointment ON BillingTransactions(AppointmentId);
+
+CREATE INDEX IF NOT EXISTS idx_payment_records_billing ON PaymentRecords(BillingId);
+CREATE INDEX IF NOT EXISTS idx_payment_records_patient ON PaymentRecords(PatientId);
+CREATE INDEX IF NOT EXISTS idx_payment_records_date ON PaymentRecords(PaymentDate);
 
 CREATE INDEX IF NOT EXISTS idx_inventory_item_name ON InventoryItems(ItemName);
 CREATE INDEX IF NOT EXISTS idx_activity_created ON ActivityLogs(CreatedAt);
@@ -720,7 +803,6 @@ CREATE INDEX IF NOT EXISTS idx_activity_created ON ActivityLogs(CreatedAt);
             SeedService(connection, "TMJ", 0);
             SeedService(connection, "Dentures", 0);
             SeedService(connection, "Consultation", 0);
-            SeedService(connection, "Cleaning", 0);
         }
 
         private static void SeedService(SqliteConnection connection, string serviceName, double defaultPrice)

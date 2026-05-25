@@ -8,7 +8,7 @@
     <Application.Resources>
         <!-- Main application font -->
         <FontFamily x:Key="AppFont">Open Sans</FontFamily>
-
+        
         <!-- Default TextBlock font -->
         <Style TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
@@ -623,6 +623,40 @@
                 </Setter.Value>
             </Setter>
         </Style>
-    
+
+        <!--  Blue scrollbar style for Management tables  -->
+        <Style x:Key="BlueDataGridScrollBarStyle" TargetType="{x:Type ScrollBar}">
+            <Setter Property="Background" Value="#ffffff" />
+            <Setter Property="Width" Value="Auto" />
+            <Setter Property="Height" Value="Auto" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ScrollBar}">
+                        <Grid Background="{TemplateBinding Background}">
+                            <Track x:Name="PART_Track" IsDirectionReversed="True">
+                                <Track.Thumb>
+                                    <Thumb>
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="Thumb">
+                                                <Border
+                                                    Margin="7,0,2,0"
+                                                    Background="#223357"
+                                                    CornerRadius="5" />
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="Orientation" Value="Horizontal">
+                                <Setter TargetName="PART_Track" Property="IsDirectionReversed" Value="False" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Application.Resources>
 </Application>

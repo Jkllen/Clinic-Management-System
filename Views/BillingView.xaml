@@ -1,0 +1,856 @@
+<UserControl
+    x:Class="CruzNeryClinic.Views.BillingView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DesignHeight="900"
+    d:DesignWidth="1600"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Billing/BillingManagementStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid Background="{StaticResource ScreenBackgroundBrush}">
+        <Grid Margin="24,28,24,18">
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="78" />
+                <RowDefinition Height="104" />
+                <RowDefinition Height="260" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!--  Header  -->
+            <StackPanel Grid.Row="0">
+                <TextBlock
+                    FontSize="30"
+                    FontWeight="Bold"
+                    Foreground="Black"
+                    Text="Billing Management" />
+
+                <TextBlock
+                    Margin="0,4,0,0"
+                    FontSize="20"
+                    Foreground="#7A7A7A"
+                    Text="Process appointment payments, balance payments, and manual transactions" />
+            </StackPanel>
+
+            <!--  Submodule tabs  -->
+            <Grid Grid.Row="1" Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="28" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="28" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Button
+                    Grid.Column="0"
+                    Command="{Binding SelectBillingModuleCommand}"
+                    CommandParameter="Appointment Payment">
+                    <Button.Style>
+                        <Style BasedOn="{StaticResource BillingTabButtonStyle}" TargetType="Button">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsAppointmentPaymentSelected}" Value="True">
+                                    <Setter Property="Background" Value="#223357" />
+                                    <Setter Property="Foreground" Value="White" />
+                                    <Setter Property="BorderBrush" Value="#223357" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <fa:IconBlock
+                            HorizontalAlignment="Center"
+                            FontSize="24"
+                            Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                            Icon="CalendarCheck" />
+
+                        <TextBlock
+                            Margin="0,6,0,0"
+                            HorizontalAlignment="Center"
+                            FontSize="13"
+                            FontWeight="Bold"
+                            Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                            Text="Appointment Payment" />
+                    </StackPanel>
+                </Button>
+
+                <Button
+                    Grid.Column="2"
+                    Command="{Binding SelectBillingModuleCommand}"
+                    CommandParameter="Balance Payment">
+
+                    <Button.Style>
+                        <Style BasedOn="{StaticResource BillingTabButtonStyle}" TargetType="Button">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsBalancePaymentSelected}" Value="True">
+                                    <Setter Property="Background" Value="#223357" />
+                                    <Setter Property="Foreground" Value="White" />
+                                    <Setter Property="BorderBrush" Value="#223357" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <fa:IconBlock
+                            HorizontalAlignment="Center"
+                            FontSize="24"
+                            Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                            Icon="PesoSign" />
+
+                        <TextBlock
+                            Margin="0,6,0,0"
+                            HorizontalAlignment="Center"
+                            FontSize="13"
+                            FontWeight="Bold"
+                            Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                            Text="Balance Payment" />
+                    </StackPanel>
+                </Button>
+
+                <Button
+                    Grid.Column="4"
+                    Command="{Binding SelectBillingModuleCommand}"
+                    CommandParameter="Manual Transaction">
+
+                    <Button.Style>
+                        <Style BasedOn="{StaticResource BillingTabButtonStyle}" TargetType="Button">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsManualTransactionSelected}" Value="True">
+                                    <Setter Property="Background" Value="#223357" />
+                                    <Setter Property="Foreground" Value="White" />
+                                    <Setter Property="BorderBrush" Value="#223357" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <fa:IconBlock
+                            HorizontalAlignment="Center"
+                            FontSize="24"
+                            Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                            Icon="CashRegister" />
+
+                        <TextBlock
+                            Margin="0,6,0,0"
+                            HorizontalAlignment="Center"
+                            FontSize="13"
+                            FontWeight="Bold"
+                            Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                            Text="Manual Transaction" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+
+            <!--  Recent billing transactions table  -->
+            <Border
+                Grid.Row="2"
+                Padding="20"
+                Style="{StaticResource BillingPanelStyle}">
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock
+                        Grid.Row="0"
+                        Margin="0,0,0,12"
+                        FontSize="18"
+                        FontWeight="Bold"
+                        Foreground="#111111"
+                        Text="Recent Billing Transactions" />
+
+                    <DataGrid
+                        Grid.Row="1"
+                        CanUserResizeRows="False"
+                        CellStyle="{StaticResource DashboardDataGridCellStyle}"
+                        ColumnHeaderStyle="{StaticResource DashboardDataGridColumnHeaderStyle}"
+                        ItemsSource="{Binding BillingRecords}"
+                        MinRowHeight="38"
+                        RowHeight="40"
+                        ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                        ScrollViewer.VerticalScrollBarVisibility="Auto"
+                        Style="{StaticResource DashboardDataGridStyle}">
+
+                        <DataGrid.Resources>
+                            <Style BasedOn="{StaticResource BlueDataGridScrollBarStyle}" TargetType="{x:Type ScrollBar}" />
+                        </DataGrid.Resources>
+
+                        <DataGrid.Columns>
+                            <DataGridTextColumn
+                                Width="1*"
+                                MinWidth="120"
+                                Binding="{Binding ReceiptNumber}"
+                                Header="Receipt No." />
+                            <DataGridTextColumn
+                                Width="1*"
+                                MinWidth="105"
+                                Binding="{Binding PatientCode}"
+                                Header="Patient ID" />
+                            <DataGridTextColumn
+                                Width="1.3*"
+                                MinWidth="150"
+                                Binding="{Binding PatientName}"
+                                Header="Patient Name" />
+                            <DataGridTextColumn
+                                Width="1*"
+                                MinWidth="105"
+                                Binding="{Binding TransactionDateDisplay}"
+                                Header="Date" />
+                            <DataGridTextColumn
+                                Width="1.2*"
+                                MinWidth="135"
+                                Binding="{Binding ServiceName}"
+                                Header="Service" />
+                            <DataGridTextColumn
+                                Width="1*"
+                                MinWidth="115"
+                                Binding="{Binding TotalAmountDisplay}"
+                                Header="Total" />
+                            <DataGridTextColumn
+                                Width="1*"
+                                MinWidth="115"
+                                Binding="{Binding BalanceDisplay}"
+                                Header="Balance" />
+                            <DataGridTextColumn
+                                Width="0.9*"
+                                MinWidth="95"
+                                Binding="{Binding PaymentStatus}"
+                                Header="Status" />
+
+                            <DataGridTemplateColumn
+                                Width="1.4*"
+                                MinWidth="170"
+                                Header="Action">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                            <Button
+                                                Width="70"
+                                                Height="28"
+                                                Margin="0,0,6,0"
+                                                Background="#223357"
+                                                Command="{Binding DataContext.PrintReceiptCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                CommandParameter="{Binding}"
+                                                Foreground="White"
+                                                Style="{StaticResource SmallActionButtonStyle}">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <fa:IconBlock
+                                                        Margin="0,0,5,0"
+                                                        FontSize="11"
+                                                        Foreground="White"
+                                                        Icon="Print" />
+                                                    <TextBlock
+                                                        FontSize="11"
+                                                        FontWeight="Bold"
+                                                        Foreground="White"
+                                                        Text="Print" />
+                                                </StackPanel>
+                                            </Button>
+
+                                            <Button
+                                                Width="65"
+                                                Height="28"
+                                                Command="{Binding DataContext.ViewReceiptCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                CommandParameter="{Binding}"
+                                                Content="View"
+                                                Style="{StaticResource BillingOutlineActionButtonStyle}" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </Border>
+
+            <!--  Bottom content  -->
+            <Grid Grid.Row="3" Margin="0,16,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2.4*" />
+                    <ColumnDefinition Width="20" />
+                    <ColumnDefinition Width="1*" />
+                </Grid.ColumnDefinitions>
+
+                <!--  Left transaction panel  -->
+                <Border Grid.Column="0" Style="{StaticResource BillingPanelStyle}">
+                    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+
+                        <ScrollViewer.Resources>
+                            <Style BasedOn="{StaticResource BlueDataGridScrollBarStyle}" TargetType="{x:Type ScrollBar}" />
+                        </ScrollViewer.Resources>
+
+                        <StackPanel Margin="0,0,14,0">
+                            <TextBlock
+                                FontSize="22"
+                                FontWeight="Bold"
+                                Foreground="#111111"
+                                Text="{Binding SelectedModuleTitle}" />
+
+                            <TextBlock
+                                Margin="0,4,0,18"
+                                FontSize="14"
+                                Foreground="#777777"
+                                Text="{Binding SelectedModuleSubtitle}"
+                                TextWrapping="Wrap" />
+
+                            <!--  Appointment Payment  -->
+                            <StackPanel>
+                                <StackPanel.Style>
+                                    <Style TargetType="StackPanel">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsAppointmentPaymentSelected}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </StackPanel.Style>
+                                <StackPanel>
+                                    <StackPanel.Style>
+                                        <Style TargetType="StackPanel">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsAppointmentPaymentSelected}" Value="True">
+                                                    <Setter Property="Visibility" Value="Visible" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </StackPanel.Style>
+
+                                    <!--  Completed appointments table  -->
+                                    <Border
+                                        Height="210"
+                                        Margin="0,0,0,20"
+                                        Padding="12"
+                                        Background="White"
+                                        BorderBrush="#D8D8D8"
+                                        BorderThickness="1"
+                                        CornerRadius="8">
+
+                                        <DataGrid
+                                            CanUserResizeRows="False"
+                                            CellStyle="{StaticResource DashboardDataGridCellStyle}"
+                                            ColumnHeaderStyle="{StaticResource DashboardDataGridColumnHeaderStyle}"
+                                            ItemsSource="{Binding AppointmentPaymentItems}"
+                                            MinRowHeight="36"
+                                            RowHeight="38"
+                                            ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                            ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                            SelectedItem="{Binding SelectedAppointmentPaymentItem, Mode=TwoWay}"
+                                            Style="{StaticResource DashboardDataGridStyle}">
+
+                                            <DataGrid.Resources>
+                                                <Style BasedOn="{StaticResource BlueDataGridScrollBarStyle}" TargetType="{x:Type ScrollBar}" />
+                                            </DataGrid.Resources>
+
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn
+                                                    Width="1*"
+                                                    MinWidth="95"
+                                                    Binding="{Binding PatientCode}"
+                                                    Header="Patient ID" />
+
+                                                <DataGridTextColumn
+                                                    Width="1.4*"
+                                                    MinWidth="150"
+                                                    Binding="{Binding PatientName}"
+                                                    Header="Patient Name" />
+
+                                                <DataGridTextColumn
+                                                    Width="1.2*"
+                                                    MinWidth="130"
+                                                    Binding="{Binding ServiceName}"
+                                                    Header="Service" />
+
+                                                <DataGridTextColumn
+                                                    Width="1*"
+                                                    MinWidth="100"
+                                                    Binding="{Binding TreatmentDateDisplay}"
+                                                    Header="Date" />
+
+                                                <DataGridTextColumn
+                                                    Width="1*"
+                                                    MinWidth="100"
+                                                    Binding="{Binding DefaultPriceDisplay}"
+                                                    Header="Amount" />
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                    </Border>
+
+                                    <!--  Form layout  -->
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="1.1*" />
+                                            <ColumnDefinition Width="24" />
+                                            <ColumnDefinition Width="1.1*" />
+                                            <ColumnDefinition Width="28" />
+                                            <ColumnDefinition Width="1.6*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="12" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="12" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="12" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="12" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+
+                                        <!--  Patient ID  -->
+                                        <StackPanel Grid.Row="0" Grid.Column="0">
+                                            <TextBlock
+                                                FontSize="14"
+                                                FontWeight="Bold"
+                                                Text="Patient ID" />
+
+                                            <TextBox
+                                                Height="42"
+                                                Margin="0,6,0,0"
+                                                IsReadOnly="True"
+                                                Text="{Binding AppointmentPatientCode, Mode=OneWay}" />
+                                        </StackPanel>
+
+                                        <!--  Appointment Type  -->
+                                        <StackPanel Grid.Row="0" Grid.Column="2">
+                                            <TextBlock
+                                                FontSize="14"
+                                                FontWeight="Bold"
+                                                Text="Appointment Type" />
+
+                                            <TextBox
+                                                Height="42"
+                                                Margin="0,6,0,0"
+                                                IsReadOnly="True"
+                                                Text="Completed Appointment" />
+                                        </StackPanel>
+
+                                        <!--  Summary box  -->
+                                        <Border
+                                            Grid.Row="0"
+                                            Grid.RowSpan="3"
+                                            Grid.Column="4"
+                                            Padding="18"
+                                            Background="#EAF5FF"
+                                            BorderBrush="#B9DAFF"
+                                            BorderThickness="1"
+                                            CornerRadius="12">
+
+                                            <StackPanel>
+                                                <Grid>
+                                                    <TextBlock Foreground="#223357" Text="Total Amount:" />
+                                                    <TextBlock
+                                                        HorizontalAlignment="Right"
+                                                        FontWeight="Bold"
+                                                        Foreground="#223357"
+                                                        Text="{Binding AppointmentTotalAmount, StringFormat=₱ {0:N2}}" />
+                                                </Grid>
+
+                                                <Grid Margin="0,10,0,0">
+                                                    <TextBlock Foreground="#223357" Text="Discount:" />
+                                                    <TextBlock
+                                                        HorizontalAlignment="Right"
+                                                        FontWeight="Bold"
+                                                        Foreground="#00A423"
+                                                        Text="{Binding AppointmentDiscountAmount, StringFormat=₱ {0:N2}}" />
+                                                </Grid>
+
+                                                <Grid Margin="0,10,0,0">
+                                                    <TextBlock Foreground="#223357" Text="Payment:" />
+                                                    <TextBlock
+                                                        HorizontalAlignment="Right"
+                                                        FontWeight="Bold"
+                                                        Foreground="#223357"
+                                                        Text="{Binding AppointmentPaymentAmount, StringFormat=₱ {0:N2}}" />
+                                                </Grid>
+
+                                                <Border
+                                                    Height="1"
+                                                    Margin="0,14,0,12"
+                                                    Background="#223357" />
+
+                                                <Grid>
+                                                    <TextBlock
+                                                        FontWeight="Bold"
+                                                        Foreground="#223357"
+                                                        Text="Balance:" />
+
+                                                    <TextBlock
+                                                        HorizontalAlignment="Right"
+                                                        FontWeight="Bold"
+                                                        Foreground="#00A423"
+                                                        Text="{Binding AppointmentBalanceDisplay}" />
+                                                </Grid>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <!--  Patient Name  -->
+                                        <StackPanel Grid.Row="2" Grid.Column="0">
+                                            <TextBlock
+                                                FontSize="14"
+                                                FontWeight="Bold"
+                                                Text="Patient Name" />
+
+                                            <TextBox
+                                                Height="42"
+                                                Margin="0,6,0,0"
+                                                IsReadOnly="True"
+                                                Text="{Binding AppointmentPatientName, Mode=OneWay}" />
+                                        </StackPanel>
+
+                                        <!--  Service / Treatment  -->
+                                        <StackPanel Grid.Row="2" Grid.Column="2">
+                                            <TextBlock
+                                                FontSize="14"
+                                                FontWeight="Bold"
+                                                Text="Service / Treatment" />
+
+                                            <TextBox
+                                                Height="42"
+                                                Margin="0,6,0,0"
+                                                IsReadOnly="True"
+                                                Text="{Binding AppointmentServiceName, Mode=OneWay}" />
+                                        </StackPanel>
+
+                                        <!--  Category  -->
+                                        <StackPanel Grid.Row="4" Grid.Column="0">
+                                            <TextBlock
+                                                FontSize="14"
+                                                FontWeight="Bold"
+                                                Text="Category" />
+
+                                            <TextBox
+                                                Height="42"
+                                                Margin="0,6,0,0"
+                                                IsReadOnly="True"
+                                                Text="{Binding AppointmentCategory, Mode=OneWay}" />
+                                        </StackPanel>
+
+                                        <!--  Receipt Number  -->
+                                        <StackPanel Grid.Row="4" Grid.Column="4">
+                                            <TextBlock
+                                                FontSize="14"
+                                                FontWeight="Bold"
+                                                Text="Receipt Number" />
+
+                                            <TextBox
+                                                Height="42"
+                                                Margin="0,6,0,0"
+                                                IsReadOnly="True"
+                                                Text="{Binding AppointmentReceiptNumber, Mode=OneWay}" />
+                                        </StackPanel>
+
+                                        <!--  Total Amount  -->
+                                        <StackPanel Grid.Row="6" Grid.Column="0">
+                                            <TextBlock
+                                                FontSize="14"
+                                                FontWeight="Bold"
+                                                Text="Total Amount *" />
+
+                                            <TextBox
+                                                Height="42"
+                                                Margin="0,6,0,0"
+                                                Text="{Binding AppointmentTotalAmount, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+
+                                        <!--  Discount Amount  -->
+                                        <StackPanel Grid.Row="6" Grid.Column="2">
+                                            <TextBlock
+                                                FontSize="14"
+                                                FontWeight="Bold"
+                                                Text="Discount Amount" />
+
+                                            <TextBox
+                                                Height="42"
+                                                Margin="0,6,0,0"
+                                                Text="{Binding AppointmentDiscountAmount, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+
+                                        <!--  Notes  -->
+                                        <StackPanel
+                                            Grid.Row="6"
+                                            Grid.RowSpan="3"
+                                            Grid.Column="4">
+                                            <TextBlock
+                                                FontSize="14"
+                                                FontWeight="Bold"
+                                                Text="Notes" />
+
+                                            <TextBox
+                                                Height="118"
+                                                Margin="0,6,0,0"
+                                                AcceptsReturn="True"
+                                                Text="{Binding AppointmentNotes, UpdateSourceTrigger=PropertyChanged}"
+                                                TextWrapping="Wrap" />
+                                        </StackPanel>
+
+                                        <!--  Subtotal after discount  -->
+                                        <Border
+                                            Grid.Row="8"
+                                            Grid.Column="0"
+                                            Grid.ColumnSpan="3"
+                                            Height="42"
+                                            Padding="16,0"
+                                            Background="#EEEEEE"
+                                            CornerRadius="8">
+
+                                            <Grid>
+                                                <TextBlock
+                                                    VerticalAlignment="Center"
+                                                    FontSize="14"
+                                                    Foreground="#888888"
+                                                    Text="Subtotal after discount:" />
+
+                                                <TextBlock
+                                                    HorizontalAlignment="Right"
+                                                    VerticalAlignment="Center"
+                                                    FontSize="14"
+                                                    Foreground="#888888"
+                                                    Text="{Binding AppointmentSubtotalDisplay}" />
+                                            </Grid>
+                                        </Border>
+                                    </Grid>
+
+                                    <!--  Payment and action row  -->
+                                    <Grid Margin="0,14,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="1.1*" />
+                                            <ColumnDefinition Width="24" />
+                                            <ColumnDefinition Width="1.1*" />
+                                            <ColumnDefinition Width="28" />
+                                            <ColumnDefinition Width="1.6*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock
+                                                FontSize="14"
+                                                FontWeight="Bold"
+                                                Text="Payment Amount *" />
+
+                                            <TextBox
+                                                Height="42"
+                                                Margin="0,6,0,0"
+                                                Text="{Binding AppointmentPaymentAmount, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="2">
+                                            <TextBlock
+                                                FontSize="14"
+                                                FontWeight="Bold"
+                                                Text="Date" />
+
+                                            <TextBox
+                                                Height="42"
+                                                Margin="0,6,0,0"
+                                                IsReadOnly="True"
+                                                Text="{Binding AppointmentDate, Mode=OneWay}" />
+                                        </StackPanel>
+
+                                        <StackPanel
+                                            Grid.Column="4"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Bottom"
+                                            Orientation="Horizontal">
+
+                                            <Button
+                                                Width="180"
+                                                Height="42"
+                                                Margin="0,0,10,0"
+                                                Background="#223357"
+                                                Command="{Binding ProcessAppointmentPaymentCommand}"
+                                                Foreground="White"
+                                                Style="{StaticResource SecondaryButtonStyle}">
+
+                                                <TextBlock
+                                                    FontSize="15"
+                                                    FontWeight="Bold"
+                                                    Text="₱ Process Transaction" />
+                                            </Button>
+
+                                            <Button
+                                                Width="80"
+                                                Height="42"
+                                                Background="White"
+                                                BorderBrush="#111111"
+                                                BorderThickness="1"
+                                                Command="{Binding ClearAppointmentPaymentFormCommand}"
+                                                Content="Clear"
+                                                Foreground="Black"
+                                                Style="{StaticResource SecondaryButtonStyle}" />
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <TextBlock
+                                        Margin="0,12,0,0"
+                                        FontSize="14"
+                                        FontWeight="SemiBold"
+                                        Foreground="#C62828"
+                                        Text="{Binding AppointmentPaymentErrorMessage}"
+                                        TextWrapping="Wrap"
+                                        Visibility="{Binding HasAppointmentPaymentError, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                </StackPanel>
+
+
+                                <!--  Balance Payment placeholder  -->
+                                <StackPanel>
+                                    <StackPanel.Style>
+                                        <Style TargetType="StackPanel">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsBalancePaymentSelected}" Value="True">
+                                                    <Setter Property="Visibility" Value="Visible" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </StackPanel.Style>
+
+                                    <TextBlock
+                                        FontSize="16"
+                                        FontWeight="Bold"
+                                        Text="Patients With Existing Balance" />
+
+                                    <DataGrid
+                                        Height="250"
+                                        Margin="0,12,0,0"
+                                        CellStyle="{StaticResource DashboardDataGridCellStyle}"
+                                        ColumnHeaderStyle="{StaticResource DashboardDataGridColumnHeaderStyle}"
+                                        ItemsSource="{Binding BalancePaymentItems}"
+                                        Style="{StaticResource DashboardDataGridStyle}">
+
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn
+                                                Width="1*"
+                                                MinWidth="120"
+                                                Binding="{Binding ReceiptNumber}"
+                                                Header="Receipt No." />
+                                            <DataGridTextColumn
+                                                Width="1.3*"
+                                                MinWidth="150"
+                                                Binding="{Binding PatientName}"
+                                                Header="Patient Name" />
+                                            <DataGridTextColumn
+                                                Width="1.2*"
+                                                MinWidth="130"
+                                                Binding="{Binding ServiceName}"
+                                                Header="Service" />
+                                            <DataGridTextColumn
+                                                Width="1*"
+                                                MinWidth="100"
+                                                Binding="{Binding AmountPaidDisplay}"
+                                                Header="Paid" />
+                                            <DataGridTextColumn
+                                                Width="1*"
+                                                MinWidth="100"
+                                                Binding="{Binding RemainingBalanceDisplay}"
+                                                Header="Balance" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </StackPanel>
+
+                                <!--  Manual Transaction placeholder  -->
+                                <StackPanel>
+                                    <StackPanel.Style>
+                                        <Style TargetType="StackPanel">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsManualTransactionSelected}" Value="True">
+                                                    <Setter Property="Visibility" Value="Visible" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </StackPanel.Style>
+
+                                    <TextBlock
+                                        FontSize="16"
+                                        FontWeight="Bold"
+                                        Text="Manual Transaction Form" />
+
+                                    <TextBlock
+                                        Margin="0,10,0,0"
+                                        FontSize="14"
+                                        Foreground="#777777"
+                                        Text="The manual transaction form will be added after appointment and balance payment flows are working."
+                                        TextWrapping="Wrap" />
+                                </StackPanel>
+                            </StackPanel>
+
+                            <TextBlock
+                                VerticalAlignment="Bottom"
+                                FontSize="14"
+                                FontWeight="SemiBold"
+                                Foreground="#C62828"
+                                Text="{Binding ErrorMessage}"
+                                TextWrapping="Wrap"
+                                Visibility="{Binding HasError, Converter={StaticResource BoolToVisibilityConverter}}" />
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+
+                <!--  Right payment history panel  -->
+                <Border Grid.Column="2" Style="{StaticResource BillingPanelStyle}">
+                    <StackPanel>
+                        <TextBlock
+                            FontSize="20"
+                            FontWeight="Bold"
+                            Foreground="#111111"
+                            Text="Payment History for Patient" />
+
+                        <TextBlock
+                            Margin="0,20,0,6"
+                            FontSize="14"
+                            FontWeight="SemiBold"
+                            Text="Patient Lookup" />
+
+                        <TextBox
+                            Height="46"
+                            Style="{StaticResource SearchTextBoxStyle}"
+                            Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+
+                        <TextBlock
+                            Margin="0,20,0,6"
+                            FontSize="14"
+                            FontWeight="SemiBold"
+                            Text="Transaction History" />
+
+                        <Border
+                            Height="260"
+                            Padding="14"
+                            BorderBrush="#D8D8D8"
+                            BorderThickness="1"
+                            CornerRadius="10">
+
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Foreground="#777777"
+                                Text="Patient receipt history will be added in a later batch."
+                                TextAlignment="Center"
+                                TextWrapping="Wrap" />
+                        </Border>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>
