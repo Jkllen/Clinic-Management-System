@@ -190,14 +190,44 @@
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
 
-                        <TextBlock
-                            Grid.Row="0"
-                            Margin="0,0,0,12"
-                            FontSize="18"
-                            FontWeight="Bold"
-                            Foreground="#111111"
-                            Text="Recent Billing Transactions" />
+                        <Grid Grid.Row="0" Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
 
+                            <TextBlock
+                                Grid.Column="0"
+                                VerticalAlignment="Center"
+                                FontSize="18"
+                                FontWeight="Bold"
+                                Foreground="#111111"
+                                Text="Recent Billing Transactions" />
+
+                            <ComboBox
+                                Grid.Column="1"
+                                Width="150"
+                                Height="30"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                FontSize="13"
+                                ItemsSource="{Binding BillingStatusFilterOptions}"
+                                SelectedItem="{Binding SelectedBillingStatusFilter, Mode=TwoWay}"
+                                MaxDropDownHeight="150"
+                                Padding="10,2"
+                                Style="{StaticResource ToolbarComboBoxStyle}"
+                                Tag="Filter">
+
+                                <ComboBox.ItemContainerStyle>
+                                    <Style TargetType="{x:Type ComboBoxItem}">
+                                        <Setter Property="HorizontalContentAlignment" Value="Left" />
+                                        <Setter Property="Padding" Value="10,4" />
+                                        <Setter Property="MinHeight" Value="26" />
+                                    </Style>
+                                </ComboBox.ItemContainerStyle>
+                            </ComboBox>
+                        </Grid>                 
+                
                         <DataGrid
                             Grid.Row="1"
                             CanUserResizeRows="False"

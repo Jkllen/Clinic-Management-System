@@ -21,6 +21,8 @@ namespace CruzNeryClinic.ViewModels
 
         private AppointmentPaymentItem? selectedAppointmentPaymentItem;
 
+        private string selectedBillingStatusFilter = "All";
+
         private string appointmentReceiptNumber = string.Empty;
         private string appointmentPatientCode = string.Empty;
         private string appointmentPatientName = string.Empty;
@@ -87,7 +89,7 @@ namespace CruzNeryClinic.ViewModels
         #endregion
 
         #region Collections
-
+        public ObservableCollection<string> BillingStatusFilterOptions { get; }
         public ObservableCollection<BillingRecordListItem> BillingRecords { get; }
 
         public ObservableCollection<AppointmentPaymentItem> AppointmentPaymentItems { get; }
@@ -126,6 +128,16 @@ namespace CruzNeryClinic.ViewModels
 
                     RefreshSelectedModuleData();
                 }
+            }
+        }
+
+        public string SelectedBillingStatusFilter
+        {
+            get => selectedBillingStatusFilter;
+            set
+            {
+                if (SetProperty(ref selectedBillingStatusFilter, value))
+                    LoadBillingRecords();
             }
         }
 
@@ -634,6 +646,14 @@ namespace CruzNeryClinic.ViewModels
             FilteredAppointmentPaymentItems = new ObservableCollection<AppointmentPaymentItem>();
             VisibleBalancePaymentItems = new ObservableCollection<BalancePaymentItem>();
 
+            BillingStatusFilterOptions = new ObservableCollection<string>
+            {
+                "All",
+                "Paid",
+                "Partial",
+                "Unpaid"
+            };
+
             ToggleBalancePaymentItemsCommand = new RelayCommand(() =>
             {
                 ShowAllBalancePaymentItems = !ShowAllBalancePaymentItems;
@@ -702,10 +722,22 @@ namespace CruzNeryClinic.ViewModels
         {
             BillingRecords.Clear();
 
-            foreach (BillingRecordListItem item in billingRepository.GetBillingRecords())
+            IEnumerable<BillingRecordListItem> records = billingRepository.GetBillingRecords();
+
+            if (!string.IsNullOrWhiteSpace(SelectedBillingStatusFilter) &&
+                SelectedBillingStatusFilter != "All")
+            {
+                records = records.Where(record =>
+                    string.Equals(
+                        record.PaymentStatus,
+                        SelectedBillingStatusFilter,
+                        StringComparison.OrdinalIgnoreCase
+                    ));
+            }
+
+            foreach (BillingRecordListItem item in records)
                 BillingRecords.Add(item);
         }
-
         private void SearchPatientsForPaymentHistory()
         {
             PaymentHistoryPatientResults.Clear();
