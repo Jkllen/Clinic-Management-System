@@ -1,7 +1,9 @@
 using CruzNeryClinic.Data;
 using CruzNeryClinic.Models;
+using CruzNeryClinic.Services;  
 using Microsoft.Data.Sqlite;
 using System;
+using System.Globalization;
 using System.Collections.Generic;
 
 namespace CruzNeryClinic.Repositories
@@ -90,31 +92,40 @@ ORDER BY tr.TreatmentDate DESC, tr.TreatmentTime DESC, tr.TreatmentRecordId DESC
 
             using SqliteCommand command = connection.CreateCommand();
             command.CommandText = @"
-SELECT
-    bt.BillingId,
-    bt.PatientId,
-    p.PatientCode,
-    p.FirstName,
-    p.MiddleName,
-    p.LastName,
-    bt.ReceiptNumber,
-    bt.ServiceName,
-    bt.TotalAmount,
-    bt.AmountPaid,
-    bt.RemainingBalance,
-    bt.PaymentStatus,
-    bt.TransactionDate
-FROM BillingTransactions bt
-INNER JOIN Patients p
-    ON bt.PatientId = p.PatientId
-WHERE bt.RemainingBalance > 0
-  AND bt.PaymentStatus IN ('Unpaid', 'Partial')
-ORDER BY bt.TransactionDate DESC, bt.BillingId DESC;";
+        SELECT
+            bt.BillingId,
+            bt.PatientId,
+            p.PatientCode,
+            p.FirstName,
+            p.MiddleName,
+            p.LastName,
+            bt.ReceiptNumber,
+            bt.ServiceName,
+            bt.TotalAmount,
+            bt.AmountPaid,
+            bt.RemainingBalance,
+            bt.PaymentStatus,
+            bt.TransactionDate
+        FROM BillingTransactions bt
+        INNER JOIN Patients p
+            ON bt.PatientId = p.PatientId
+        ORDER BY bt.TransactionDate DESC, bt.BillingId DESC;";
 
             using SqliteDataReader reader = command.ExecuteReader();
 
             while (reader.Read())
             {
+                decimal remainingBalance = SafeGetSecureDecimal(reader, "RemainingBalance");
+                string paymentStatus = SafeGetString(reader, "PaymentStatus");
+
+                // Because RemainingBalance and PaymentStatus may now be encrypted,
+                // filtering must happen in C# after decryption.
+                if (remainingBalance <= 0)
+                    continue;
+
+                if (paymentStatus != "Unpaid" && paymentStatus != "Partial")
+                    continue;
+
                 items.Add(new BalancePaymentItem
                 {
                     BillingId = Convert.ToInt32(reader["BillingId"]),
@@ -126,11 +137,11 @@ ORDER BY bt.TransactionDate DESC, bt.BillingId DESC;";
                         SafeGetString(reader, "LastName")
                     ),
                     ReceiptNumber = SafeGetString(reader, "ReceiptNumber"),
-                    ServiceName = SafeGetString(reader, "ServiceName"),
-                    TotalAmount = Convert.ToDecimal(reader["TotalAmount"]),
-                    AmountPaid = Convert.ToDecimal(reader["AmountPaid"]),
-                    RemainingBalance = Convert.ToDecimal(reader["RemainingBalance"]),
-                    PaymentStatus = SafeGetString(reader, "PaymentStatus"),
+                    ServiceName = SafeGetSecureString(reader, "ServiceName"),
+                    TotalAmount = SafeGetSecureDecimal(reader, "TotalAmount"),
+                    AmountPaid = SafeGetSecureDecimal(reader, "AmountPaid"),
+                    RemainingBalance = remainingBalance,
+                    PaymentStatus = paymentStatus,
                     TransactionDate = ParseDate(SafeGetString(reader, "TransactionDate"))
                 });
             }
@@ -189,12 +200,15 @@ ORDER BY bt.TransactionDate DESC, bt.BillingId DESC;";
                     ),
                     ReceiptNumber = SafeGetString(reader, "ReceiptNumber"),
                     BillingSource = SafeGetString(reader, "BillingSource"),
-                    ServiceName = SafeGetString(reader, "ServiceName"),
-                    TotalAmount = Convert.ToDecimal(reader["TotalAmount"]),
-                    DiscountAmount = Convert.ToDecimal(reader["DiscountAmount"]),
-                    SubtotalAfterDiscount = Convert.ToDecimal(reader["SubtotalAfterDiscount"]),
-                    AmountPaid = Convert.ToDecimal(reader["AmountPaid"]),
-                    RemainingBalance = Convert.ToDecimal(reader["RemainingBalance"]),
+                    
+                    ServiceName = SafeGetSecureString(reader, "ServiceName"),
+
+                    TotalAmount = SafeGetSecureDecimal(reader, "TotalAmount"),
+                    DiscountAmount = SafeGetSecureDecimal(reader, "DiscountAmount"),
+                    SubtotalAfterDiscount = SafeGetSecureDecimal(reader, "SubtotalAfterDiscount"),
+                    AmountPaid = SafeGetSecureDecimal(reader, "AmountPaid"),
+                    RemainingBalance = SafeGetSecureDecimal(reader, "RemainingBalance"),
+
                     PaymentStatus = SafeGetString(reader, "PaymentStatus"),
                     TransactionDate = ParseDate(SafeGetString(reader, "TransactionDate"))
                 });
@@ -257,13 +271,7 @@ ORDER BY bt.TransactionDate DESC, bt.BillingId DESC;";
                 WHERE pr.BillingId = bt.BillingId
                 ORDER BY pr.PaymentDate DESC, pr.PaymentRecordId DESC
                 LIMIT 1
-            ) AS LatestPaymentDate,
-
-            COALESCE((
-                SELECT SUM(pr.AmountPaid)
-                FROM PaymentRecords pr
-                WHERE pr.BillingId = bt.BillingId
-            ), 0) AS ActualAmountPaid
+            ) AS LatestPaymentDate
 
         FROM BillingTransactions bt
         INNER JOIN Patients p
@@ -282,6 +290,11 @@ ORDER BY bt.TransactionDate DESC, bt.BillingId DESC;";
             string middleName = SafeGetString(reader, "MiddleName");
             string lastName = SafeGetString(reader, "LastName");
 
+            decimal totalAmount = SafeGetSecureDecimal(reader, "TotalAmount");
+            string discountType = SafeGetString(reader, "DiscountType", "None");
+
+            decimal actualAmountPaid = GetTotalPaidForBilling(connection, null, billingId);
+
             return new BillingReceiptDetail
             {
                 BillingId = Convert.ToInt32(reader["BillingId"]),
@@ -295,34 +308,31 @@ ORDER BY bt.TransactionDate DESC, bt.BillingId DESC;";
                 PatientName = BuildFullName(firstName, middleName, lastName),
                 PatientCategory = SafeGetString(reader, "PatientCategory", "Regular"),
 
-                ServiceName = SafeGetString(reader, "ServiceName"),
-                Description = SafeGetString(reader, "Description"),
+                ServiceName = SafeGetSecureString(reader, "ServiceName"),
+                Description = SafeGetSecureString(reader, "Description"),
 
-                TotalAmount = SafeGetDecimal(reader, "TotalAmount"),
-                VatExemptSales = SafeGetString(reader, "DiscountType") is "PWD" or "Senior Citizen" or "PWD/Senior"
-                    ? Math.Round(SafeGetDecimal(reader, "TotalAmount") / 1.12m, 2)
-                    : SafeGetDecimal(reader, "TotalAmount"),
+                TotalAmount = totalAmount,
 
-                DiscountType = SafeGetString(reader, "DiscountType", "None"),
-                DiscountAmount = SafeGetDecimal(reader, "DiscountAmount"),
-                SubtotalAfterDiscount = SafeGetDecimal(reader, "SubtotalAfterDiscount"),
+                VatExemptSales = discountType is "PWD" or "Senior Citizen" or "PWD/Senior"
+                    ? Math.Round(totalAmount / 1.12m, 2)
+                    : totalAmount,
 
-                // Use actual SUM from PaymentRecords to be safer.
-                AmountPaid = SafeGetDecimal(reader, "ActualAmountPaid"),
+                DiscountType = discountType,
+                DiscountAmount = SafeGetSecureDecimal(reader, "DiscountAmount"),
+                SubtotalAfterDiscount = SafeGetSecureDecimal(reader, "SubtotalAfterDiscount"),
 
-                RemainingBalance = SafeGetDecimal(reader, "RemainingBalance"),
+                AmountPaid = actualAmountPaid,
+                RemainingBalance = SafeGetSecureDecimal(reader, "RemainingBalance"),
+
                 PaymentStatus = SafeGetString(reader, "PaymentStatus"),
-                PaymentMethod = SafeGetString(reader, "PaymentMethod", "Cash"),
+                PaymentMethod = SafeGetSecureString(reader, "PaymentMethod", "Cash"),
 
                 TransactionDate = ParseDate(SafeGetString(reader, "TransactionDate")),
                 LatestPaymentDate = ParseNullableDate(SafeGetString(reader, "LatestPaymentDate")),
-                Notes = SafeGetString(reader, "Notes")
+                Notes = SafeGetSecureString(reader, "Notes")
             };
         }
-
-
         #endregion
-
         #region Billing Patient Lookup
         public List<BillingPatientLookupItem> SearchPatientsForBillingHistory(string keyword)
         {
@@ -434,12 +444,15 @@ ORDER BY bt.TransactionDate DESC, bt.BillingId DESC;";
                     ),
                     ReceiptNumber = SafeGetString(reader, "ReceiptNumber"),
                     BillingSource = SafeGetString(reader, "BillingSource"),
-                    ServiceName = SafeGetString(reader, "ServiceName"),
-                    TotalAmount = Convert.ToDecimal(reader["TotalAmount"]),
-                    DiscountAmount = Convert.ToDecimal(reader["DiscountAmount"]),
-                    SubtotalAfterDiscount = Convert.ToDecimal(reader["SubtotalAfterDiscount"]),
-                    AmountPaid = Convert.ToDecimal(reader["AmountPaid"]),
-                    RemainingBalance = Convert.ToDecimal(reader["RemainingBalance"]),
+                    
+                    ServiceName = SafeGetSecureString(reader, "ServiceName"),
+
+                    TotalAmount = SafeGetSecureDecimal(reader, "TotalAmount"),
+                    DiscountAmount = SafeGetSecureDecimal(reader, "DiscountAmount"),
+                    SubtotalAfterDiscount = SafeGetSecureDecimal(reader, "SubtotalAfterDiscount"),
+                    AmountPaid = SafeGetSecureDecimal(reader, "AmountPaid"),
+                    RemainingBalance = SafeGetSecureDecimal(reader, "RemainingBalance"),
+
                     PaymentStatus = SafeGetString(reader, "PaymentStatus"),
                     TransactionDate = ParseDate(SafeGetString(reader, "TransactionDate"))
                 });
@@ -509,18 +522,23 @@ SELECT last_insert_rowid();";
             command.Parameters.AddWithValue("@BillingSource", billing.BillingSource);
             command.Parameters.AddWithValue("@ReceiptNumber", billing.ReceiptNumber);
             command.Parameters.AddWithValue("@ServiceId", billing.ServiceId.HasValue ? billing.ServiceId.Value : DBNull.Value);
-            command.Parameters.AddWithValue("@ServiceName", billing.ServiceName);
-            command.Parameters.AddWithValue("@Description", billing.Description);
-            command.Parameters.AddWithValue("@TotalAmount", billing.TotalAmount);
+            
+            command.Parameters.AddWithValue("@ServiceName", CryptoService.EncryptString(billing.ServiceName));
+            command.Parameters.AddWithValue("@Description", CryptoService.EncryptString(billing.Description));
+
+            command.Parameters.AddWithValue("@TotalAmount", CryptoService.EncryptDecimal(billing.TotalAmount));
             command.Parameters.AddWithValue("@DiscountType", billing.DiscountType);
-            command.Parameters.AddWithValue("@DiscountAmount", billing.DiscountAmount);
-            command.Parameters.AddWithValue("@SubtotalAfterDiscount", billing.SubtotalAfterDiscount);
-            command.Parameters.AddWithValue("@AmountPaid", billing.AmountPaid);
-            command.Parameters.AddWithValue("@RemainingBalance", billing.RemainingBalance);
+            command.Parameters.AddWithValue("@DiscountAmount", CryptoService.EncryptDecimal(billing.DiscountAmount));
+            command.Parameters.AddWithValue("@SubtotalAfterDiscount", CryptoService.EncryptDecimal(billing.SubtotalAfterDiscount));
+            command.Parameters.AddWithValue("@AmountPaid", CryptoService.EncryptDecimal(billing.AmountPaid));
+            command.Parameters.AddWithValue("@RemainingBalance", CryptoService.EncryptDecimal(billing.RemainingBalance));
             command.Parameters.AddWithValue("@PaymentStatus", billing.PaymentStatus);
+
             command.Parameters.AddWithValue("@TransactionDate", billing.TransactionDate.ToString("yyyy-MM-dd"));
             command.Parameters.AddWithValue("@CreatedByUserId", billing.CreatedByUserId.HasValue ? billing.CreatedByUserId.Value : DBNull.Value);
-            command.Parameters.AddWithValue("@Notes", billing.Notes);
+            
+            command.Parameters.AddWithValue("@Notes", CryptoService.EncryptString(billing.Notes));
+            
             command.Parameters.AddWithValue("@CreatedAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
 
             return Convert.ToInt32(command.ExecuteScalar());
@@ -529,7 +547,6 @@ SELECT last_insert_rowid();";
         #endregion
 
         #region Payments
-
         public void AddPaymentRecord(PaymentRecord payment)
         {
             using SqliteConnection connection = DatabaseService.GetConnection();
@@ -565,61 +582,45 @@ SELECT last_insert_rowid();";
 
                 insertCommand.Parameters.AddWithValue("@BillingId", payment.BillingId);
                 insertCommand.Parameters.AddWithValue("@PatientId", payment.PatientId);
-                insertCommand.Parameters.AddWithValue("@AmountPaid", payment.AmountPaid);
-                insertCommand.Parameters.AddWithValue("@PaymentMethod", payment.PaymentMethod);
+                insertCommand.Parameters.AddWithValue("@AmountPaid", CryptoService.EncryptDecimal(payment.AmountPaid));
+                insertCommand.Parameters.AddWithValue("@PaymentMethod", CryptoService.EncryptString(payment.PaymentMethod));
                 insertCommand.Parameters.AddWithValue("@PaymentDate", payment.PaymentDate.ToString("yyyy-MM-dd"));
                 insertCommand.Parameters.AddWithValue("@ReceivedByUserId", payment.ReceivedByUserId.HasValue ? payment.ReceivedByUserId.Value : DBNull.Value);
-                insertCommand.Parameters.AddWithValue("@Notes", payment.Notes ?? string.Empty);
+                insertCommand.Parameters.AddWithValue("@Notes", CryptoService.EncryptString(payment.Notes));
                 insertCommand.Parameters.AddWithValue("@CreatedAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
 
                 insertCommand.ExecuteNonQuery();
+
+                decimal subtotalAfterDiscount = GetBillingSubtotalAfterDiscount(connection, transaction, payment.BillingId);
+                decimal totalPaid = GetTotalPaidForBilling(connection, transaction, payment.BillingId);
+
+                decimal remainingBalance = Math.Max(subtotalAfterDiscount - totalPaid, 0);
+
+                string paymentStatus;
+
+                if (totalPaid <= 0)
+                    paymentStatus = "Unpaid";
+                else if (remainingBalance <= 0)
+                    paymentStatus = "Paid";
+                else
+                    paymentStatus = "Partial";
 
                 using SqliteCommand updateCommand = connection.CreateCommand();
                 updateCommand.Transaction = transaction;
                 updateCommand.CommandText = @"
         UPDATE BillingTransactions
         SET
-            AmountPaid = (
-                SELECT COALESCE(SUM(pr.AmountPaid), 0)
-                FROM PaymentRecords pr
-                WHERE pr.BillingId = @BillingId
-            ),
-
-            RemainingBalance = CASE
-                WHEN SubtotalAfterDiscount - (
-                    SELECT COALESCE(SUM(pr.AmountPaid), 0)
-                    FROM PaymentRecords pr
-                    WHERE pr.BillingId = @BillingId
-                ) < 0 THEN 0
-
-                ELSE SubtotalAfterDiscount - (
-                    SELECT COALESCE(SUM(pr.AmountPaid), 0)
-                    FROM PaymentRecords pr
-                    WHERE pr.BillingId = @BillingId
-                )
-            END,
-
-            PaymentStatus = CASE
-                WHEN (
-                    SELECT COALESCE(SUM(pr.AmountPaid), 0)
-                    FROM PaymentRecords pr
-                    WHERE pr.BillingId = @BillingId
-                ) <= 0 THEN 'Unpaid'
-
-                WHEN (
-                    SELECT COALESCE(SUM(pr.AmountPaid), 0)
-                    FROM PaymentRecords pr
-                    WHERE pr.BillingId = @BillingId
-                ) >= SubtotalAfterDiscount THEN 'Paid'
-
-                ELSE 'Partial'
-            END,
-
+            AmountPaid = @AmountPaid,
+            RemainingBalance = @RemainingBalance,
+            PaymentStatus = @PaymentStatus,
             UpdatedAt = @UpdatedAt
         WHERE BillingId = @BillingId;";
 
-                updateCommand.Parameters.AddWithValue("@BillingId", payment.BillingId);
+                updateCommand.Parameters.AddWithValue("@AmountPaid", CryptoService.EncryptDecimal(totalPaid));
+                updateCommand.Parameters.AddWithValue("@RemainingBalance", CryptoService.EncryptDecimal(remainingBalance));
+                updateCommand.Parameters.AddWithValue("@PaymentStatus", paymentStatus);
                 updateCommand.Parameters.AddWithValue("@UpdatedAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                updateCommand.Parameters.AddWithValue("@BillingId", payment.BillingId);
 
                 updateCommand.ExecuteNonQuery();
 
@@ -715,6 +716,122 @@ SELECT last_insert_rowid();";
                 return fallback;
 
             return Convert.ToDecimal(reader.GetValue(ordinal));
+        }
+
+        private static string SafeGetRawString(SqliteDataReader reader, string columnName, string fallback = "")
+        {
+            int ordinal = reader.GetOrdinal(columnName);
+
+            if (reader.IsDBNull(ordinal))
+                return fallback;
+
+            return reader.GetValue(ordinal)?.ToString() ?? fallback;
+        }
+
+        private static decimal SafeGetSecureDecimal(SqliteDataReader reader, string columnName, decimal fallback = 0m)
+        {
+            string rawValue = SafeGetRawString(reader, columnName);
+
+            if (string.IsNullOrWhiteSpace(rawValue))
+                return fallback;
+
+            if (rawValue.StartsWith("ENC:", StringComparison.Ordinal))
+                return CryptoService.DecryptDecimal(rawValue, fallback);
+
+            if (decimal.TryParse(
+                    rawValue,
+                    NumberStyles.Any,
+                    CultureInfo.InvariantCulture,
+                    out decimal result))
+            {
+                return result;
+            }
+
+            return fallback;
+        }
+
+        private static string SafeGetSecureString(SqliteDataReader reader, string columnName, string fallback = "")
+        {
+            string rawValue = SafeGetRawString(reader, columnName, fallback);
+            return CryptoService.DecryptString(rawValue);
+        }
+
+        private decimal GetBillingSubtotalAfterDiscount(
+            SqliteConnection connection,
+            SqliteTransaction transaction,
+            int billingId)
+        {
+            using SqliteCommand command = connection.CreateCommand();
+            command.Transaction = transaction;
+            command.CommandText = @"
+        SELECT SubtotalAfterDiscount
+        FROM BillingTransactions
+        WHERE BillingId = @BillingId;";
+
+            command.Parameters.AddWithValue("@BillingId", billingId);
+
+            object? value = command.ExecuteScalar();
+
+            if (value == null || value == DBNull.Value)
+                return 0m;
+
+            string rawValue = value.ToString() ?? string.Empty;
+
+            if (rawValue.StartsWith("ENC:", StringComparison.Ordinal))
+                return CryptoService.DecryptDecimal(rawValue);
+
+            if (decimal.TryParse(
+                    rawValue,
+                    NumberStyles.Any,
+                    CultureInfo.InvariantCulture,
+                    out decimal result))
+            {
+                return result;
+            }
+
+            return 0m;
+        }
+
+        private decimal GetTotalPaidForBilling(
+            SqliteConnection connection,
+            SqliteTransaction? transaction,
+            int billingId)
+        {
+            decimal totalPaid = 0m;
+
+            using SqliteCommand command = connection.CreateCommand();
+            
+            if (transaction != null)
+                command.Transaction = transaction;
+            
+            command.CommandText = @"
+        SELECT AmountPaid
+        FROM PaymentRecords
+        WHERE BillingId = @BillingId;";
+
+            command.Parameters.AddWithValue("@BillingId", billingId);
+
+            using SqliteDataReader reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                string rawValue = reader["AmountPaid"]?.ToString() ?? string.Empty;
+
+                if (rawValue.StartsWith("ENC:", StringComparison.Ordinal))
+                {
+                    totalPaid += CryptoService.DecryptDecimal(rawValue);
+                }
+                else if (decimal.TryParse(
+                            rawValue,
+                            NumberStyles.Any,
+                            CultureInfo.InvariantCulture,
+                            out decimal amount))
+                {
+                    totalPaid += amount;
+                }
+            }
+
+            return totalPaid;
         }
 
         #endregion
