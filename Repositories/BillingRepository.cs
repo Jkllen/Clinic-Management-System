@@ -336,7 +336,7 @@ ORDER BY bt.TransactionDate DESC, bt.BillingId DESC;";
 
             using SqliteCommand command = connection.CreateCommand();
             command.CommandText = @"
-        SELECT DISTINCT
+        SELECT
             p.PatientId,
             p.PatientCode,
             p.FirstName,
@@ -349,8 +349,6 @@ ORDER BY bt.TransactionDate DESC, bt.BillingId DESC;";
                 ELSE 'Regular'
             END AS Category
         FROM Patients p
-        INNER JOIN BillingTransactions bt
-            ON bt.PatientId = p.PatientId
         WHERE
             COALESCE(p.IsActive, 1) = 1
             AND (
@@ -360,11 +358,12 @@ ORDER BY bt.TransactionDate DESC, bt.BillingId DESC;";
                 OR p.LastName LIKE @Keyword
                 OR (p.LastName || ', ' || p.FirstName) LIKE @Keyword
                 OR (p.FirstName || ' ' || p.LastName) LIKE @Keyword
+                OR (p.FirstName || ' ' || COALESCE(p.MiddleName, '') || ' ' || p.LastName) LIKE @Keyword
             )
         ORDER BY p.LastName, p.FirstName
-        LIMIT 8;";
+        LIMIT 10;";
 
-            command.Parameters.AddWithValue("@Keyword", $"%{keyword}%");
+            command.Parameters.AddWithValue("@Keyword", $"%{keyword.Trim()}%");
 
             using SqliteDataReader reader = command.ExecuteReader();
 

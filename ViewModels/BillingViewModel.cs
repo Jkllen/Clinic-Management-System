@@ -88,6 +88,29 @@ namespace CruzNeryClinic.ViewModels
 
         #endregion
 
+        #region Backing Fields for Manual Transaction Module    
+
+        private BillingPatientLookupItem? selectedManualPatient;
+
+        private string manualPatientSearchText = string.Empty;
+        private string manualReceiptNumber = string.Empty;
+        private string manualPatientCode = string.Empty;
+        private string manualPatientName = string.Empty;
+        private string manualCategory = string.Empty;
+        private string manualServiceName = string.Empty;
+        private string manualDescription = string.Empty;
+
+        private decimal manualTotalAmount;
+        private string manualDiscountType = "None";
+        private decimal manualVatExemptSales;
+        private decimal manualDiscountAmount;
+        private decimal manualPaymentAmount;
+        private decimal manualBalance;
+
+        private string manualNotes = string.Empty;
+
+        #endregion
+
         #region Collections
         public ObservableCollection<string> BillingStatusFilterOptions { get; }
         public ObservableCollection<BillingRecordListItem> BillingRecords { get; }
@@ -103,6 +126,10 @@ namespace CruzNeryClinic.ViewModels
         public ObservableCollection<BillingRecordListItem> SelectedPatientBillingRecords { get; }
 
         public ObservableCollection<BillingRecordListItem> LatestPatientBillingRecords { get; }
+
+        public ObservableCollection<BillingPatientLookupItem> ManualPatientLookupResults { get; }
+
+        public ObservableCollection<string> ManualServiceOptions { get; }
 
         #endregion
 
@@ -597,6 +624,165 @@ namespace CruzNeryClinic.ViewModels
             ShowAllBalancePaymentItems ? "Show Less" : "View More";
         #endregion
 
+        #region Manual Transaction Properties
+
+        public BillingPatientLookupItem? SelectedManualPatient
+        {
+            get => selectedManualPatient;
+            set
+            {
+                if (SetProperty(ref selectedManualPatient, value))
+                    FillManualPatient(value);
+            }
+        }
+
+        public string ManualPatientSearchText
+        {
+            get => manualPatientSearchText;
+            set
+            {
+                if (SetProperty(ref manualPatientSearchText, value))
+                    SearchManualPatients();
+            }
+        }
+
+        public string ManualReceiptNumber
+        {
+            get => manualReceiptNumber;
+            set => SetProperty(ref manualReceiptNumber, value);
+        }
+
+        public string ManualPatientCode
+        {
+            get => manualPatientCode;
+            set => SetProperty(ref manualPatientCode, value);
+        }
+
+        public string ManualPatientName
+        {
+            get => manualPatientName;
+            set => SetProperty(ref manualPatientName, value);
+        }
+
+        public string ManualCategory
+        {
+            get => manualCategory;
+            set => SetProperty(ref manualCategory, value);
+        }
+
+        public string ManualServiceName
+        {
+            get => manualServiceName;
+            set => SetProperty(ref manualServiceName, value);
+        }
+
+        public string ManualDescription
+        {
+            get => manualDescription;
+            set => SetProperty(ref manualDescription, value);
+        }
+
+        public decimal ManualTotalAmount
+        {
+            get => manualTotalAmount;
+            set
+            {
+                if (SetProperty(ref manualTotalAmount, value))
+                    RecalculateManualTransaction();
+            }
+        }
+
+        public string ManualDiscountType
+        {
+            get => manualDiscountType;
+            set
+            {
+                if (SetProperty(ref manualDiscountType, value))
+                    RecalculateManualTransaction();
+            }
+        }
+
+        public decimal ManualVatExemptSales
+        {
+            get => manualVatExemptSales;
+            set
+            {
+                if (SetProperty(ref manualVatExemptSales, value))
+                    OnPropertyChanged(nameof(ManualVatExemptSalesDisplay));
+            }
+        }
+
+        public decimal ManualDiscountAmount
+        {
+            get => manualDiscountAmount;
+            set
+            {
+                if (SetProperty(ref manualDiscountAmount, value))
+                    OnPropertyChanged(nameof(ManualDiscountAmountDisplay));
+            }
+        }
+
+        public decimal ManualPaymentAmount
+        {
+            get => manualPaymentAmount;
+            set
+            {
+                if (SetProperty(ref manualPaymentAmount, value))
+                    RecalculateManualTransaction();
+            }
+        }
+
+        public decimal ManualBalance
+        {
+            get => manualBalance;
+            set
+            {
+                if (SetProperty(ref manualBalance, value))
+                    OnPropertyChanged(nameof(ManualBalanceDisplay));
+            }
+        }
+
+        public string ManualNotes
+        {
+            get => manualNotes;
+            set => SetProperty(ref manualNotes, value);
+        }
+
+        public string ManualTransactionDateDisplay =>
+            DateTime.Today.ToString("MM/dd/yyyy");
+
+        public bool HasManualVatExemption =>
+            ManualDiscountType is "PWD" or "Senior Citizen" or "PWD/Senior";
+
+        public string ManualTotalAmountDisplay =>
+            $"₱{ManualTotalAmount:N2}";
+
+        public string ManualVatExemptSalesDisplay =>
+            $"₱{ManualVatExemptSales:N2}";
+
+        public string ManualDiscountAmountDisplay =>
+            $"₱{ManualDiscountAmount:N2}";
+
+        public string ManualPaymentAmountDisplay =>
+            $"₱{ManualPaymentAmount:N2}";
+
+        public string ManualBalanceDisplay =>
+            $"₱{ManualBalance:N2}";
+
+        public string ManualSubtotalDisplay
+        {
+            get
+            {
+                decimal billableAmount = HasManualVatExemption
+                    ? Math.Max(ManualVatExemptSales - ManualDiscountAmount, 0)
+                    : Math.Max(ManualTotalAmount - ManualDiscountAmount, 0);
+
+                return $"₱{billableAmount:N2}";
+            }
+        }
+
+        #endregion
+
         #region Commands
 
         public ICommand SelectBillingModuleCommand { get; }
@@ -633,6 +819,15 @@ namespace CruzNeryClinic.ViewModels
         public ICommand ClearBalancePaymentFormCommand { get; }
 
         public ICommand ToggleBalancePaymentItemsCommand { get; }
+        
+        
+        // Manual Transaction Commands
+        public ICommand SelectManualPatientCommand { get; }
+
+        public ICommand ProcessManualTransactionCommand { get; }
+
+        public ICommand ClearManualTransactionFormCommand { get; }       
+       
         #endregion
 
         #region Constructor
@@ -645,6 +840,19 @@ namespace CruzNeryClinic.ViewModels
             AppointmentPaymentItems = new ObservableCollection<AppointmentPaymentItem>();
             FilteredAppointmentPaymentItems = new ObservableCollection<AppointmentPaymentItem>();
             VisibleBalancePaymentItems = new ObservableCollection<BalancePaymentItem>();
+
+            ManualPatientLookupResults = new ObservableCollection<BillingPatientLookupItem>();
+            ManualServiceOptions = new ObservableCollection<string>
+            {
+                "Consultation",
+                "Prophylaxis",
+                "Restoration / Pasta",
+                "Extraction",
+                "Orthodontics",
+                "TMJ",
+                "Dentures",
+                "Other"
+            };
 
             BillingStatusFilterOptions = new ObservableCollection<string>
             {
@@ -691,6 +899,10 @@ namespace CruzNeryClinic.ViewModels
             SelectBalancePaymentCommand = new RelayCommand<BalancePaymentItem>(SelectBalancePayment);
             ProcessBalancePaymentCommand = new RelayCommand(ProcessBalancePayment);
             ClearBalancePaymentFormCommand = new RelayCommand(ClearBalancePaymentForm);
+
+            SelectManualPatientCommand = new RelayCommand<BillingPatientLookupItem>(SelectManualPatient);
+            ProcessManualTransactionCommand = new RelayCommand(ProcessManualTransaction);
+            ClearManualTransactionFormCommand = new RelayCommand(ClearManualTransactionForm);
 
 
             ClosePromptCommand = new RelayCommand(ClosePrompt);
@@ -1396,6 +1608,232 @@ namespace CruzNeryClinic.ViewModels
             OnPropertyChanged(nameof(BalanceCurrentBalanceDisplay));
             OnPropertyChanged(nameof(BalancePaymentAmountDisplay));
             OnPropertyChanged(nameof(BalanceRemainingAfterPaymentDisplay));
+        }
+
+        #endregion
+
+        #region Manual Transaction Methods
+
+        private void SearchManualPatients()
+        {
+            ManualPatientLookupResults.Clear();
+
+            if (string.IsNullOrWhiteSpace(ManualPatientSearchText))
+                return;
+
+            try
+            {
+                foreach (BillingPatientLookupItem patient in billingRepository.SearchPatientsForBillingHistory(ManualPatientSearchText))
+                    ManualPatientLookupResults.Add(patient);
+            }
+            catch (Exception ex)
+            {
+                ShowPrompt("Manual Transaction", $"Failed to search patients: {ex.Message}");
+            }
+        }
+
+        private void SelectManualPatient(BillingPatientLookupItem? patient)
+        {
+            if (patient == null)
+                return;
+
+            SelectedManualPatient = patient;
+        }
+
+        private void FillManualPatient(BillingPatientLookupItem? patient)
+        {
+            if (patient == null)
+            {
+                ClearManualPatientFieldsOnly();
+                return;
+            }
+
+            ManualReceiptNumber = billingRepository.GenerateReceiptNumber();
+            ManualPatientCode = patient.PatientCode;
+            ManualPatientName = patient.PatientName;
+            ManualCategory = patient.Category;
+
+            ManualDiscountType = patient.Category switch
+            {
+                "PWD" => "PWD",
+                "Senior Citizen" => "Senior Citizen",
+                "PWD / Senior" => "PWD/Senior",
+                "PWD/Senior" => "PWD/Senior",
+                _ => "None"
+            };
+
+            ManualPatientSearchText = patient.PatientCode;
+            ManualPatientLookupResults.Clear();
+
+            OnPropertyChanged(nameof(ManualTransactionDateDisplay));
+
+            RecalculateManualTransaction();
+        }
+
+        private void RecalculateManualTransaction()
+        {
+            if (ManualTotalAmount < 0)
+                ManualTotalAmount = 0;
+
+            if (ManualPaymentAmount < 0)
+                ManualPaymentAmount = 0;
+
+            if (HasManualVatExemption && ManualTotalAmount > 0)
+            {
+                ManualVatExemptSales = Math.Round(ManualTotalAmount / 1.12m, 2);
+                ManualDiscountAmount = Math.Round(ManualVatExemptSales * 0.20m, 2);
+            }
+            else
+            {
+                ManualVatExemptSales = 0;
+                ManualDiscountAmount = 0;
+            }
+
+            decimal billableAmount = HasManualVatExemption
+                ? Math.Max(ManualVatExemptSales - ManualDiscountAmount, 0)
+                : Math.Max(ManualTotalAmount - ManualDiscountAmount, 0);
+
+            if (ManualPaymentAmount > billableAmount)
+                ManualPaymentAmount = billableAmount;
+
+            ManualBalance = Math.Max(billableAmount - ManualPaymentAmount, 0);
+
+            OnPropertyChanged(nameof(HasManualVatExemption));
+            OnPropertyChanged(nameof(ManualTotalAmountDisplay));
+            OnPropertyChanged(nameof(ManualVatExemptSalesDisplay));
+            OnPropertyChanged(nameof(ManualDiscountAmountDisplay));
+            OnPropertyChanged(nameof(ManualPaymentAmountDisplay));
+            OnPropertyChanged(nameof(ManualBalanceDisplay));
+            OnPropertyChanged(nameof(ManualSubtotalDisplay));
+        }
+
+        private void ProcessManualTransaction()
+        {
+            if (SelectedManualPatient == null)
+            {
+                ShowPrompt("Manual Transaction", "Please select a patient first.");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(ManualServiceName))
+            {
+                ShowPrompt("Manual Transaction", "Please enter or select a service/treatment.");
+                return;
+            }
+
+            if (ManualTotalAmount <= 0)
+            {
+                ShowPrompt("Manual Transaction", "Please enter a valid total amount.");
+                return;
+            }
+
+            decimal billableAmount = HasManualVatExemption
+                ? Math.Max(ManualVatExemptSales - ManualDiscountAmount, 0)
+                : Math.Max(ManualTotalAmount - ManualDiscountAmount, 0);
+
+            if (ManualPaymentAmount < 0)
+            {
+                ShowPrompt("Manual Transaction", "Payment amount cannot be negative.");
+                return;
+            }
+
+            if (ManualPaymentAmount > billableAmount)
+            {
+                ShowPrompt("Manual Transaction", "Payment amount cannot be greater than the billable amount.");
+                return;
+            }
+
+            try
+            {
+                BillingTransaction billing = new()
+                {
+                    PatientId = SelectedManualPatient.PatientId,
+                    AppointmentId = null,
+                    TreatmentRecordId = null,
+                    BillingSource = "Manual",
+                    ReceiptNumber = ManualReceiptNumber,
+                    ServiceId = null,
+                    ServiceName = ManualServiceName,
+                    Description = string.IsNullOrWhiteSpace(ManualDescription)
+                        ? $"Manual transaction for {ManualServiceName}"
+                        : ManualDescription,
+                    TotalAmount = ManualTotalAmount,
+                    DiscountType = ManualDiscountType,
+                    DiscountAmount = ManualDiscountAmount,
+                    SubtotalAfterDiscount = billableAmount,
+                    AmountPaid = 0,
+                    RemainingBalance = billableAmount,
+                    PaymentStatus = "Unpaid",
+                    TransactionDate = DateTime.Today,
+                    CreatedByUserId = null,
+                    Notes = ManualNotes
+                };
+
+                int billingId = billingRepository.CreateBillingTransaction(billing);
+
+                if (ManualPaymentAmount > 0)
+                {
+                    PaymentRecord payment = new()
+                    {
+                        BillingId = billingId,
+                        PatientId = SelectedManualPatient.PatientId,
+                        AmountPaid = ManualPaymentAmount,
+                        PaymentMethod = "Cash",
+                        PaymentDate = DateTime.Today,
+                        ReceivedByUserId = null,
+                        Notes = ManualNotes
+                    };
+
+                    billingRepository.AddPaymentRecord(payment);
+                }
+
+                LoadBillingData();
+                ClearManualTransactionForm();
+
+                SelectedBillingModule = "Manual Transaction";
+
+                ShowPrompt("Manual Transaction", "Manual transaction has been recorded successfully.");
+            }
+            catch (Exception ex)
+            {
+                ShowPrompt("Manual Transaction", $"Failed to process manual transaction: {ex.Message}");
+            }
+        }
+
+        private void ClearManualTransactionForm()
+        {
+            SelectedManualPatient = null;
+            ClearManualPatientFieldsOnly();
+
+            ManualPatientSearchText = string.Empty;
+            ManualPatientLookupResults.Clear();
+
+            ManualServiceName = string.Empty;
+            ManualDescription = string.Empty;
+            ManualTotalAmount = 0;
+            ManualDiscountType = "None";
+            ManualVatExemptSales = 0;
+            ManualDiscountAmount = 0;
+            ManualPaymentAmount = 0;
+            ManualBalance = 0;
+            ManualNotes = string.Empty;
+
+            OnPropertyChanged(nameof(ManualTransactionDateDisplay));
+            OnPropertyChanged(nameof(HasManualVatExemption));
+            OnPropertyChanged(nameof(ManualTotalAmountDisplay));
+            OnPropertyChanged(nameof(ManualVatExemptSalesDisplay));
+            OnPropertyChanged(nameof(ManualDiscountAmountDisplay));
+            OnPropertyChanged(nameof(ManualPaymentAmountDisplay));
+            OnPropertyChanged(nameof(ManualBalanceDisplay));
+            OnPropertyChanged(nameof(ManualSubtotalDisplay));
+        }
+
+        private void ClearManualPatientFieldsOnly()
+        {
+            ManualReceiptNumber = string.Empty;
+            ManualPatientCode = string.Empty;
+            ManualPatientName = string.Empty;
+            ManualCategory = string.Empty;
         }
 
         #endregion

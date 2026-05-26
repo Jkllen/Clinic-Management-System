@@ -3,31 +3,642 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    d:DesignHeight="500"
+    d:DesignHeight="520"
     d:DesignWidth="1200"
     mc:Ignorable="d">
 
-    <Border
-        Padding="28"
-        Background="White"
-        BorderBrush="#D8D8D8"
-        BorderThickness="1"
-        CornerRadius="14">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </UserControl.Resources>
 
-        <StackPanel>
-            <TextBlock
-                FontSize="24"
-                FontWeight="Bold"
-                Foreground="#111111"
-                Text="Manual Transaction" />
+    <Grid Margin="0">
+        <Grid.ColumnDefinitions>
+            <!-- Left patient lookup card -->
+            <ColumnDefinition Width="330" />
 
-            <TextBlock
-                Margin="0,6,0,0"
-                FontSize="15"
-                Foreground="#777777"
-                Text="Manual transaction form will be implemented after Balance Payment is stable."
-                TextWrapping="Wrap" />
-        </StackPanel>
-    </Border>
+            <!-- Gap -->
+            <ColumnDefinition Width="24" />
+
+            <!-- Right manual transaction form -->
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- =====================================================
+             LEFT CARD: Patient Lookup
+             ===================================================== -->
+        <Border
+            Grid.Column="0"
+            Padding="22"
+            Background="White"
+            BorderBrush="#DDDDDD"
+            BorderThickness="1"
+            CornerRadius="16">
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="20" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="6" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!-- Header -->
+                <StackPanel Grid.Row="0">
+                    <TextBlock
+                        FontSize="22"
+                        FontWeight="Bold"
+                        Foreground="#111111"
+                        Text="Manual Transaction" />
+
+                    <TextBlock
+                        Margin="0,6,0,0"
+                        FontSize="14"
+                        Foreground="#777777"
+                        Text="Create a billing record manually for walk-in services or additional charges."
+                        TextWrapping="Wrap" />
+                </StackPanel>
+
+                <!-- Patient lookup -->
+                <StackPanel Grid.Row="2">
+                    <TextBlock
+                        Margin="0,0,0,8"
+                        FontSize="16"
+                        FontWeight="Bold"
+                        Foreground="#111111"
+                        Text="Patient ID or Name" />
+
+                    <TextBox
+                        Height="46"
+                        FontSize="14"
+                        Style="{StaticResource ModernTextBoxStyle}"
+                        Tag="Search patient"
+                        Text="{Binding ManualPatientSearchText, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+
+                <!-- Patient result list -->
+                <ScrollViewer
+                    Grid.Row="4"
+                    MaxHeight="350"
+                    HorizontalScrollBarVisibility="Disabled"
+                    VerticalScrollBarVisibility="Auto">
+
+                    <ScrollViewer.Resources>
+                        <Style
+                            BasedOn="{StaticResource BlueDataGridScrollBarStyle}"
+                            TargetType="{x:Type ScrollBar}" />
+                    </ScrollViewer.Resources>
+
+                    <ItemsControl ItemsSource="{Binding ManualPatientLookupResults}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border
+                                    Margin="0,0,0,10"
+                                    Padding="16"
+                                    Background="#EFEFF3"
+                                    CornerRadius="12">
+
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="88" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Patient info -->
+                                        <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                            <TextBlock
+                                                FontSize="14"
+                                                FontWeight="Bold"
+                                                Foreground="#111111"
+                                                Text="{Binding PatientCode}"
+                                                TextWrapping="Wrap" />
+
+                                            <TextBlock
+                                                Margin="0,7,0,0"
+                                                FontSize="13"
+                                                Foreground="#333333"
+                                                Text="{Binding PatientName}"
+                                                TextTrimming="CharacterEllipsis" />
+
+                                            <TextBlock
+                                                Margin="0,7,0,0"
+                                                FontSize="13"
+                                                FontWeight="SemiBold"
+                                                Foreground="#223357"
+                                                Text="{Binding Category}" />
+                                        </StackPanel>
+
+                                        <!-- Select button -->
+                                        <Button
+                                            Grid.Column="1"
+                                            Width="82"
+                                            Height="34"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Center"
+                                            Background="White"
+                                            BorderBrush="#223357"
+                                            BorderThickness="1"
+                                            Command="{Binding DataContext.SelectManualPatientCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding}"
+                                            Content="Select"
+                                            Foreground="#223357"
+                                            FontSize="13"
+                                            FontWeight="Bold"
+                                            Style="{StaticResource SecondaryButtonStyle}" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+
+        <!-- =====================================================
+             RIGHT CARD: Manual Transaction Form
+             ===================================================== -->
+        <Border
+            Grid.Column="2"
+            Padding="26"
+            Background="White"
+            BorderBrush="#DDDDDD"
+            BorderThickness="1"
+            CornerRadius="16">
+
+            <ScrollViewer
+                HorizontalScrollBarVisibility="Disabled"
+                VerticalScrollBarVisibility="Auto">
+
+                <ScrollViewer.Resources>
+                    <Style
+                        BasedOn="{StaticResource BlueDataGridScrollBarStyle}"
+                        TargetType="{x:Type ScrollBar}" />
+                </ScrollViewer.Resources>
+
+                <Grid Margin="0,0,10,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Header -->
+                    <Grid Grid.Row="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="220" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock
+                                FontSize="22"
+                                FontWeight="Bold"
+                                Foreground="#111111"
+                                Text="Create Manual Transaction" />
+
+                            <TextBlock
+                                Margin="0,6,0,0"
+                                FontSize="14"
+                                Foreground="#777777"
+                                Text="Select a patient, enter the service details, then process the cash payment."
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+
+                        <!-- Current transaction date -->
+                        <StackPanel
+                            Grid.Column="1"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            Orientation="Horizontal">
+
+                            <TextBlock
+                                Margin="0,0,12,0"
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Foreground="#111111"
+                                Text="Date" />
+
+                            <TextBlock
+                                FontSize="16"
+                                Foreground="#8A8A8A"
+                                Text="{Binding ManualTransactionDateDisplay, Mode=OneWay}" />
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Form body -->
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <!-- Form column 1 -->
+                            <ColumnDefinition Width="1*" />
+
+                            <!-- Gap -->
+                            <ColumnDefinition Width="22" />
+
+                            <!-- Form column 2 -->
+                            <ColumnDefinition Width="1*" />
+
+                            <!-- Gap -->
+                            <ColumnDefinition Width="28" />
+
+                            <!-- Summary and buttons -->
+                            <ColumnDefinition Width="275" />
+                        </Grid.ColumnDefinitions>
+
+                        <Grid.RowDefinitions>
+                            <!-- Row 0: Receipt Number and Patient ID -->
+                            <RowDefinition Height="Auto" />
+
+                            <!-- Row 1: Gap after Receipt Number / Patient ID -->
+                            <RowDefinition Height="Auto" />
+
+                            <!-- Row 2: Patient Name and Category -->
+                            <RowDefinition Height="Auto" />
+
+                            <!-- Row 3: Gap after Patient Name / Category -->
+                            <RowDefinition Height="Auto" />
+
+                            <!-- Row 4: Service / Treatment and Total Amount -->
+                            <RowDefinition Height="Auto" />
+
+                            <!-- Row 5: Gap after Service / Treatment / Total Amount -->
+                            <RowDefinition Height="Auto" />
+
+                            <!-- Row 6: Description and Payment Amount -->
+                            <RowDefinition Height="Auto" />
+
+                            <!-- Row 7: Gap before Notes -->
+                            <RowDefinition Height="Auto" />
+
+                            <!-- Row 8: Notes textarea -->
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <!-- Receipt Number -->
+                        <StackPanel 
+                                Grid.Row="0" 
+                                Grid.Column="0">
+                            <TextBlock
+                                FontSize="16"
+                                Margin="0,8,0,0"
+                                FontWeight="Bold"
+                                Foreground="#111111"
+                                Text="Receipt Number" />
+
+                            <TextBox
+                                Height="46"
+                                Margin="0,8,0,0"
+                                IsReadOnly="True"
+                                Style="{StaticResource ModernTextBoxStyle}"
+                                Tag="Auto-Filled"
+                                Text="{Binding ManualReceiptNumber}" />
+                        </StackPanel>
+
+                        <!-- Patient ID -->
+                        <StackPanel Grid.Row="0" Grid.Column="2">
+                            <TextBlock
+                                FontSize="16"
+                                Margin="0,8,0,0"
+                                FontWeight="Bold"
+                                Foreground="#111111"
+                                Text="Patient ID" />
+
+                            <TextBox
+                                Height="46"
+                                Margin="0,8,0,0"
+                                IsReadOnly="True"
+                                Style="{StaticResource ModernTextBoxStyle}"
+                                Tag="Auto-Filled"
+                                Text="{Binding ManualPatientCode}" />
+                        </StackPanel>
+
+                        <!-- Patient Name -->
+                        <StackPanel Grid.Row="2" Grid.Column="0">
+                            <TextBlock
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Foreground="#111111"
+                                Text="Patient Name" />
+
+                            <TextBox
+                                Height="46"
+                                Margin="0,8,0,0"
+                                IsReadOnly="True"
+                                Style="{StaticResource ModernTextBoxStyle}"
+                                Tag="Auto-Filled"
+                                Text="{Binding ManualPatientName}" />
+                        </StackPanel>
+
+                        <!-- Category -->
+                        <StackPanel Grid.Row="2" Grid.Column="2">
+                            <TextBlock
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Foreground="#111111"
+                                Text="Category" />
+
+                            <TextBox
+                                Height="46"
+                                Margin="0,8,0,0"
+                                IsReadOnly="True"
+                                Style="{StaticResource ModernTextBoxStyle}"
+                                Tag="Auto-Filled"
+                                Text="{Binding ManualCategory}" />
+                        </StackPanel>
+
+                        <!-- Service / Treatment -->
+                        <StackPanel Grid.Row="4" Grid.Column="0">
+                            <TextBlock
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Foreground="#111111"
+                                Text="Service / Treatment *" />
+
+                            <ComboBox
+                                Height="46"
+                                Margin="0,8,0,0"
+                                FontSize="14"
+                                Style="{StaticResource ToolbarComboBoxStyle}"
+                                ItemsSource="{Binding ManualServiceOptions}"
+                                SelectedItem="{Binding ManualServiceName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        </StackPanel>
+
+                        <!-- Total Amount -->
+                        <StackPanel Grid.Row="4" Grid.Column="2">
+                            <TextBlock
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Foreground="#111111"
+                                Text="Total Amount *" />
+
+                            <TextBox
+                                Height="46"
+                                Margin="0,8,0,0"
+                                Style="{StaticResource ModernTextBoxStyle}"
+                                Text="{Binding ManualTotalAmount, UpdateSourceTrigger=LostFocus, StringFormat={}{0:N2}}" />
+                        </StackPanel>
+
+                        <!-- Description -->
+                        <StackPanel Grid.Row="6" Grid.Column="0">
+                            <TextBlock
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Foreground="#111111"
+                                Text="Description" />
+
+                            <TextBox
+                                Height="46"
+                                Margin="0,8,0,0"
+                                Style="{StaticResource ModernTextBoxStyle}"
+                                Tag="Optional description"
+                                Text="{Binding ManualDescription, UpdateSourceTrigger=PropertyChanged}" />
+                        </StackPanel>
+
+                        <!-- Payment Amount -->
+                        <StackPanel Grid.Row="6" Grid.Column="2">
+                            <TextBlock
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Foreground="#111111"
+                                Text="Payment Amount *" />
+
+                            <TextBox
+                                Height="46"
+                                Margin="0,8,0,0"
+                                Style="{StaticResource ModernTextBoxStyle}"
+                                Text="{Binding ManualPaymentAmount, UpdateSourceTrigger=LostFocus, StringFormat={}{0:N2}}" />
+                        </StackPanel>
+
+                        <!-- Notes: wide textarea -->
+                        <StackPanel
+                            Grid.Row="8"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="3">
+
+                            <TextBlock
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Foreground="#111111"
+                                Text="Notes" />
+
+                            <TextBox
+                                Height="140"
+                                Margin="0,8,0,0"
+                                AcceptsReturn="True"
+                                BorderBrush="#BFBFBF"
+                                BorderThickness="1"
+                                Style="{StaticResource ModernTextBoxStyle}"
+                                Text="{Binding ManualNotes, UpdateSourceTrigger=PropertyChanged}"
+                                TextWrapping="Wrap"
+                                VerticalScrollBarVisibility="Auto" />
+                        </StackPanel>
+
+                        <!-- Right summary + buttons -->
+                        <Grid Grid.Row="0" Grid.RowSpan="9" Grid.Column="4" VerticalAlignment="Top">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="24" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <!-- Payment Summary -->
+                            <Border
+                                Grid.Row="0"
+                                Padding="22"
+                                Margin="0,8,0,0"
+                                Background="#EAF5FF"
+                                BorderBrush="#B9DAFF"
+                                BorderThickness="1"
+                                CornerRadius="12">
+
+                                <StackPanel>
+                                    <TextBlock
+                                        Margin="0,0,0,18"
+                                        FontSize="16"
+                                        FontWeight="Bold"
+                                        Foreground="#223357"
+                                        Text="Payment Summary" />
+
+                                    <Grid Margin="0,0,0,14">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock
+                                            Grid.Column="0"
+                                            FontSize="14"
+                                            Foreground="#223357"
+                                            Text="Total Amount:" />
+
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            FontSize="14"
+                                            FontWeight="Bold"
+                                            Foreground="#223357"
+                                            Text="{Binding ManualTotalAmountDisplay, Mode=OneWay}" />
+                                    </Grid>
+
+                                    <!-- VAT Exempt Sales: visible only for Senior/PWD -->
+                                    <Grid Margin="0,0,0,14">
+                                        <Grid.Style>
+                                            <Style TargetType="Grid">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding HasManualVatExemption}" Value="True">
+                                                        <Setter Property="Visibility" Value="Visible" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Grid.Style>
+
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock
+                                            Grid.Column="0"
+                                            FontSize="14"
+                                            Foreground="#223357"
+                                            Text="VAT Exempt Sales:" />
+
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            FontSize="14"
+                                            FontWeight="Bold"
+                                            Foreground="#223357"
+                                            Text="{Binding ManualVatExemptSalesDisplay, Mode=OneWay}" />
+                                    </Grid>
+
+                                    <Grid Margin="0,0,0,14">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock
+                                            Grid.Column="0"
+                                            FontSize="14"
+                                            Foreground="#223357"
+                                            Text="Discount:" />
+
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            FontSize="14"
+                                            FontWeight="Bold"
+                                            Foreground="#00A423"
+                                            Text="{Binding ManualDiscountAmountDisplay, Mode=OneWay}" />
+                                    </Grid>
+
+                                    <Grid Margin="0,0,0,14">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock
+                                            Grid.Column="0"
+                                            FontSize="14"
+                                            Foreground="#223357"
+                                            Text="Billable Amount:" />
+
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            FontSize="14"
+                                            FontWeight="Bold"
+                                            Foreground="#223357"
+                                            Text="{Binding ManualSubtotalDisplay, Mode=OneWay}" />
+                                    </Grid>
+
+                                    <Grid Margin="0,0,0,16">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock
+                                            Grid.Column="0"
+                                            FontSize="14"
+                                            Foreground="#223357"
+                                            Text="Payment:" />
+
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            FontSize="14"
+                                            FontWeight="Bold"
+                                            Foreground="#223357"
+                                            Text="{Binding ManualPaymentAmountDisplay, Mode=OneWay}" />
+                                    </Grid>
+
+                                    <Border
+                                        Height="1"
+                                        Margin="0,0,0,14"
+                                        Background="#6CA6E8" />
+
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock
+                                            Grid.Column="0"
+                                            FontSize="15"
+                                            FontWeight="Bold"
+                                            Foreground="#223357"
+                                            Text="Balance:" />
+
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            FontSize="15"
+                                            FontWeight="Bold"
+                                            Foreground="#00A423"
+                                            Text="{Binding ManualBalanceDisplay, Mode=OneWay}" />
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Buttons -->
+                            <StackPanel
+                                Grid.Row="2"
+                                HorizontalAlignment="Right"
+                                Orientation="Horizontal">
+
+                                <Button
+                                    Width="160"
+                                    Height="44"
+                                    Margin="0,0,10,0"
+                                    Background="#223357"
+                                    Command="{Binding ProcessManualTransactionCommand}"
+                                    Foreground="White"
+                                    Style="{StaticResource SecondaryButtonStyle}">
+
+                                    <TextBlock
+                                        FontSize="14"
+                                        FontWeight="Bold"
+                                        Text="₱ Process Transaction" />
+                                </Button>
+
+                                <Button
+                                    Width="65"
+                                    Height="44"
+                                    Background="White"
+                                    BorderBrush="#111111"
+                                    BorderThickness="1"
+                                    Command="{Binding ClearManualTransactionFormCommand}"
+                                    Content="Clear"
+                                    Foreground="Black"
+                                    FontSize="14"
+                                    FontWeight="Bold"
+                                    Style="{StaticResource SecondaryButtonStyle}" />
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </ScrollViewer>
+        </Border>
+    </Grid>
 </UserControl>
