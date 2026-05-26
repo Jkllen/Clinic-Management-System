@@ -6,49 +6,556 @@
     xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     d:DesignHeight="900"
-    d:DesignWidth="1600"
+    d:DesignWidth="1200"
     mc:Ignorable="d">
 
-    <!--
-        HELP SCREEN TODO
-
-        Required layout:
-        1. Header
-           - Title: Help
-           - Subtitle: User Manual, FAQs, and System Guide
-
-        2. Toolbar
-           - Search Help textbox
-           - Print Manual button
-
-        3. Main content area
-           - Left panel: User Manual
-           - Right panel: Frequently Asked Questions
-
-        Required bindings:
-        - SearchText
-        - PrintUserManualCommand
-        - FilteredManualTopics
-        - FilteredFaqs
-
-        Suggested styles to reuse:
-        - ScreenBackgroundBrush
-        - SearchTextBoxStyle
-        - SecondaryButtonStyle
-        - LargePanelStyle
-
-        Notes:
-        - Do not add this as a separate Help button inside Dashboard/User/Patient screens.
-        - Help is now part of the sidebar.
-        - Help should be available to all roles.
-    -->
-
     <Grid Background="{StaticResource ScreenBackgroundBrush}">
+        <Grid Margin="32,28,32,24">
 
-        <!-- TODO:
-             Build the Help screen UI here.
-             Use the same spacing and style as Dashboard/User/Patient screens.
-        -->
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
 
+            <!-- ====================
+                 Row 0: Header
+                 ==================== -->
+            <Grid Grid.Row="0" Margin="0,0,0,20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <TextBlock
+                        FontSize="28"
+                        FontWeight="Bold"
+                        Foreground="#111111"
+                        Text="Help &amp; Documentation" />
+                    <TextBlock
+                        Margin="0,6,0,0"
+                        FontSize="14"
+                        Foreground="#7A7A7A"
+                        Text="User manual and frequently asked questions" />
+                </StackPanel>
+
+                <!-- Print Manual Button -->
+                <Button
+                    Grid.Column="1"
+                    Height="44"
+                    Padding="20,0"
+                    VerticalAlignment="Center"
+                    Command="{Binding PrintUserManualCommand}">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Background" Value="#111111" />
+                            <Setter Property="Foreground" Value="White" />
+                            <Setter Property="BorderThickness" Value="0" />
+                            <Setter Property="Cursor" Value="Hand" />
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border
+                                            Background="{TemplateBinding Background}"
+                                            CornerRadius="8"
+                                            Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#333333" />
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter Property="Background" Value="#555555" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                    <StackPanel Orientation="Horizontal">
+                        <fa:IconBlock
+                            Margin="0,0,8,0"
+                            VerticalAlignment="Center"
+                            FontSize="15"
+                            Foreground="White"
+                            Icon="Print" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="14"
+                            FontWeight="SemiBold"
+                            Foreground="White"
+                            Text="Print Manual" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+
+            <!-- ====================
+                 Row 1: Tab Bar
+                 ==================== -->
+            <Border
+                Grid.Row="1"
+                BorderBrush="#E5E7EB"
+                BorderThickness="0,0,0,1">
+                <StackPanel Orientation="Horizontal">
+
+                    <!-- User Manual Tab -->
+                    <StackPanel Margin="0,0,4,0">
+                        <Button
+                            Padding="4,0,24,12"
+                            Command="{Binding SelectManualTabCommand}"
+                            Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="Transparent" Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter />
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                            <StackPanel Orientation="Horizontal">
+                                <fa:IconBlock
+                                    Margin="0,0,8,0"
+                                    VerticalAlignment="Center"
+                                    FontSize="15"
+                                    Icon="BookOpen">
+                                    <fa:IconBlock.Style>
+                                        <Style TargetType="fa:IconBlock">
+                                            <Setter Property="Foreground" Value="#9CA3AF" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding SelectedTab}" Value="Manual">
+                                                    <Setter Property="Foreground" Value="#111111" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </fa:IconBlock.Style>
+                                </fa:IconBlock>
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    FontSize="14"
+                                    Text="User Manual">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="#9CA3AF" />
+                                            <Setter Property="FontWeight" Value="Normal" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding SelectedTab}" Value="Manual">
+                                                    <Setter Property="Foreground" Value="#111111" />
+                                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </StackPanel>
+                        </Button>
+                        <Border
+                            Height="2.5"
+                            Margin="0,-1,24,0"
+                            Background="#111111"
+                            CornerRadius="2">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedTab}" Value="Manual">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- FAQs Tab -->
+                    <StackPanel>
+                        <Button
+                            Padding="4,0,24,12"
+                            Command="{Binding SelectFaqTabCommand}"
+                            Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="Transparent" Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter />
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                            <StackPanel Orientation="Horizontal">
+                                <fa:IconBlock
+                                    Margin="0,0,8,0"
+                                    VerticalAlignment="Center"
+                                    FontSize="15"
+                                    Icon="QuestionCircle">
+                                    <fa:IconBlock.Style>
+                                        <Style TargetType="fa:IconBlock">
+                                            <Setter Property="Foreground" Value="#9CA3AF" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding SelectedTab}" Value="FAQ">
+                                                    <Setter Property="Foreground" Value="#111111" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </fa:IconBlock.Style>
+                                </fa:IconBlock>
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    FontSize="14"
+                                    Text="FAQs">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="#9CA3AF" />
+                                            <Setter Property="FontWeight" Value="Normal" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding SelectedTab}" Value="FAQ">
+                                                    <Setter Property="Foreground" Value="#111111" />
+                                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </StackPanel>
+                        </Button>
+                        <Border
+                            Height="2.5"
+                            Margin="0,-1,24,0"
+                            Background="#111111"
+                            CornerRadius="2">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedTab}" Value="FAQ">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                        </Border>
+                    </StackPanel>
+
+                </StackPanel>
+            </Border>
+
+            <!-- ====================
+                 Row 2: Content
+                 ==================== -->
+            <Grid Grid.Row="2" Margin="0,20,0,0">
+
+                <!-- =====================
+                     User Manual Panel
+                     ===================== -->
+                <Grid>
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedTab}" Value="Manual">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+                    <Border
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        Padding="24"
+                        Style="{StaticResource LargePanelStyle}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <!-- Search -->
+                            <Grid Grid.Row="0" Margin="0,0,0,16">
+                                <Border Height="42" Background="#F3F4F6" CornerRadius="8">
+                                    <Grid>
+                                        <fa:IconBlock
+                                            Margin="14,0,0,0"
+                                            HorizontalAlignment="Left"
+                                            VerticalAlignment="Center"
+                                            FontSize="14"
+                                            Foreground="#9CA3AF"
+                                            Icon="Search" />
+                                        <TextBox
+                                            Margin="40,0,16,0"
+                                            VerticalAlignment="Center"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            FontSize="14"
+                                            Text="{Binding ManualSearchText, UpdateSourceTrigger=PropertyChanged}" />
+                                        <TextBlock
+                                            Margin="40,0,0,0"
+                                            VerticalAlignment="Center"
+                                            FontSize="14"
+                                            Foreground="#9CA3AF"
+                                            IsHitTestVisible="False"
+                                            Text="Search user manual...">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding ManualSearchText}" Value="">
+                                                            <Setter Property="Visibility" Value="Visible" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+
+                            <!-- Empty State -->
+                            <TextBlock
+                                Grid.Row="1"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontSize="14"
+                                Foreground="#9CA3AF"
+                                Text="No topics match your search.">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding FilteredManualTopics.Count}" Value="0">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+
+                            <!-- Topics List -->
+                            <ScrollViewer
+                                Grid.Row="1"
+                                Style="{x:Null}"
+                                HorizontalScrollBarVisibility="Disabled"
+                                VerticalScrollBarVisibility="Auto">
+                                <ItemsControl ItemsSource="{Binding FilteredManualTopics}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border
+                                                Margin="0,0,0,10"
+                                                Padding="20"
+                                                BorderBrush="#E5E7EB"
+                                                BorderThickness="1"
+                                                CornerRadius="8">
+                                                <StackPanel>
+                                                    <TextBlock
+                                                        FontSize="14"
+                                                        FontWeight="SemiBold"
+                                                        Foreground="#111111"
+                                                        Text="{Binding Title}"
+                                                        TextWrapping="Wrap" />
+                                                    <TextBlock
+                                                        Margin="0,8,0,0"
+                                                        FontSize="13"
+                                                        Foreground="#555555"
+                                                        LineHeight="20"
+                                                        Text="{Binding Content}"
+                                                        TextWrapping="Wrap" />
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <!-- =====================
+                     FAQ Panel
+                     ===================== -->
+                <Grid>
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedTab}" Value="FAQ">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+                    <Border
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        Padding="24"
+                        Style="{StaticResource LargePanelStyle}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <!-- Search -->
+                            <Grid Grid.Row="0" Margin="0,0,0,16">
+                                <Border Height="42" Background="#F3F4F6" CornerRadius="8">
+                                    <Grid>
+                                        <fa:IconBlock
+                                            Margin="14,0,0,0"
+                                            HorizontalAlignment="Left"
+                                            VerticalAlignment="Center"
+                                            FontSize="14"
+                                            Foreground="#9CA3AF"
+                                            Icon="Search" />
+                                        <TextBox
+                                            Margin="40,0,16,0"
+                                            VerticalAlignment="Center"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            FontSize="14"
+                                            Text="{Binding FaqSearchText, UpdateSourceTrigger=PropertyChanged}" />
+                                        <TextBlock
+                                            Margin="40,0,0,0"
+                                            VerticalAlignment="Center"
+                                            FontSize="14"
+                                            Foreground="#9CA3AF"
+                                            IsHitTestVisible="False"
+                                            Text="Search FAQs...">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding FaqSearchText}" Value="">
+                                                            <Setter Property="Visibility" Value="Visible" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+
+                            <!-- Empty State -->
+                            <TextBlock
+                                Grid.Row="1"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontSize="14"
+                                Foreground="#9CA3AF"
+                                Text="No FAQs match your search.">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding FilteredFaqs.Count}" Value="0">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+
+                            <!-- FAQ Accordion -->
+                            <ScrollViewer
+                                Grid.Row="1"
+                                Style="{x:Null}"
+                                HorizontalScrollBarVisibility="Disabled"
+                                VerticalScrollBarVisibility="Auto">
+                                <ItemsControl ItemsSource="{Binding FilteredFaqs}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border
+                                                Margin="0,0,0,8"
+                                                BorderBrush="#E5E7EB"
+                                                BorderThickness="1"
+                                                CornerRadius="8">
+                                                <StackPanel>
+
+                                                    <!-- Question (clickable header) -->
+                                                    <Button
+                                                        HorizontalAlignment="Stretch"
+                                                        HorizontalContentAlignment="Stretch"
+                                                        Padding="16,14"
+                                                        Command="{Binding DataContext.ToggleFaqCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                        CommandParameter="{Binding}"
+                                                        Cursor="Hand">
+                                                        <Button.Template>
+                                                            <ControlTemplate TargetType="Button">
+                                                                <Border Background="Transparent" Padding="{TemplateBinding Padding}">
+                                                                    <ContentPresenter />
+                                                                </Border>
+                                                            </ControlTemplate>
+                                                        </Button.Template>
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="Auto" />
+                                                                <ColumnDefinition Width="*" />
+                                                                <ColumnDefinition Width="Auto" />
+                                                            </Grid.ColumnDefinitions>
+                                                            <fa:IconBlock
+                                                                Grid.Column="0"
+                                                                Margin="0,0,12,0"
+                                                                VerticalAlignment="Center"
+                                                                FontSize="17"
+                                                                Foreground="#223357"
+                                                                Icon="QuestionCircle" />
+                                                            <TextBlock
+                                                                Grid.Column="1"
+                                                                VerticalAlignment="Center"
+                                                                FontSize="14"
+                                                                FontWeight="SemiBold"
+                                                                Foreground="#111111"
+                                                                Text="{Binding Question}"
+                                                                TextWrapping="Wrap" />
+                                                            <fa:IconBlock
+                                                                Grid.Column="2"
+                                                                Margin="12,0,0,0"
+                                                                VerticalAlignment="Center"
+                                                                FontSize="13"
+                                                                Foreground="#6B7280">
+                                                                <fa:IconBlock.Style>
+                                                                    <Style TargetType="fa:IconBlock">
+                                                                        <Setter Property="Icon" Value="ChevronRight" />
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding IsExpanded}" Value="True">
+                                                                                <Setter Property="Icon" Value="ChevronDown" />
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </fa:IconBlock.Style>
+                                                            </fa:IconBlock>
+                                                        </Grid>
+                                                    </Button>
+
+                                                    <!-- Answer (collapsed by default) -->
+                                                    <TextBlock
+                                                        Margin="45,0,16,14"
+                                                        FontSize="13"
+                                                        Foreground="#6B7280"
+                                                        LineHeight="20"
+                                                        Text="{Binding Answer}"
+                                                        TextWrapping="Wrap">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsExpanded}" Value="True">
+                                                                        <Setter Property="Visibility" Value="Visible" />
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+            </Grid>
+
+        </Grid>
     </Grid>
 </UserControl>

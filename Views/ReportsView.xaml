@@ -1,0 +1,798 @@
+<UserControl
+    x:Class="CruzNeryClinic.Views.ReportsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DesignHeight="900"
+    d:DesignWidth="1300"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+
+        <!-- ── Tab button (unselected state) ── -->
+        <Style x:Key="ReportTabButtonStyle" TargetType="Button">
+            <Setter Property="Height" Value="92" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderBrush" Value="#E0E0E0" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#555555" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="Bd"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="10">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.82" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ── Filter button ── -->
+        <Style x:Key="FilterButtonStyle" TargetType="Button">
+            <Setter Property="Height" Value="34" />
+            <Setter Property="Padding" Value="16,0" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderBrush" Value="#CCCCCC" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#444444" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="Bd"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="17"
+                            Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.80" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Chart card border -->
+        <Style x:Key="ChartCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="BorderBrush" Value="#E8E8E8" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="16,12" />
+        </Style>
+
+        <!-- Table section header -->
+        <Style x:Key="SectionHeaderStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Background="{StaticResource ScreenBackgroundBrush}">
+        <Grid Margin="26,24,18,12">
+            <Grid.RowDefinitions>
+                <!-- Header -->
+                <RowDefinition Height="Auto" />
+                <!-- Tab buttons -->
+                <RowDefinition Height="Auto" />
+                <!-- Filter bar -->
+                <RowDefinition Height="Auto" />
+                <!-- Content (charts + splitter + table) -->
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- ═══════════════════════════════ HEADER ═══════════════════════════════ -->
+            <Grid Grid.Row="0" Margin="0,0,0,16">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBlock
+                    Grid.Row="0"
+                    FontSize="28"
+                    FontWeight="Bold"
+                    Text="Reports and Analytics" />
+                <TextBlock
+                    Grid.Row="1"
+                    FontSize="15"
+                    Foreground="#7A7A7A"
+                    Margin="0,2,0,0"
+                    Text="Comprehensive clinic reports and data visualization" />
+            </Grid>
+
+            <!-- ═══════════════════════════════ TAB BUTTONS ══════════════════════════ -->
+            <!-- Each button is its own card; gap columns create visible spacing between them -->
+            <Grid Grid.Row="1" Margin="0,0,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="12" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="12" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="12" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Patient Visits -->
+                <Button Grid.Column="0" Command="{Binding SelectPatientVisitsCommand}">
+                    <Button.Style>
+                        <Style BasedOn="{StaticResource ReportTabButtonStyle}" TargetType="Button">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsPatientVisitsSelected}" Value="True">
+                                    <Setter Property="Background" Value="#223357" />
+                                    <Setter Property="Foreground" Value="White" />
+                                    <Setter Property="BorderBrush" Value="#223357" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <fa:IconBlock
+                            HorizontalAlignment="Center"
+                            FontSize="28"
+                            Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                            Icon="Users" />
+                        <TextBlock
+                            Margin="0,7,0,0"
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                            HorizontalAlignment="Center"
+                            Text="Patient Visits" />
+                    </StackPanel>
+                </Button>
+
+                <!-- Transaction Reports -->
+                <Button Grid.Column="2" Command="{Binding SelectTransactionReportsCommand}">
+                    <Button.Style>
+                        <Style BasedOn="{StaticResource ReportTabButtonStyle}" TargetType="Button">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsTransactionReportsSelected}" Value="True">
+                                    <Setter Property="Background" Value="#223357" />
+                                    <Setter Property="Foreground" Value="White" />
+                                    <Setter Property="BorderBrush" Value="#223357" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <fa:IconBlock
+                            HorizontalAlignment="Center"
+                            FontSize="28"
+                            Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                            Icon="PesoSign" />
+                        <TextBlock
+                            Margin="0,7,0,0"
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                            HorizontalAlignment="Center"
+                            Text="Transaction Reports" />
+                    </StackPanel>
+                </Button>
+
+                <!-- Inventory Reports -->
+                <Button Grid.Column="4" Command="{Binding SelectInventoryReportsCommand}">
+                    <Button.Style>
+                        <Style BasedOn="{StaticResource ReportTabButtonStyle}" TargetType="Button">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsInventoryReportsSelected}" Value="True">
+                                    <Setter Property="Background" Value="#223357" />
+                                    <Setter Property="Foreground" Value="White" />
+                                    <Setter Property="BorderBrush" Value="#223357" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <fa:IconBlock
+                            HorizontalAlignment="Center"
+                            FontSize="28"
+                            Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                            Icon="BoxOpen" />
+                        <TextBlock
+                            Margin="0,7,0,0"
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                            HorizontalAlignment="Center"
+                            Text="Inventory Reports" />
+                    </StackPanel>
+                </Button>
+
+                <!-- User Activity Log -->
+                <Button Grid.Column="6" Command="{Binding SelectUserActivityLogCommand}">
+                    <Button.Style>
+                        <Style BasedOn="{StaticResource ReportTabButtonStyle}" TargetType="Button">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsUserActivityLogSelected}" Value="True">
+                                    <Setter Property="Background" Value="#223357" />
+                                    <Setter Property="Foreground" Value="White" />
+                                    <Setter Property="BorderBrush" Value="#223357" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <fa:IconBlock
+                            HorizontalAlignment="Center"
+                            FontSize="28"
+                            Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                            Icon="HeartPulse" />
+                        <TextBlock
+                            Margin="0,7,0,0"
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                            HorizontalAlignment="Center"
+                            Text="User Activity Log" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+
+            <!-- ═══════════════════════════════ FILTER BAR ═══════════════════════════ -->
+            <Border
+                Grid.Row="2"
+                Margin="0,0,0,10"
+                Padding="16,10,16,10"
+                Background="White"
+                BorderBrush="#E0E0E0"
+                BorderThickness="1"
+                CornerRadius="10">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <!-- ── Row 0: Controls ── -->
+                    <Grid Grid.Row="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Filter icon -->
+                        <fa:IconBlock
+                            Grid.Column="0"
+                            Margin="0,0,8,0"
+                            FontSize="14"
+                            Foreground="#555555"
+                            Icon="Filter"
+                            VerticalAlignment="Center" />
+
+                        <!-- "Quick Filter:" -->
+                        <TextBlock
+                            Grid.Column="1"
+                            Margin="0,0,12,0"
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            Foreground="#444444"
+                            Text="Quick Filter:"
+                            VerticalAlignment="Center" />
+
+                        <!-- This Month -->
+                        <Button
+                            Grid.Column="2"
+                            Margin="0,0,6,0"
+                            Command="{Binding ApplyThisMonthCommand}"
+                            Content="This Month">
+                            <Button.Style>
+                                <Style BasedOn="{StaticResource FilterButtonStyle}" TargetType="Button">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsThisMonthSelected}" Value="True">
+                                            <Setter Property="Background" Value="#223357" />
+                                            <Setter Property="Foreground" Value="White" />
+                                            <Setter Property="BorderBrush" Value="#223357" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+                        <!-- This Year -->
+                        <Button
+                            Grid.Column="3"
+                            Margin="0,0,6,0"
+                            Command="{Binding ApplyThisYearCommand}"
+                            Content="This Year">
+                            <Button.Style>
+                                <Style BasedOn="{StaticResource FilterButtonStyle}" TargetType="Button">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsThisYearSelected}" Value="True">
+                                            <Setter Property="Background" Value="#223357" />
+                                            <Setter Property="Foreground" Value="White" />
+                                            <Setter Property="BorderBrush" Value="#223357" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+                        <!-- Custom Range -->
+                        <Button
+                            Grid.Column="4"
+                            Command="{Binding ApplyCustomRangeCommand}"
+                            Content="Custom Range">
+                            <Button.Style>
+                                <Style BasedOn="{StaticResource FilterButtonStyle}" TargetType="Button">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsCustomRangeSelected}" Value="True">
+                                            <Setter Property="Background" Value="#223357" />
+                                            <Setter Property="Foreground" Value="White" />
+                                            <Setter Property="BorderBrush" Value="#223357" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+                        <!-- Spacer -->
+
+                        <!-- Calendar icon -->
+                        <fa:IconBlock
+                            Grid.Column="6"
+                            Margin="0,0,8,0"
+                            FontSize="14"
+                            Foreground="#555555"
+                            Icon="CalendarDays"
+                            VerticalAlignment="Center" />
+
+                        <!-- "Data Range:" label -->
+                        <TextBlock
+                            Grid.Column="7"
+                            Margin="0,0,10,0"
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            Foreground="#444444"
+                            Text="Data Range:"
+                            VerticalAlignment="Center" />
+
+                        <!-- Adaptive date controls -->
+                        <Grid Grid.Column="8">
+
+                            <!-- This Month: Month + Year ComboBoxes -->
+                            <StackPanel Orientation="Horizontal">
+                                <StackPanel.Style>
+                                    <Style TargetType="StackPanel">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsThisMonthSelected}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </StackPanel.Style>
+                                <ComboBox
+                                    Width="130"
+                                    Margin="0,0,8,0"
+                                    FontSize="12"
+                                    VerticalContentAlignment="Center"
+                                    ItemsSource="{Binding MonthNames}"
+                                    SelectedIndex="{Binding SelectedFilterMonthIndex, Mode=TwoWay}" />
+                                <ComboBox
+                                    Width="75"
+                                    FontSize="12"
+                                    VerticalContentAlignment="Center"
+                                    ItemsSource="{Binding AvailableYears}"
+                                    SelectedItem="{Binding SelectedFilterYear, Mode=TwoWay}" />
+                            </StackPanel>
+
+                            <!-- This Year: Year ComboBox only -->
+                            <StackPanel Orientation="Horizontal">
+                                <StackPanel.Style>
+                                    <Style TargetType="StackPanel">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsThisYearSelected}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </StackPanel.Style>
+                                <ComboBox
+                                    Width="75"
+                                    FontSize="12"
+                                    VerticalContentAlignment="Center"
+                                    ItemsSource="{Binding AvailableYears}"
+                                    SelectedItem="{Binding SelectedFilterYear, Mode=TwoWay}" />
+                            </StackPanel>
+
+                            <!-- Custom Range: From / To date pickers -->
+                            <StackPanel Orientation="Horizontal">
+                                <StackPanel.Style>
+                                    <Style TargetType="StackPanel">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsCustomRangeSelected}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </StackPanel.Style>
+                                <TextBlock Margin="0,0,6,0" FontSize="12" Foreground="#888888" Text="From:" VerticalAlignment="Center" />
+                                <DatePicker Width="130" Margin="0,0,10,0" FontSize="12" SelectedDate="{Binding FilterFromDate, Mode=TwoWay}" />
+                                <TextBlock Margin="0,0,6,0" FontSize="12" Foreground="#888888" Text="To:" VerticalAlignment="Center" />
+                                <DatePicker Width="130" FontSize="12" SelectedDate="{Binding FilterToDate, Mode=TwoWay}" />
+                            </StackPanel>
+
+                        </Grid>
+
+                    </Grid>
+
+                    <!-- ── Row 1: Showing label (bottom-right) ── -->
+                    <TextBlock
+                        Grid.Row="1"
+                        Margin="0,6,0,0"
+                        FontSize="12"
+                        Foreground="#888888"
+                        HorizontalAlignment="Right"
+                        Text="{Binding ShowingText}" />
+                </Grid>
+            </Border>
+
+            <!-- ═══════════════════════════════ CONTENT ══════════════════════════════ -->
+            <Grid Grid.Row="3">
+                <Grid.RowDefinitions>
+                    <!-- Charts area -->
+                    <RowDefinition Height="2*" MinHeight="160" />
+                    <!-- GridSplitter -->
+                    <RowDefinition Height="8" />
+                    <!-- Table area -->
+                    <RowDefinition Height="3*" MinHeight="160" />
+                </Grid.RowDefinitions>
+
+                <!-- ─────────────────── CHARTS AREA (Row 0) ─────────────────── -->
+
+                <!-- Patient Visits Charts -->
+                <Border
+                    Grid.Row="0"
+                    Style="{StaticResource ChartCardStyle}"
+                    Visibility="{Binding IsPatientVisitsSelected, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <TextBlock
+                            Grid.Row="0"
+                            FontSize="15"
+                            FontWeight="SemiBold"
+                            Margin="0,0,0,6"
+                            Text="Patients Visit Trend" />
+                        <Canvas
+                            x:Name="PatientVisitCanvas"
+                            Grid.Row="1"
+                            ClipToBounds="True"
+                            SizeChanged="PatientVisitCanvas_SizeChanged" />
+                    </Grid>
+                </Border>
+
+                <!-- Transaction Charts (two side-by-side) -->
+                <Grid
+                    Grid.Row="0"
+                    Visibility="{Binding IsTransactionReportsSelected, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Style="{StaticResource ChartCardStyle}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <TextBlock
+                                Grid.Row="0"
+                                FontSize="15"
+                                FontWeight="SemiBold"
+                                Margin="0,0,0,6"
+                                Text="Revenue Trend" />
+                            <Canvas
+                                x:Name="RevenueTrendCanvas"
+                                Grid.Row="1"
+                                ClipToBounds="True"
+                                SizeChanged="RevenueTrendCanvas_SizeChanged" />
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Column="2" Style="{StaticResource ChartCardStyle}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <TextBlock
+                                Grid.Row="0"
+                                FontSize="15"
+                                FontWeight="SemiBold"
+                                Margin="0,0,0,6"
+                                Text="Daily Transactions" />
+                            <Canvas
+                                x:Name="DailyTransactionsCanvas"
+                                Grid.Row="1"
+                                ClipToBounds="True"
+                                SizeChanged="DailyTransactionsCanvas_SizeChanged" />
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <!-- Inventory Chart -->
+                <Border
+                    Grid.Row="0"
+                    Style="{StaticResource ChartCardStyle}"
+                    Visibility="{Binding IsInventoryReportsSelected, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <TextBlock
+                            Grid.Row="0"
+                            FontSize="15"
+                            FontWeight="SemiBold"
+                            Margin="0,0,0,6"
+                            Text="Stock Levels vs Threshold" />
+                        <Canvas
+                            x:Name="InventoryBarCanvas"
+                            Grid.Row="1"
+                            ClipToBounds="True"
+                            SizeChanged="InventoryBarCanvas_SizeChanged" />
+                    </Grid>
+                </Border>
+
+                <!-- Activity Log Charts (two side-by-side) -->
+                <Grid
+                    Grid.Row="0"
+                    Visibility="{Binding IsUserActivityLogSelected, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Style="{StaticResource ChartCardStyle}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <TextBlock
+                                Grid.Row="0"
+                                FontSize="15"
+                                FontWeight="SemiBold"
+                                Margin="0,0,0,6"
+                                Text="Activity Distribution by Type" />
+                            <Canvas
+                                x:Name="ActivityPieCanvas"
+                                Grid.Row="1"
+                                ClipToBounds="True"
+                                SizeChanged="ActivityPieCanvas_SizeChanged" />
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Column="2" Style="{StaticResource ChartCardStyle}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <TextBlock
+                                Grid.Row="0"
+                                FontSize="15"
+                                FontWeight="SemiBold"
+                                Margin="0,0,0,6"
+                                Text="Activity by Module" />
+                            <Canvas
+                                x:Name="ActivityModuleCanvas"
+                                Grid.Row="1"
+                                ClipToBounds="True"
+                                SizeChanged="ActivityModuleCanvas_SizeChanged" />
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <!-- ─────────────── GRID SPLITTER (Row 1) ─────────────── -->
+                <GridSplitter
+                    Grid.Row="1"
+                    Height="6"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"
+                    Background="#D4D4D4"
+                    Cursor="SizeNS"
+                    ShowsPreview="True" />
+
+                <!-- ─────────────────── TABLE AREA (Row 2) ─────────────────── -->
+                <Grid Grid.Row="2">
+
+                    <!-- Patient Visits Table -->
+                    <Grid Visibility="{Binding IsPatientVisitsSelected, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <TextBlock
+                            Grid.Row="0"
+                            Style="{StaticResource SectionHeaderStyle}"
+                            Text="Patient Visits Report" />
+                        <Border Grid.Row="1" Style="{StaticResource DashboardTableContainerStyle}">
+                            <DataGrid
+                                ItemsSource="{Binding PatientVisitsItems}"
+                                Style="{StaticResource DashboardDataGridStyle}"
+                                ColumnHeaderStyle="{StaticResource DashboardDataGridColumnHeaderStyle}"
+                                CellStyle="{StaticResource DashboardDataGridCellStyle}"
+                                HorizontalScrollBarVisibility="Auto"
+                                VerticalScrollBarVisibility="Auto">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="1.2*" MinWidth="100" />
+                                    <DataGridTemplateColumn Header="Patient ID" Width="1*" MinWidth="80">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding PatientCode}" Foreground="#2F98D0" FontSize="13" VerticalAlignment="Center" Margin="6,0" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTextColumn Header="Patient Name" Binding="{Binding PatientName}" Width="2*" MinWidth="140" />
+                                    <DataGridTextColumn Header="Visit Type" Binding="{Binding VisitType}" Width="1.2*" MinWidth="100" />
+                                    <DataGridTextColumn Header="Service" Binding="{Binding Service}" Width="1.5*" MinWidth="120" />
+                                    <DataGridTextColumn Header="Dentist" Binding="{Binding Dentist}" Width="1.5*" MinWidth="120" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Border>
+                    </Grid>
+
+                    <!-- Transaction Table -->
+                    <Grid Visibility="{Binding IsTransactionReportsSelected, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <TextBlock
+                            Grid.Row="0"
+                            Style="{StaticResource SectionHeaderStyle}"
+                            Text="Transaction Report" />
+                        <Border Grid.Row="1" Style="{StaticResource DashboardTableContainerStyle}">
+                            <DataGrid
+                                ItemsSource="{Binding TransactionItems}"
+                                Style="{StaticResource DashboardDataGridStyle}"
+                                ColumnHeaderStyle="{StaticResource DashboardDataGridColumnHeaderStyle}"
+                                CellStyle="{StaticResource DashboardDataGridCellStyle}"
+                                HorizontalScrollBarVisibility="Auto"
+                                VerticalScrollBarVisibility="Auto">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="1.2*" MinWidth="100" />
+                                    <DataGridTextColumn Header="Receipt No." Binding="{Binding ReceiptNumber}" Width="1.8*" MinWidth="150" />
+                                    <DataGridTemplateColumn Header="Patient ID" Width="1*" MinWidth="80">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding PatientCode}" Foreground="#2F98D0" FontSize="13" VerticalAlignment="Center" Margin="6,0" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTextColumn Header="Patient Name" Binding="{Binding PatientName}" Width="2*" MinWidth="140" />
+                                    <DataGridTextColumn Header="Service" Binding="{Binding Service}" Width="1.4*" MinWidth="120" />
+                                    <DataGridTextColumn Header="Amount" Binding="{Binding Amount, StringFormat='₱ {0:N2}'}" Width="1.2*" MinWidth="100" />
+                                    <DataGridTextColumn Header="Payment Method" Binding="{Binding PaymentMethod}" Width="1.4*" MinWidth="120" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Border>
+                    </Grid>
+
+                    <!-- Inventory Table -->
+                    <Grid Visibility="{Binding IsInventoryReportsSelected, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <TextBlock
+                            Grid.Row="0"
+                            Style="{StaticResource SectionHeaderStyle}"
+                            Text="Inventory Reports" />
+                        <Border Grid.Row="1" Style="{StaticResource DashboardTableContainerStyle}">
+                            <DataGrid
+                                ItemsSource="{Binding InventoryItems}"
+                                Style="{StaticResource DashboardDataGridStyle}"
+                                ColumnHeaderStyle="{StaticResource DashboardDataGridColumnHeaderStyle}"
+                                CellStyle="{StaticResource DashboardDataGridCellStyle}"
+                                HorizontalScrollBarVisibility="Auto"
+                                VerticalScrollBarVisibility="Auto">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Item Name" Binding="{Binding ItemName}" Width="2.5*" MinWidth="160" />
+                                    <DataGridTextColumn Header="Current Stock" Binding="{Binding CurrentStock}" Width="1.2*" MinWidth="110" />
+                                    <DataGridTextColumn Header="Threshold" Binding="{Binding Threshold}" Width="1*" MinWidth="90" />
+                                    <DataGridTextColumn Header="Last Restocked" Binding="{Binding LastRestocked}" Width="1.5*" MinWidth="130" />
+                                    <DataGridTemplateColumn Header="Status" Width="1.2*" MinWidth="100">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock
+                                                    Text="{Binding Status}"
+                                                    Foreground="{Binding StatusColor}"
+                                                    FontSize="13"
+                                                    FontWeight="SemiBold"
+                                                    VerticalAlignment="Center"
+                                                    Margin="6,0" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Border>
+                    </Grid>
+
+                    <!-- Activity Log Table -->
+                    <Grid Visibility="{Binding IsUserActivityLogSelected, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <TextBlock
+                            Grid.Row="0"
+                            Style="{StaticResource SectionHeaderStyle}"
+                            Text="User Activity Log Reports" />
+                        <Border Grid.Row="1" Style="{StaticResource DashboardTableContainerStyle}">
+                            <DataGrid
+                                ItemsSource="{Binding ActivityLogItems}"
+                                Style="{StaticResource DashboardDataGridStyle}"
+                                ColumnHeaderStyle="{StaticResource DashboardDataGridColumnHeaderStyle}"
+                                CellStyle="{StaticResource DashboardDataGridCellStyle}"
+                                HorizontalScrollBarVisibility="Auto"
+                                VerticalScrollBarVisibility="Auto">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Timestamp" Binding="{Binding Timestamp}" Width="1.8*" MinWidth="150" />
+                                    <DataGridTextColumn Header="Role" Binding="{Binding Role}" Width="1*" MinWidth="80" />
+                                    <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="1.2*" MinWidth="100" />
+                                    <DataGridTemplateColumn Header="Action" Width="1*" MinWidth="90">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock
+                                                    Text="{Binding Action}"
+                                                    Foreground="{Binding ActionColor}"
+                                                    FontSize="13"
+                                                    FontWeight="SemiBold"
+                                                    VerticalAlignment="Center"
+                                                    Margin="6,0" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTextColumn Header="Module" Binding="{Binding Module}" Width="1.4*" MinWidth="110" />
+                                    <DataGridTextColumn Header="Details" Binding="{Binding Details}" Width="3*" MinWidth="200" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

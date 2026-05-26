@@ -1,24 +1,25 @@
+using System.ComponentModel;
+
 namespace CruzNeryClinic.Models
 {
-    // Represents one frequently asked question in the Help screen.
-    public class FaqItem
+    public class FaqItem : INotifyPropertyChanged
     {
-        #region Properties
+        private bool _isExpanded;
 
-        // TODO:
-        // Set this to the question shown to the user.
-        // Example: "How do I reset my password?"
         public string Question { get; set; } = string.Empty;
-
-        // TODO:
-        // Set this to the answer/instruction for the question.
         public string Answer { get; set; } = string.Empty;
 
-        // TODO:
-        // Optional later:
-        // Add DisplayOrder if FAQs need sorting.
-        // public int DisplayOrder { get; set; }
+        public bool IsExpanded
+        {
+            get => _isExpanded;
+            set
+            {
+                if (_isExpanded == value) return;
+                _isExpanded = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsExpanded)));
+            }
+        }
 
-        #endregion
+        public event PropertyChangedEventHandler? PropertyChanged;
     }
 }
