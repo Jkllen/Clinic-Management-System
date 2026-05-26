@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using System.Globalization;
 
 namespace CruzNeryClinic.Services
 {
@@ -87,6 +88,53 @@ namespace CruzNeryClinic.Services
             }
         }
 
+        public static string EncryptDecimal(decimal value)
+        {
+            return EncryptString(value.ToString(CultureInfo.InvariantCulture));
+        }
+
+        public static decimal DecryptDecimal(string? encryptedText, decimal fallback = 0m)
+        {
+            if (string.IsNullOrWhiteSpace(encryptedText))
+                return fallback;
+
+            string decryptedText = DecryptString(encryptedText);
+
+            if (decimal.TryParse(
+                    decryptedText,
+                    NumberStyles.Any,
+                    CultureInfo.InvariantCulture,
+                    out decimal result))
+            {
+                return result;
+            }
+
+            return fallback;
+        }
+
+        public static string EncryptInt(int value)
+        {
+            return EncryptString(value.ToString(CultureInfo.InvariantCulture));
+        }
+
+        public static int DecryptInt(string? encryptedText, int fallback = 0)
+        {
+            if (string.IsNullOrWhiteSpace(encryptedText))
+                return fallback;
+
+            string decryptedText = DecryptString(encryptedText);
+
+            if (int.TryParse(
+                    decryptedText,
+                    NumberStyles.Any,
+                    CultureInfo.InvariantCulture,
+                    out int result))
+            {
+                return result;
+            }
+
+            return fallback;
+        }
         #endregion
 
         #region Key Management

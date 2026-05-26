@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
+    xmlns:converters="clr-namespace:CruzNeryClinic.Converters"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     d:DesignHeight="520"
     d:DesignWidth="1200"
@@ -11,6 +12,7 @@
 
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converters:PesoCurrencyConverter x:Key="PesoCurrencyConverter" />
     </UserControl.Resources>
 
     <Grid Margin="0">
@@ -404,7 +406,7 @@
                                 Height="46"
                                 Margin="0,5,0,0"
                                 Style="{StaticResource ModernTextBoxStyle}"
-                                Text="{Binding BalancePaymentAmount, UpdateSourceTrigger=LostFocus, StringFormat={}{0:N2}}" />
+                                Text="{Binding BalancePaymentAmount, Converter={StaticResource PesoCurrencyConverter}, UpdateSourceTrigger=LostFocus}" />
                         </StackPanel>
 
                         <!-- Service / Treatment -->

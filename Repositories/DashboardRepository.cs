@@ -1,8 +1,10 @@
 using CruzNeryClinic.Data;
 using CruzNeryClinic.Models.Dashboard;
+using CruzNeryClinic.Services;
 using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace CruzNeryClinic.Repositories
 {
@@ -37,13 +39,8 @@ namespace CruzNeryClinic.Repositories
                     WHERE PaymentStatus IN ('Unpaid', 'Partial');"
                 ),
 
-                TotalUnpaidBalance = GetDecimal(
-                    connection,
-                    @"
-                    SELECT IFNULL(SUM(RemainingBalance), 0)
-                    FROM BillingTransactions
-                    WHERE PaymentStatus IN ('Unpaid', 'Partial');"
-                ),
+                // RemainingBalance is encrypted, so it must be summed in C# after decryption.
+                TotalUnpaidBalance = GetTotalUnpaidBalance(connection),
 
                 LowStockItemCount = Count(
                     connection,
@@ -184,15 +181,6 @@ LIMIT @Limit;";
             return queue;
         }
 
-        // Formats patient name as: LastName, FirstName M.
-        private string FormatPatientName(string firstName, string middleName, string lastName)
-        {
-            string middleInitial = string.IsNullOrWhiteSpace(middleName)
-                ? string.Empty
-                : $" {middleName.Trim()[0]}.";
-
-            return $"{lastName}, {firstName}{middleInitial}";
-        }
         public List<DashboardTransactionItem> GetRecentPatientTransactions(int limit = 5)
         {
             List<DashboardTransactionItem> transactions = new();
@@ -237,13 +225,48 @@ LIMIT @Limit;";
                     Time = transactionDate.ToString("hh:mm tt"),
                     PatientCode = reader["PatientCode"].ToString() ?? string.Empty,
                     PatientName = patientName,
-                    Service = reader["ServiceName"].ToString() ?? string.Empty,
-                    Amount = Convert.ToDecimal(reader["AmountPaid"]),
+                    Service = SafeGetSecureString(reader, "ServiceName"),
+                    Amount = SafeGetSecureDecimal(reader, "AmountPaid"),
                     PaymentStatus = reader["PaymentStatus"].ToString() ?? string.Empty
                 });
             }
 
             return transactions;
+        }
+
+        // Formats patient name as: LastName, FirstName M.
+        private string FormatPatientName(string firstName, string middleName, string lastName)
+        {
+            string middleInitial = string.IsNullOrWhiteSpace(middleName)
+                ? string.Empty
+                : $" {middleName.Trim()[0]}.";
+
+            return $"{lastName}, {firstName}{middleInitial}";
+        }
+
+        private decimal GetTotalUnpaidBalance(SqliteConnection connection)
+        {
+            decimal total = 0m;
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+SELECT RemainingBalance, PaymentStatus
+FROM BillingTransactions
+WHERE PaymentStatus IN ('Unpaid', 'Partial');";
+
+            using SqliteDataReader reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                string paymentStatus = reader["PaymentStatus"].ToString() ?? string.Empty;
+
+                if (paymentStatus != "Unpaid" && paymentStatus != "Partial")
+                    continue;
+
+                total += SafeGetSecureDecimal(reader, "RemainingBalance");
+            }
+
+            return total;
         }
 
         private int Count(SqliteConnection connection, string sql)
@@ -255,17 +278,42 @@ LIMIT @Limit;";
             return (int)count;
         }
 
-        private decimal GetDecimal(SqliteConnection connection, string sql)
+        private static string SafeGetRawString(SqliteDataReader reader, string columnName, string fallback = "")
         {
-            using SqliteCommand command = connection.CreateCommand();
-            command.CommandText = sql;
+            int ordinal = reader.GetOrdinal(columnName);
 
-            object? result = command.ExecuteScalar();
+            if (reader.IsDBNull(ordinal))
+                return fallback;
 
-            if (result == null || result == DBNull.Value)
-                return 0;
+            return reader.GetValue(ordinal)?.ToString() ?? fallback;
+        }
 
-            return Convert.ToDecimal(result);
+        private static string SafeGetSecureString(SqliteDataReader reader, string columnName, string fallback = "")
+        {
+            string rawValue = SafeGetRawString(reader, columnName, fallback);
+            return CryptoService.DecryptString(rawValue);
+        }
+
+        private static decimal SafeGetSecureDecimal(SqliteDataReader reader, string columnName, decimal fallback = 0m)
+        {
+            string rawValue = SafeGetRawString(reader, columnName);
+
+            if (string.IsNullOrWhiteSpace(rawValue))
+                return fallback;
+
+            if (rawValue.StartsWith("ENC:", StringComparison.Ordinal))
+                return CryptoService.DecryptDecimal(rawValue, fallback);
+
+            if (decimal.TryParse(
+                    rawValue,
+                    NumberStyles.Any,
+                    CultureInfo.InvariantCulture,
+                    out decimal result))
+            {
+                return result;
+            }
+
+            return fallback;
         }
     }
 }
