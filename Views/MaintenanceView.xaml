@@ -1,0 +1,817 @@
+<UserControl
+    x:Class="CruzNeryClinic.Views.MaintenanceView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DesignHeight="900"
+    d:DesignWidth="1400"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+
+        <!--  Small dashboard card style  -->
+        <Style x:Key="MaintenanceStatCardStyle" TargetType="{x:Type Border}">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderBrush" Value="#D8D8D8" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Padding" Value="28,18" />
+        </Style>
+
+        <!--  Section card style  -->
+        <Style x:Key="MaintenanceSectionCardStyle" TargetType="{x:Type Border}">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderBrush" Value="#D8D8D8" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Padding" Value="28,18" />
+        </Style>
+
+        <!--  Small icon button style  -->
+        <Style x:Key="MaintenanceIconButtonStyle" TargetType="{x:Type Button}">
+            <Setter Property="Width" Value="44" />
+            <Setter Property="Height" Value="40" />
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderBrush" Value="#DDDDDD" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!--  Restore red outline button  -->
+        <Style x:Key="DangerOutlineButtonStyle" TargetType="{x:Type Button}">
+            <Setter Property="Height" Value="42" />
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderBrush" Value="#FF4B4B" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#FF4B4B" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="5">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Background="#FAF9F6">
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled">
+
+            <ScrollViewer.Resources>
+                <Style BasedOn="{StaticResource BlueDataGridScrollBarStyle}" TargetType="{x:Type ScrollBar}" />
+            </ScrollViewer.Resources>
+
+            <StackPanel Margin="28,14,28,20">
+
+                <!--
+                    =====================================================
+                    PAGE HEADER
+                    =====================================================
+                -->
+                <StackPanel>
+                    <TextBlock
+                        FontSize="30"
+                        FontWeight="Bold"
+                        Foreground="#111111"
+                        Text="Maintenance" />
+
+                    <TextBlock
+                        Margin="0,5,0,0"
+                        FontSize="22"
+                        Foreground="#777777"
+                        Text="Backup &amp; Recovery" />
+
+                    <TextBlock
+                        Margin="0,10,0,0"
+                        FontSize="14"
+                        Foreground="#777777"
+                        Text="Local network data protection and restoration" />
+                </StackPanel>
+
+                <!--
+                    =====================================================
+                    TOP STAT CARDS
+                    =====================================================
+                -->
+                <Grid Margin="0,15,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="28" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="28" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!--  Last Backup  -->
+                    <Border Grid.Column="0" Style="{StaticResource MaintenanceStatCardStyle}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock
+                                    FontSize="18"
+                                    FontWeight="Bold"
+                                    Foreground="#111111"
+                                    Text="Last Backup" />
+
+                                <TextBlock
+                                    Margin="0,14,0,0"
+                                    FontSize="36"
+                                    Foreground="#111111"
+                                    Text="{Binding LastBackupTime}" />
+
+                                <TextBlock
+                                    Margin="0,4,0,0"
+                                    FontSize="16"
+                                    Foreground="#00B020"
+                                    Text="{Binding LastBackupDate}" />
+                            </StackPanel>
+
+                            <fa:IconBlock
+                                Grid.Column="1"
+                                VerticalAlignment="Top"
+                                FontSize="24"
+                                Foreground="#9A9A9A"
+                                Icon="Clock" />
+                        </Grid>
+                    </Border>
+
+                    <!--  Total Backups  -->
+                    <Border Grid.Column="2" Style="{StaticResource MaintenanceStatCardStyle}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock
+                                    FontSize="18"
+                                    FontWeight="Bold"
+                                    Foreground="#111111"
+                                    Text="Total Backups" />
+
+                                <TextBlock
+                                    Margin="0,14,0,0"
+                                    FontSize="38"
+                                    Foreground="#111111"
+                                    Text="{Binding TotalBackupsDisplay}" />
+
+                                <TextBlock
+                                    Margin="0,4,0,0"
+                                    FontSize="16"
+                                    Foreground="#999999"
+                                    Text="Local backups" />
+                            </StackPanel>
+
+                            <fa:IconBlock
+                                Grid.Column="1"
+                                VerticalAlignment="Top"
+                                FontSize="25"
+                                Foreground="#9A9A9A"
+                                Icon="Database" />
+                        </Grid>
+                    </Border>
+
+                    <!--  Backup Location  -->
+                    <Border Grid.Column="4" Style="{StaticResource MaintenanceStatCardStyle}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock
+                                    FontSize="18"
+                                    FontWeight="Bold"
+                                    Foreground="#111111"
+                                    Text="Backup Location" />
+
+                                <TextBlock
+                                    Margin="0,15,0,0"
+                                    FontSize="18"
+                                    Foreground="#111111"
+                                    Text="{Binding BackupLocationDisplay}"
+                                    TextTrimming="CharacterEllipsis" />
+
+                                <TextBlock
+                                    Margin="0,20,0,0"
+                                    FontSize="12"
+                                    Foreground="#999999"
+                                    Text="Local path" />
+                            </StackPanel>
+
+                            <fa:IconBlock
+                                Grid.Column="1"
+                                VerticalAlignment="Top"
+                                FontSize="25"
+                                Foreground="#9A9A9A"
+                                Icon="Server" />
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <!--
+                    =====================================================
+                    CONFIGURATION + MANUAL BACKUP RESTORE
+                    =====================================================
+                -->
+                <Grid Margin="0,15,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.08*" />
+                        <ColumnDefinition Width="28" />
+                        <ColumnDefinition Width="1*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!--  Backup Configuration  -->
+                    <Border Grid.Column="0" Style="{StaticResource MaintenanceSectionCardStyle}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="22" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="16" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <TextBlock
+                                Grid.Row="0"
+                                FontSize="18"
+                                FontWeight="SemiBold"
+                                Foreground="#111111"
+                                Text="Backup Configuration" />
+
+                            <Grid Grid.Row="2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1.25*" />
+                                    <ColumnDefinition Width="24" />
+                                    <ColumnDefinition Width="0.85*" />
+                                </Grid.ColumnDefinitions>
+
+                                <!--  Primary Backup Location  -->
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock
+                                        FontSize="14"
+                                        FontWeight="Bold"
+                                        Foreground="#111111"
+                                        Text="Primary Backup Location *" />
+
+                                    <Grid Margin="0,10,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="8" />
+                                            <ColumnDefinition Width="44" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBox
+                                            Grid.Column="0"
+                                            Height="42"
+                                            IsReadOnly="True"
+                                            Style="{StaticResource ModernTextBoxStyle}"
+                                            Tag="Set primary backup location..."
+                                            Text="{Binding PrimaryBackupLocation}" />
+
+                                        <Button
+                                            Grid.Column="2"
+                                            Command="{Binding BrowsePrimaryBackupLocationCommand}"
+                                            Style="{StaticResource MaintenanceIconButtonStyle}">
+                                            <fa:IconBlock
+                                                FontSize="18"
+                                                Foreground="#444444"
+                                                Icon="FolderOpen" />
+                                        </Button>
+                                    </Grid>
+                                </StackPanel>
+
+                                <!--  Backup Retention  -->
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock
+                                        FontSize="14"
+                                        FontWeight="Bold"
+                                        Foreground="#111111"
+                                        Text="Backup Retention" />
+
+                                    <ComboBox
+                                        Height="42"
+                                        Margin="0,10,0,0"
+                                        FontSize="13"
+                                        ItemsSource="{Binding BackupRetentionOptions}"
+                                        SelectedItem="{Binding SelectedRetentionOption, Mode=TwoWay}"
+                                        Style="{StaticResource ExactStyleComboBox}" />
+                                </StackPanel>
+                            </Grid>
+
+                            <Grid Grid.Row="4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1.25*" />
+                                    <ColumnDefinition Width="24" />
+                                    <ColumnDefinition Width="0.85*" />
+                                </Grid.ColumnDefinitions>
+
+                                <!--  Secondary Backup Location  -->
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock
+                                        FontSize="14"
+                                        FontWeight="Bold"
+                                        Foreground="#111111"
+                                        Text="Secondary Backup Location (Optional)" />
+
+                                    <Grid Margin="0,10,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="8" />
+                                            <ColumnDefinition Width="44" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBox
+                                            Grid.Column="0"
+                                            Height="42"
+                                            IsReadOnly="True"
+                                            Style="{StaticResource ModernTextBoxStyle}"
+                                            Tag="Set secondary backup location..."
+                                            Text="{Binding SecondaryBackupLocation}" />
+
+                                        <Button
+                                            Grid.Column="2"
+                                            Command="{Binding BrowseSecondaryBackupLocationCommand}"
+                                            Style="{StaticResource MaintenanceIconButtonStyle}">
+                                            <fa:IconBlock
+                                                FontSize="18"
+                                                Foreground="#444444"
+                                                Icon="FolderOpen" />
+                                        </Button>
+                                    </Grid>
+                                </StackPanel>
+
+                                <!--  Warning note  -->
+                                <Border
+                                    Grid.Column="2"
+                                    Height="66"
+                                    Margin="0,24,0,0"
+                                    Padding="12"
+                                    Background="#FFF9DF"
+                                    BorderBrush="#F8C85D"
+                                    BorderThickness="1"
+                                    CornerRadius="5">
+
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="8" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <fa:IconBlock
+                                            Grid.Column="0"
+                                            VerticalAlignment="Top"
+                                            FontSize="16"
+                                            Foreground="#F59E0B"
+                                            Icon="InfoCircle" />
+
+                                        <TextBlock
+                                            Grid.Column="2"
+                                            FontSize="10"
+                                            Foreground="#8A5A00"
+                                            Text="Ensure network location has sufficient storage space and proper permissions."
+                                            TextWrapping="Wrap" />
+                                    </Grid>
+                                </Border>
+                            </Grid>
+                        </Grid>
+                    </Border>
+
+                    <!--  Manual Backup and Restore  -->
+                    <Border Grid.Column="2" Style="{StaticResource MaintenanceSectionCardStyle}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="14" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <Grid Grid.Row="0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="10" />
+                                    <ColumnDefinition Width="270" />
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock
+                                    Grid.Column="0"
+                                    FontSize="18"
+                                    FontWeight="SemiBold"
+                                    Foreground="#111111"
+                                    Text="Manual Backup &amp; Restore" />
+
+                                <Border
+                                    Grid.Column="2"
+                                    Padding="12,8"
+                                    Background="#FFF3F3"
+                                    BorderBrush="#FFB0B0"
+                                    BorderThickness="1"
+                                    CornerRadius="4">
+
+                                    <TextBlock
+                                        FontSize="10"
+                                        Foreground="#B91C1C"
+                                        Text="Warning: Restoring a backup will replace all current data. Create a backup before restoring."
+                                        TextWrapping="Wrap" />
+                                </Border>
+                            </Grid>
+
+                            <Grid Grid.Row="2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="12" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <!--  Create Manual Backup  -->
+                                <Grid Grid.Column="0" MinHeight="160">
+                                    <Rectangle
+                                        RadiusX="8"
+                                        RadiusY="8"
+                                        Stroke="#BDBDBD"
+                                        StrokeThickness="1"
+                                        StrokeDashArray="6 5"
+                                        Fill="White" />
+
+                                    <Border
+                                        Padding="20"
+                                        Background="Transparent"
+                                        BorderThickness="0">
+
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="*" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+
+                                            <Grid Grid.Row="0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="14" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <fa:IconBlock
+                                                    Grid.Column="0"
+                                                    FontSize="26"
+                                                    Foreground="#111111"
+                                                    Icon="Database"
+                                                    VerticalAlignment="Top" />
+
+                                                <StackPanel Grid.Column="2">
+                                                    <TextBlock
+                                                        FontSize="15"
+                                                        FontWeight="Bold"
+                                                        Foreground="#111111"
+                                                        Text="Create Manual Backup" />
+
+                                                    <TextBlock
+                                                        Margin="0,5,0,0"
+                                                        FontSize="12"
+                                                        Foreground="#777777"
+                                                        Text="Creates encrypted backup of system data."
+                                                        TextWrapping="Wrap" />
+                                                </StackPanel>
+                                            </Grid>
+
+                                            <Button
+                                                Grid.Row="2"
+                                                Height="42"
+                                                Background="#223357"
+                                                Command="{Binding CreateManualBackupCommand}"
+                                                Foreground="White"
+                                                Style="{StaticResource SecondaryButtonStyle}">
+
+                                                <TextBlock
+                                                    FontSize="14"
+                                                    FontWeight="Bold"
+                                                    Text="Backup Now" />
+                                            </Button>
+                                        </Grid>
+                                    </Border>
+                                </Grid>
+
+                                <!--  Restore From Backup  -->
+                                <Grid Grid.Column="2" MinHeight="160">
+                                    <Rectangle
+                                        Fill="White"
+                                        RadiusX="8"
+                                        RadiusY="8"
+                                        Stroke="#BDBDBD"
+                                        StrokeDashArray="6 5"
+                                        StrokeThickness="1" />
+
+                                    <Border Padding="20" Background="Transparent">
+
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="14" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="14" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+
+                                            <Grid Grid.Row="0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="14" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <fa:IconBlock
+                                                    Grid.Column="0"
+                                                    VerticalAlignment="Top"
+                                                    FontSize="26"
+                                                    Foreground="#111111"
+                                                    Icon="FileUpload" />
+
+                                                <StackPanel Grid.Column="2">
+                                                    <TextBlock
+                                                        FontSize="15"
+                                                        FontWeight="Bold"
+                                                        Foreground="#111111"
+                                                        Text="Restore from Backup" />
+
+                                                    <TextBlock
+                                                        Margin="0,5,0,0"
+                                                        FontSize="12"
+                                                        Foreground="#777777"
+                                                        Text="Select backup file to restore data."
+                                                        TextWrapping="Wrap" />
+                                                </StackPanel>
+                                            </Grid>
+
+                                            <Grid Grid.Row="2">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="8" />
+                                                    <ColumnDefinition Width="44" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <TextBox
+                                                    Grid.Column="0"
+                                                    Height="42"
+                                                    IsReadOnly="True"
+                                                    Style="{StaticResource ModernTextBoxStyle}"
+                                                    Tag="Select backup file..."
+                                                    Text="{Binding SelectedRestoreFilePath}" />
+
+                                                <Button
+                                                    Grid.Column="2"
+                                                    Command="{Binding BrowseRestoreFileCommand}"
+                                                    Style="{StaticResource MaintenanceIconButtonStyle}">
+                                                    <fa:IconBlock
+                                                        FontSize="18"
+                                                        Foreground="#444444"
+                                                        Icon="FolderOpen" />
+                                                </Button>
+                                            </Grid>
+
+                                            <Button
+                                                Grid.Row="4"
+                                                Command="{Binding RestoreSelectedBackupCommand}"
+                                                Content="Restore Database"
+                                                Style="{StaticResource DangerOutlineButtonStyle}" />
+                                        </Grid>
+                                    </Border>
+                                </Grid>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <!--
+                    =====================================================
+                    BACKUP HISTORY
+                    =====================================================
+                -->
+                <Border 
+                    Height="260"
+                    Margin="0,18,0,0" 
+                    Style="{StaticResource MaintenanceSectionCardStyle}">
+
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="15" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock
+                            Grid.Row="0"
+                            FontSize="18"
+                            FontWeight="SemiBold"
+                            Foreground="#111111"
+                            Text="Backup History" />
+
+                            <DataGrid
+                                Grid.Row="2"
+                                MaxHeight="215"
+                                AutoGenerateColumns="False"
+                                CanUserAddRows="False"
+                                CanUserDeleteRows="False"
+                                CanUserResizeRows="False"
+                                HeadersVisibility="Column"
+                                GridLinesVisibility="None"
+                                ItemsSource="{Binding BackupHistoryItems}"
+                                RowHeight="48"
+                                Background="White"
+                                BorderThickness="0"
+                                IsReadOnly="True"
+                                ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                Style="{StaticResource DashboardDataGridStyle}"
+                                CellStyle="{StaticResource DashboardDataGridCellStyle}"
+                                ColumnHeaderStyle="{StaticResource DashboardDataGridColumnHeaderStyle}">
+
+                                <DataGrid.Resources>
+                                    <Style
+                                        BasedOn="{StaticResource BlueDataGridScrollBarStyle}"
+                                        TargetType="{x:Type ScrollBar}" />
+                                </DataGrid.Resources>
+
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn
+                                        Width="1.2*"
+                                        Binding="{Binding CreatedAtDisplay}"
+                                        Header="Date &amp; Time" />
+
+                                    <DataGridTextColumn
+                                        Width="0.6*"
+                                        Binding="{Binding BackupType}"
+                                        Header="Type">
+                                        <DataGridTextColumn.ElementStyle>
+                                            <Style TargetType="{x:Type TextBlock}">
+                                                <Setter Property="Foreground" Value="#0066FF" />
+                                                <Setter Property="VerticalAlignment" Value="Center" />
+                                            </Style>
+                                        </DataGridTextColumn.ElementStyle>
+                                    </DataGridTextColumn>
+
+                                    <DataGridTextColumn
+                                        Width="1.8*"
+                                        Binding="{Binding FileLocation}"
+                                        Header="File Location">
+                                        <DataGridTextColumn.ElementStyle>
+                                            <Style TargetType="{x:Type TextBlock}">
+                                                <Setter Property="Foreground" Value="#666666" />
+                                                <Setter Property="TextWrapping" Value="NoWrap" />
+                                                <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                                                <Setter Property="VerticalAlignment" Value="Center" />
+                                            </Style>
+                                        </DataGridTextColumn.ElementStyle>
+                                    </DataGridTextColumn>
+
+                                    <DataGridTextColumn
+                                        Width="0.5*"
+                                        Binding="{Binding SizeDisplay}"
+                                        Header="Size" />
+
+                                    <DataGridTextColumn
+                                        Width="0.6*"
+                                        Binding="{Binding Status}"
+                                        Header="Status">
+                                        <DataGridTextColumn.ElementStyle>
+                                            <Style TargetType="{x:Type TextBlock}">
+                                                <Setter Property="Foreground" Value="#00A423" />
+                                                <Setter Property="VerticalAlignment" Value="Center" />
+                                            </Style>
+                                        </DataGridTextColumn.ElementStyle>
+                                    </DataGridTextColumn>
+
+                                    <DataGridTemplateColumn Width="1.3*" Header="Actions">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Button
+                                                        Width="92"
+                                                        Height="34"
+                                                        Margin="0,0,12,0"
+                                                        Background="#223357"
+                                                        Command="{Binding DataContext.RestoreBackupHistoryItemCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                        CommandParameter="{Binding}"
+                                                        Foreground="White"
+                                                        Style="{StaticResource SecondaryButtonStyle}">
+
+                                                        <TextBlock
+                                                            FontSize="13"
+                                                            FontWeight="Bold"
+                                                            Text="Restore" />
+                                                    </Button>
+
+                                                    <Button
+                                                        Width="120"
+                                                        Height="34"
+                                                        Background="White"
+                                                        BorderBrush="#999999"
+                                                        BorderThickness="1"
+                                                        Command="{Binding DataContext.OpenBackupLocationCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                        CommandParameter="{Binding}"
+                                                        Content="View Location"
+                                                        Foreground="#111111"
+                                                        FontSize="13"
+                                                        FontWeight="SemiBold"
+                                                        Style="{StaticResource OutlineActionButtonStyle}" />
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>                    
+                    
+                    
+                    </Grid>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!--
+            =====================================================
+            CENTER PROMPT MODAL
+            =====================================================
+        -->
+        <Grid Background="#66000000" Visibility="{Binding IsPromptVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+
+            <Border
+                Width="430"
+                Padding="30"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Background="White"
+                CornerRadius="18">
+
+                <Border.Effect>
+                    <DropShadowEffect
+                        BlurRadius="20"
+                        Opacity="0.25"
+                        ShadowDepth="3" />
+                </Border.Effect>
+
+                <StackPanel>
+                    <TextBlock
+                        FontSize="24"
+                        FontWeight="Bold"
+                        Foreground="#223357"
+                        Text="{Binding PromptTitle}"
+                        TextWrapping="Wrap" />
+
+                    <TextBlock
+                        Margin="0,18,0,26"
+                        FontSize="15"
+                        Foreground="#333333"
+                        LineHeight="22"
+                        Text="{Binding PromptMessage}"
+                        TextWrapping="Wrap" />
+
+                    <Button
+                        Width="140"
+                        Height="46"
+                        HorizontalAlignment="Right"
+                        Background="#223357"
+                        Command="{Binding ClosePromptCommand}"
+                        Foreground="White"
+                        Style="{StaticResource SecondaryButtonStyle}">
+
+                        <TextBlock
+                            FontSize="14"
+                            FontWeight="Bold"
+                            Text="OK" />
+                    </Button>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

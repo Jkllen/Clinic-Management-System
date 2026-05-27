@@ -135,6 +135,21 @@ namespace CruzNeryClinic.Services
 
             return fallback;
         }
+        
+        public static byte[] ExportRawKeyForBackup()
+        {
+            return GetOrCreateKey();
+        }
+
+        public static void ImportRawKeyFromBackup(byte[] rawKey)
+        {
+            if (rawKey == null || rawKey.Length != KeySizeBytes)
+                throw new InvalidOperationException("Invalid AES key size.");
+
+            string keyFilePath = GetKeyFilePath();
+
+            SaveProtectedKey(keyFilePath, rawKey);
+        }        
         #endregion
 
         #region Key Management

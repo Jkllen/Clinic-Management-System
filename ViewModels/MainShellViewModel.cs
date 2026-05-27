@@ -47,7 +47,7 @@ namespace CruzNeryClinic.ViewModels
                 "Appointment" => CreateAppointmentManagementView(),
                 "Billing" => CreateBillingView(),
                 "Inventory" => CreateInventoryView(),
-                "Maintenance" => CreatePlaceholderView("Maintenance Screen Next"),
+                "Maintenance" => CreateMaintenanceView(),
                 "Reports" => CreateReportsView(),
                 "Help" => CreateHelpView(),
                 _ => CreateDashboardView()
@@ -172,6 +172,14 @@ namespace CruzNeryClinic.ViewModels
                     HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
                     VerticalAlignment = System.Windows.VerticalAlignment.Center
                 }
+            };
+        }
+
+        private MaintenanceView CreateMaintenanceView()
+        {
+            return new MaintenanceView
+            {
+                DataContext = new MaintenanceViewModel()
             };
         }
     }
