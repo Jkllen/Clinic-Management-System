@@ -22,6 +22,8 @@ namespace CruzNeryClinic.ViewModels
         private int lowStockItemCount;
         private string searchText = string.Empty;
 
+        public bool CanViewAdminDashboardAnalytics => SessionService.IsAdmin;
+
         private DateTime _selectedCalendarDate = DateTime.Today;
         private string _selectedAppointmentHeader = DateTime.Today.ToString("dddd | MMMM d, yyyy").ToUpper();
 
