@@ -303,7 +303,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="230" />
                     <ColumnDefinition Width="20" />
-                    <ColumnDefinition Width="200" />
+                    <ColumnDefinition Width="250" />
                     <ColumnDefinition Width="10" />
                     <ColumnDefinition Width="250" />
                     <ColumnDefinition Width="*" />
@@ -352,20 +352,22 @@
 
                 <ComboBox
                     Grid.Column="2"
-                    Height="52"
+                    Height="42"
+                    Width="Auto"
                     FontSize="16"
                     ItemsSource="{Binding FilterOptions}"
                     SelectedItem="{Binding SelectedFilterOption, Mode=TwoWay}"
-                    Style="{StaticResource ToolbarComboBoxStyle}"
+                    Style="{StaticResource ExactStyleComboBox}"
                     Tag="Filter" />
 
                 <ComboBox
                     Grid.Column="4"
-                    Height="52"
+                    Height="42"
+                    Width="Auto"
                     FontSize="16"
                     ItemsSource="{Binding SortOptions}"
                     SelectedItem="{Binding SelectedSortOption, Mode=TwoWay}"
-                    Style="{StaticResource ToolbarComboBoxStyle}"
+                    Style="{StaticResource ExactStyleComboBox}"
                     Tag="Sort By" />
 
                 <Button
@@ -791,19 +793,21 @@
                             <StackPanel Grid.Row="2" Grid.Column="0">
                                 <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Service / Treatment *" />
                                 <ComboBox
+                                    Height="42"
                                     ItemsSource="{Binding ServiceOptions}"
                                     SelectedItem="{Binding SelectedRescheduleService, Mode=TwoWay}"
                                     DisplayMemberPath="DisplayText"
-                                    Style="{StaticResource AppointmentOverlayComboBoxStyle}" />
+                                    Style="{StaticResource ExactStyleComboBox}" />
                             </StackPanel>
 
                             <StackPanel Grid.Row="2" Grid.Column="2">
                                 <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Dentist *" />
                                 <ComboBox
+                                    Height="42"
                                     ItemsSource="{Binding DentistOptions}"
                                     SelectedItem="{Binding SelectedRescheduleDentist, Mode=TwoWay}"
                                     DisplayMemberPath="DisplayText"
-                                    Style="{StaticResource AppointmentOverlayComboBoxStyle}" />
+                                    Style="{StaticResource ExactStyleComboBox}" />
                             </StackPanel>
                         </Grid>
 

@@ -844,22 +844,22 @@
                 <!--  Filter dropdown  -->
                 <ComboBox
                     Grid.Column="2"
-                    Height="52"
+                    Height="42"
                     Width="Auto"
                     FontSize="16"
                     ItemsSource="{Binding FilterOptions}"
                     SelectedItem="{Binding SelectedFilterOption, Mode=TwoWay}"
-                    Style="{StaticResource ToolbarComboBoxStyle}"
+                    Style="{StaticResource ExactStyleComboBox}"
                     Tag="Filter" />
 
                 <!--  Sort By dropdown  -->
                 <ComboBox
                     Grid.Column="4"
-                    Height="52"
+                    Height="42"
                     FontSize="16"
                     ItemsSource="{Binding SortOptions}"
                     SelectedItem="{Binding SelectedSortOption, Mode=TwoWay}"
-                    Style="{StaticResource ToolbarComboBoxStyle}"
+                    Style="{StaticResource ExactStyleComboBox}"
                     Tag="Sort By" />
 
                 <!--  Add New Item button  -->

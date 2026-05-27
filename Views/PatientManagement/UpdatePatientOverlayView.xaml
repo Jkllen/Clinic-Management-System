@@ -148,7 +148,7 @@
                         <ComboBox
                             ItemsSource="{Binding GenderOptions}"
                             SelectedItem="{Binding FormGender, Mode=TwoWay}"
-                            Style="{StaticResource PatientOverlayComboBoxStyle}"
+                            Style="{StaticResource ExactStyleComboBox}"
                             Tag="Gender *" />
                     </StackPanel>
 

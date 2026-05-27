@@ -662,7 +662,7 @@ namespace CruzNeryClinic.ViewModels
             foreach (AppointmentDentistOption dentist in dentists)
                 DentistOptions.Add(dentist);
 
-            SelectedDentist = DentistOptions.FirstOrDefault();
+            SelectedDentist = null;
         }
 
         private void LoadAppointments()
@@ -911,7 +911,7 @@ namespace CruzNeryClinic.ViewModels
             FormTitle = "Add Walk-in Visit";
             FormAppointmentDate = DateTime.Today;
             FormAppointmentTimeText = DateTime.Now.ToString("hh:mm tt");
-            SelectedDentist = DentistOptions.FirstOrDefault();
+            SelectedDentist = null;
 
             IsWalkInOverlayOpen = true;
         }
@@ -931,7 +931,7 @@ namespace CruzNeryClinic.ViewModels
             FormTitle = "Add Scheduled Appointment";
             FormAppointmentDate = DateTime.Today;
             FormAppointmentTimeText = DateTime.Now.AddHours(1).ToString("hh:mm tt");
-            SelectedDentist = DentistOptions.FirstOrDefault();
+            SelectedDentist = null;
 
             IsScheduledOverlayOpen = true;
         }

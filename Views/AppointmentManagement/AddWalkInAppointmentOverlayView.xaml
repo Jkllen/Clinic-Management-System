@@ -297,19 +297,53 @@
                     <StackPanel Grid.Row="4" Grid.Column="0">
                         <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Service / Treatment *" />
                         <ComboBox
+                            Height="42"
                             ItemsSource="{Binding ServiceOptions}"
                             SelectedItem="{Binding SelectedService, Mode=TwoWay}"
-                            DisplayMemberPath="DisplayText"
-                            Style="{StaticResource AppointmentOverlayComboBoxStyle}" />
+                            Style="{StaticResource ExactStyleComboBox}"
+                            Tag="Select a service or treatment">
+                
+                            <ComboBox.ToolTip>
+                                <ToolTip>
+                                    <TextBlock Text="Select the service or treatment for the appointment." />
+                                </ToolTip>
+                            </ComboBox.ToolTip>
+
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="4">
+                                        <TextBlock 
+                                            Text="{Binding DisplayText}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
                     </StackPanel>
 
                     <StackPanel Grid.Row="4" Grid.Column="2">
                         <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Dentist *" />
                         <ComboBox
+                            Height="42"
                             ItemsSource="{Binding DentistOptions}"
                             SelectedItem="{Binding SelectedDentist, Mode=TwoWay}"
-                            DisplayMemberPath="DisplayText"
-                            Style="{StaticResource AppointmentOverlayComboBoxStyle}" />
+                            Style="{StaticResource ExactStyleComboBox}"
+                            Tag="Select a dentist">
+                            
+                            <ComboBox.ToolTip>
+                                <ToolTip>
+                                    <TextBlock Text="Select a dentist." />
+                                </ToolTip>
+                            </ComboBox.ToolTip>
+
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="4">
+                                        <TextBlock 
+                                            Text="{Binding DisplayText}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox> 
                     </StackPanel>
                 </Grid>
 

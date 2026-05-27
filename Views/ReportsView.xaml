@@ -398,12 +398,14 @@
                                     FontSize="12"
                                     VerticalContentAlignment="Center"
                                     ItemsSource="{Binding MonthNames}"
+                                    Style="{StaticResource ExactStyleComboBox}"
                                     SelectedIndex="{Binding SelectedFilterMonthIndex, Mode=TwoWay}" />
                                 <ComboBox
                                     Width="75"
                                     FontSize="12"
                                     VerticalContentAlignment="Center"
                                     ItemsSource="{Binding AvailableYears}"
+                                    Style="{StaticResource ExactStyleComboBox}"
                                     SelectedItem="{Binding SelectedFilterYear, Mode=TwoWay}" />
                             </StackPanel>
 

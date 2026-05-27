@@ -134,7 +134,7 @@
                         <ComboBox
                             ItemsSource="{Binding GenderOptions}"
                             SelectedItem="{Binding FormGender, Mode=TwoWay}"
-                            Style="{StaticResource PatientOverlayComboBoxStyle}"
+                            Style="{StaticResource ExactStyleComboBox}"
                             Tag="Select gender" />
                     </StackPanel>
 
@@ -252,7 +252,7 @@
                         ItemsSource="{Binding ServiceOptions}"
                         SelectedItem="{Binding SelectedService, Mode=TwoWay}"
                         DisplayMemberPath="ServiceName"
-                        Style="{StaticResource PatientOverlayComboBoxStyle}"
+                        Style="{StaticResource ExactStyleComboBox}"
                         Tag="Select treatment or service" />
                 </StackPanel>
 

@@ -204,7 +204,7 @@
                                         Margin="0,8,0,0"
                                         ItemsSource="{Binding Roles}"
                                         SelectedItem="{Binding NewUserRole, Mode=TwoWay}"
-                                        Style="{StaticResource ToolbarComboBoxStyle}"
+                                        Style="{StaticResource ExactStyleComboBox}"
                                         Tag="Choose a role" />
                                 </StackPanel>
 
@@ -414,7 +414,7 @@
                                         DisplayMemberPath="QuestionText"
                                         ItemsSource="{Binding SecurityQuestions}"
                                         SelectedItem="{Binding SelectedSecurityQuestion1, Mode=TwoWay}"
-                                        Style="{StaticResource ToolbarComboBoxStyle}"
+                                        Style="{StaticResource ExactStyleComboBox}"
                                         Tag="Choose a security question" />
                                 </StackPanel>
 
@@ -449,7 +449,7 @@
                                         DisplayMemberPath="QuestionText"
                                         ItemsSource="{Binding SecurityQuestions}"
                                         SelectedItem="{Binding SelectedSecurityQuestion2, Mode=TwoWay}"
-                                        Style="{StaticResource ToolbarComboBoxStyle}"
+                                        Style="{StaticResource ExactStyleComboBox}"
                                         Tag="Choose a security question" />
                                 </StackPanel>
 
@@ -484,7 +484,7 @@
                                         DisplayMemberPath="QuestionText"
                                         ItemsSource="{Binding SecurityQuestions}"
                                         SelectedItem="{Binding SelectedSecurityQuestion3, Mode=TwoWay}"
-                                        Style="{StaticResource ToolbarComboBoxStyle}"
+                                        Style="{StaticResource ExactStyleComboBox}"
                                         Tag="Choose a security question" />
                                 </StackPanel>
 

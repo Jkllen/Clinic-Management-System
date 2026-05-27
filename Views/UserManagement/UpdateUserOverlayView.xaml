@@ -206,7 +206,7 @@
                                     Margin="0,8,0,0"
                                     ItemsSource="{Binding Roles}"
                                     SelectedItem="{Binding UpdateUserRole, Mode=TwoWay}"
-                                    Style="{StaticResource ToolbarComboBoxStyle}"
+                                    Style="{StaticResource ExactStyleComboBox}"
                                     Tag="Choose a role" />
                             </StackPanel>
 
