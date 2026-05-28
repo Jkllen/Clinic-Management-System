@@ -12,21 +12,24 @@
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
 
         <Style TargetType="{x:Type ScrollBar}">
-            <Setter Property="Width" Value="8"/>
-            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Width"
+                    Value="8"/>
+            <Setter Property="Background"
+                    Value="Transparent"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type ScrollBar}">
                         <Grid Background="Transparent">
                             <!-- Track -->
-                            <Track x:Name="PART_Track" IsDirectionReversed="true">
+                            <Track x:Name="PART_Track"
+                                   IsDirectionReversed="true">
                                 <Track.Thumb>
                                     <Thumb>
                                         <Thumb.Template>
                                             <ControlTemplate TargetType="{x:Type Thumb}">
                                                 <!-- The actual "Slider" piece -->
-                                                <Border CornerRadius="4" 
-                                                        Background="#445577" 
+                                                <Border CornerRadius="4"
+                                                        Background="#445577"
                                                         Opacity="0.6"
                                                         Margin="2,0"/>
                                             </ControlTemplate>
@@ -38,269 +41,330 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
-        </Style>    
+        </Style>
     </UserControl.Resources>
 
     <!-- Reusable sidebar used by Dashboard, Users, Patients, Appointment, Billing, etc. -->
-    <Grid x:Name="SidebarRoot" 
-          Background="#223357">
+    <Border x:Name="SidebarRoot"
+            Background="#223357"
+            CornerRadius="0,15,15,0">
 
-        <Grid.RowDefinitions>
-            <!-- Row 0: Clinic logo -->
-            <RowDefinition Height="260"/>
-            <!-- Row 1: User Information -->
-            <RowDefinition Height="50"/>
-            <!-- Row 3: Buttons -->
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+        <Grid>
+            <Grid.RowDefinitions>
+                <!-- Row 0: Clinic logo -->
+                <RowDefinition Height="190"/>
+                <!-- Row 1: Separator -->
+                <RowDefinition Height="Auto"/>
+                <!-- Row 2: User Information -->
+                <RowDefinition Height="110"/>
+                <!-- Row 3: Separator -->
+                <RowDefinition Height="Auto"/>
+                <!-- Row 4: Buttons -->
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
 
-        <!-- Clinic logo -->
-        <Image Grid.Row="0"
-               Source="/Assets/Images/logo.png"
-               Width="250"
-               Height="250"
-               Margin="0,-10,0,0"
-               HorizontalAlignment="Center"
-               VerticalAlignment="Center"
-               Stretch="Uniform"
-               RenderOptions.BitmapScalingMode="HighQuality"/>
+            <!-- Clinic logo -->
+            <Image Grid.Row="0"
+                   Source="/Assets/Images/logo.png"
+                   Width="180"
+                   Height="180"
+                   Margin="0,-10,0,0"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Stretch="Uniform"
+                   RenderOptions.BitmapScalingMode="HighQuality">
+                <Image.Effect>
+                    <DropShadowEffect Color="#000000"
+                                        Direction="320"
+                                      BlurRadius="5"
+                                      ShadowDepth="5"
+                                      Opacity="0.5"/>
+                </Image.Effect>
+            </Image>
 
-        <!-- User information -->
-        <StackPanel Grid.Row="1"
-                    Margin="28,0,20,0"
-                    VerticalAlignment="Center">
+            <!-- Separator -->
+            <Rectangle Grid.Row="1"
+                       Height="1"
+                       Fill="#2E4470"
+                       Margin="0,8,0,8"/>
 
-            <TextBlock FontSize="16" Foreground="White"
-                    TextWrapping="Wrap">
-                <Run Text="Name: " FontWeight="Bold"/>
-                <Run Text="{Binding CurrentUserName, Mode=OneWay}"/>
-            </TextBlock>
+            <!-- User information -->
+            <Border Grid.Row="2"
+                    Margin="18,6,18,6"
+                    Background="#1A2B47"
+                    CornerRadius="10"
+                    Padding="12,10">
+                <StackPanel>
 
-            <StackPanel Orientation="Horizontal"
-                        Margin="0,10,0,0">
+                    <!-- Profile row: icon + name/role -->
+                    <StackPanel Orientation="Horizontal"
+                                VerticalAlignment="Center">
 
-                <TextBlock FontSize="16" Foreground="White">
-                    <Run Text="User ID: " FontWeight="Bold"/>
-                    <Run Text="{Binding CurrentUserCode, Mode=OneWay}"/>
-                </TextBlock>
+                        <Border Width="38"
+                                Height="38"
+                                CornerRadius="19"
+                                Background="#2E4470"
+                                VerticalAlignment="Center">
+                            <fa:IconBlock Icon="UserCircle"
+                                          FontSize="20"
+                                          Foreground="White"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"/>
+                        </Border>
 
-                <TextBlock FontSize="16" Foreground="White"
-                           Margin="22,0,0,0">
-                    <Run Text="Role: " FontWeight="Bold"/>
-                    <Run Text="{Binding CurrentUserRole, Mode=OneWay}"/>
-                </TextBlock>
-            </StackPanel>
-        </StackPanel>
-
-        <!-- Menu buttons -->
-        <ScrollViewer Grid.Row="2"
-                      VerticalScrollBarVisibility="Auto"
-                      HorizontalScrollBarVisibility="Disabled">
-            <StackPanel Margin="6,5,10,0">
-
-                <!-- Dashboard -->
-                <Button Command="{Binding DashboardCommand}"
-                        Style="{StaticResource SidebarMenuButtonStyle}"
-                        Background="{Binding DashboardBackground}"
-                        Foreground="{Binding DashboardForeground}">
-                    <StackPanel Orientation="Horizontal">
-                        <fa:IconBlock Icon="ThLarge"
-                                    Width="42"
-                                    FontSize="24"
-                                    Foreground="{Binding DashboardForeground}"
-                                    VerticalAlignment="Center"/>
-                        <TextBlock Text="Dashboard"
-                                FontSize="21"
-                                FontWeight="SemiBold"
-                                Foreground="{Binding DashboardForeground}"
-                                VerticalAlignment="Center"
-                                Margin="18,0,0,0"/>
+                        <StackPanel Margin="10,0,0,0"
+                                    VerticalAlignment="Center">
+                            <TextBlock Text="{Binding CurrentUserName, Mode=OneWay}"
+                                       FontSize="15"
+                                       FontWeight="SemiBold"
+                                       Foreground="White"/>
+                            <TextBlock Text="{Binding CurrentUserRole, Mode=OneWay}"
+                                       FontSize="12"
+                                       Foreground="#8EAACB"/>
+                        </StackPanel>
                     </StackPanel>
-                </Button>
 
-                <!-- Manage Users: Admin only -->
-                <Button Command="{Binding ManageUsersCommand}"
-                        Visibility="{Binding CanAccessAdminOnlyModules, Converter={StaticResource BoolToVisibilityConverter}}"
-                        Style="{StaticResource SidebarMenuButtonStyle}"
-                        Background="{Binding ManageUsersBackground}"
-                        Foreground="{Binding ManageUsersForeground}">
-                    <StackPanel Orientation="Horizontal">
-                        <fa:IconBlock Icon="UserCog"
-                                    Width="42"
-                                    FontSize="24"
-                                    Foreground="{Binding ManageUsersForeground}"
-                                    VerticalAlignment="Center"/>
-                        <TextBlock Text="Manage Users"
-                                FontSize="21"
-                                FontWeight="SemiBold"
-                                Foreground="{Binding ManageUsersForeground}"
-                                VerticalAlignment="Center"
-                                Margin="18,0,0,0"/>
-                    </StackPanel>
-                </Button>
+                    <!-- Separator -->
+                    <Rectangle Height="1"
+                               Fill="#2E4470"
+                               Margin="0,8,0,8"/>
 
-                <!-- Patients -->
-                <Button Command="{Binding PatientsCommand}"
-                        Style="{StaticResource SidebarMenuButtonStyle}"
-                        Background="{Binding PatientsBackground}"
-                        Foreground="{Binding PatientsForeground}">
-                    <StackPanel Orientation="Horizontal">
-                        <fa:IconBlock Icon="Users"
-                                    Width="42"
-                                    FontSize="24"
-                                    Foreground="{Binding PatientsForeground}"
-                                    VerticalAlignment="Center"/>
-                        <TextBlock Text="Patients"
-                                FontSize="21"
-                                FontWeight="SemiBold"
-                                Foreground="{Binding PatientsForeground}"
-                                VerticalAlignment="Center"
-                                Margin="18,0,0,0"/>
-                    </StackPanel>
-                </Button>
+                    <!-- User ID row -->
+                    <Grid>
+                        <TextBlock Text="User ID:"
+                                   FontSize="12"
+                                   Foreground="#8EAACB"
+                                   FontWeight="SemiBold"
+                                   HorizontalAlignment="Left"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding CurrentUserCode, Mode=OneWay}"
+                                   FontSize="12"
+                                   Foreground="White"
+                                   Margin="8,0,0,0"
+                                   HorizontalAlignment="Right"
+                                   VerticalAlignment="Center"/>
+                    </Grid>
 
-                <!-- Appointment -->
-                <Button Command="{Binding AppointmentCommand}"
-                        Style="{StaticResource SidebarMenuButtonStyle}"
-                        Background="{Binding AppointmentBackground}"
-                        Foreground="{Binding AppointmentForeground}">
-                    <StackPanel Orientation="Horizontal">
-                        <fa:IconBlock Icon="CalendarAlt"
-                                    Width="42"
-                                    FontSize="24"
-                                    Foreground="{Binding AppointmentForeground}"
-                                    VerticalAlignment="Center"/>
-                        <TextBlock Text="Appointment"
-                                FontSize="21"
-                                FontWeight="SemiBold"
-                                Foreground="{Binding AppointmentForeground}"
-                                VerticalAlignment="Center"
-                                Margin="18,0,0,0"/>
-                    </StackPanel>
-                </Button>
+                </StackPanel>
+            </Border>
 
-                <!-- Billing -->
-                <Button Command="{Binding BillingCommand}"
-                        Style="{StaticResource SidebarMenuButtonStyle}"
-                        Background="{Binding BillingBackground}"
-                        Foreground="{Binding BillingForeground}">
-                    <StackPanel Orientation="Horizontal">
-                        <fa:IconBlock Icon="CashRegister"
-                                    Width="42"
-                                    FontSize="24"
-                                    Foreground="{Binding BillingForeground}"
-                                    VerticalAlignment="Center"/>
-                        <TextBlock Text="Billing"
-                                FontSize="21"
-                                FontWeight="SemiBold"
-                                Foreground="{Binding BillingForeground}"
-                                VerticalAlignment="Center"
-                                Margin="18,0,0,0"/>
-                    </StackPanel>
-                </Button>
+            <!-- Separator -->
+            <Rectangle Grid.Row="3"
+                       Height="1"
+                       Fill="#2E4470"
+                       Margin="0,8,0,8"/>
 
-                <!-- Inventory -->
-                <Button Command="{Binding InventoryCommand}"
-                        Style="{StaticResource SidebarMenuButtonStyle}"
-                        Background="{Binding InventoryBackground}"
-                        Foreground="{Binding InventoryForeground}">
-                    <StackPanel Orientation="Horizontal">
-                        <fa:IconBlock Icon="Box"
-                                    Width="42"
-                                    FontSize="24"
-                                    Foreground="{Binding InventoryForeground}"
-                                    VerticalAlignment="Center"/>
-                        <TextBlock Text="Inventory"
-                                FontSize="21"
-                                FontWeight="SemiBold"
-                                Foreground="{Binding InventoryForeground}"
-                                VerticalAlignment="Center"
-                                Margin="18,0,0,0"/>
-                    </StackPanel>
-                </Button>
+            <!-- Menu buttons -->
+            <ScrollViewer Grid.Row="4"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Margin="6,5,10,0">
 
-                <!-- Maintenance: Admin only -->
-                <Button Command="{Binding MaintenanceCommand}"
-                        Visibility="{Binding CanAccessAdminOnlyModules, Converter={StaticResource BoolToVisibilityConverter}}"
-                        Style="{StaticResource SidebarMenuButtonStyle}"
-                        Background="{Binding MaintenanceBackground}"
-                        Foreground="{Binding MaintenanceForeground}">
-                    <StackPanel Orientation="Horizontal">
-                        <fa:IconBlock Icon="Tools"
-                                    Width="42"
-                                    FontSize="24"
-                                    Foreground="{Binding MaintenanceForeground}"
-                                    VerticalAlignment="Center"/>
-                        <TextBlock Text="Maintenance"
-                                FontSize="21"
-                                FontWeight="SemiBold"
-                                Foreground="{Binding MaintenanceForeground}"
-                                VerticalAlignment="Center"
-                                Margin="18,0,0,0"/>
-                    </StackPanel>
-                </Button>
+                    <!-- Dashboard -->
+                    <Button Command="{Binding DashboardCommand}"
+                            Style="{StaticResource SidebarMenuButtonStyle}"
+                            Background="{Binding DashboardBackground}"
+                            Foreground="{Binding DashboardForeground}">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:IconBlock Icon="ThLarge"
+                                          Width="42"
+                                          FontSize="24"
+                                          Foreground="{Binding DashboardForeground}"
+                                          VerticalAlignment="Center"/>
+                            <TextBlock Text="Dashboard"
+                                       FontSize="21"
+                                       FontWeight="SemiBold"
+                                       Foreground="{Binding DashboardForeground}"
+                                       VerticalAlignment="Center"
+                                       Margin="18,0,0,0"/>
+                        </StackPanel>
+                    </Button>
 
-                <!-- Reports: Admin only -->
-                <Button Command="{Binding ReportsCommand}"
-                        Visibility="{Binding CanAccessAdminOnlyModules, Converter={StaticResource BoolToVisibilityConverter}}"
-                        Style="{StaticResource SidebarMenuButtonStyle}"
-                        Background="{Binding ReportsBackground}"
-                        Foreground="{Binding ReportsForeground}">
-                    <StackPanel Orientation="Horizontal">
-                        <fa:IconBlock Icon="ChartBar"
-                                    Width="42"
-                                    FontSize="24"
-                                    Foreground="{Binding ReportsForeground}"
-                                    VerticalAlignment="Center"/>
-                        <TextBlock Text="Reports"
-                                FontSize="21"
-                                FontWeight="SemiBold"
-                                Foreground="{Binding ReportsForeground}"
-                                VerticalAlignment="Center"
-                                Margin="18,0,0,0"/>
-                    </StackPanel>
-                </Button>
+                    <!-- Manage Users: Admin only -->
+                    <Button Command="{Binding ManageUsersCommand}"
+                            Visibility="{Binding CanAccessAdminOnlyModules, Converter={StaticResource BoolToVisibilityConverter}}"
+                            Style="{StaticResource SidebarMenuButtonStyle}"
+                            Background="{Binding ManageUsersBackground}"
+                            Foreground="{Binding ManageUsersForeground}">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:IconBlock Icon="UserCog"
+                                          Width="42"
+                                          FontSize="24"
+                                          Foreground="{Binding ManageUsersForeground}"
+                                          VerticalAlignment="Center"/>
+                            <TextBlock Text="Manage Users"
+                                       FontSize="21"
+                                       FontWeight="SemiBold"
+                                       Foreground="{Binding ManageUsersForeground}"
+                                       VerticalAlignment="Center"
+                                       Margin="18,0,0,0"/>
+                        </StackPanel>
+                    </Button>
 
-                <!-- Help: available to all roles -->
-                <Button Command="{Binding HelpCommand}"
-                        Style="{StaticResource SidebarMenuButtonStyle}"
-                        Background="{Binding HelpBackground}"
-                        Foreground="{Binding HelpForeground}">
-                    <StackPanel Orientation="Horizontal">
-                        <fa:IconBlock Icon="QuestionCircle"
-                                    Width="42"
-                                    FontSize="24"
-                                    Foreground="{Binding HelpForeground}"
-                                    VerticalAlignment="Center"/>
+                    <!-- Patients -->
+                    <Button Command="{Binding PatientsCommand}"
+                            Style="{StaticResource SidebarMenuButtonStyle}"
+                            Background="{Binding PatientsBackground}"
+                            Foreground="{Binding PatientsForeground}">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:IconBlock Icon="Users"
+                                          Width="42"
+                                          FontSize="24"
+                                          Foreground="{Binding PatientsForeground}"
+                                          VerticalAlignment="Center"/>
+                            <TextBlock Text="Patients"
+                                       FontSize="21"
+                                       FontWeight="SemiBold"
+                                       Foreground="{Binding PatientsForeground}"
+                                       VerticalAlignment="Center"
+                                       Margin="18,0,0,0"/>
+                        </StackPanel>
+                    </Button>
 
-                        <TextBlock Text="Help"
-                                FontSize="21"
-                                FontWeight="SemiBold"
-                                Foreground="{Binding HelpForeground}"
-                                VerticalAlignment="Center"
-                                Margin="18,0,0,0"/>
-                    </StackPanel>
-                </Button>
+                    <!-- Appointment -->
+                    <Button Command="{Binding AppointmentCommand}"
+                            Style="{StaticResource SidebarMenuButtonStyle}"
+                            Background="{Binding AppointmentBackground}"
+                            Foreground="{Binding AppointmentForeground}">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:IconBlock Icon="CalendarAlt"
+                                          Width="42"
+                                          FontSize="24"
+                                          Foreground="{Binding AppointmentForeground}"
+                                          VerticalAlignment="Center"/>
+                            <TextBlock Text="Appointment"
+                                       FontSize="21"
+                                       FontWeight="SemiBold"
+                                       Foreground="{Binding AppointmentForeground}"
+                                       VerticalAlignment="Center"
+                                       Margin="18,0,0,0"/>
+                        </StackPanel>
+                    </Button>
 
-                <!-- Logout -->
-                <Button Command="{Binding LogoutCommand}"
-                        Style="{StaticResource SidebarMenuButtonStyle}"
-                        Margin="0,8,0,0">
-                    <StackPanel Orientation="Horizontal">
-                        <fa:IconBlock Icon="SignOutAlt"
-                                    Width="42"
-                                    FontSize="24"
-                                    Foreground="White"
-                                    VerticalAlignment="Center"/>
-                        <TextBlock Text="Log Out"
-                                FontSize="21"
-                                FontWeight="SemiBold"
-                                Foreground="White"
-                                VerticalAlignment="Center"
-                                Margin="18,0,0,0"/>
-                    </StackPanel>
-                </Button>
-            </StackPanel>
-        </ScrollViewer>
-    </Grid>
+                    <!-- Billing -->
+                    <Button Command="{Binding BillingCommand}"
+                            Style="{StaticResource SidebarMenuButtonStyle}"
+                            Background="{Binding BillingBackground}"
+                            Foreground="{Binding BillingForeground}">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:IconBlock Icon="CashRegister"
+                                          Width="42"
+                                          FontSize="24"
+                                          Foreground="{Binding BillingForeground}"
+                                          VerticalAlignment="Center"/>
+                            <TextBlock Text="Billing"
+                                       FontSize="21"
+                                       FontWeight="SemiBold"
+                                       Foreground="{Binding BillingForeground}"
+                                       VerticalAlignment="Center"
+                                       Margin="18,0,0,0"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Inventory -->
+                    <Button Command="{Binding InventoryCommand}"
+                            Style="{StaticResource SidebarMenuButtonStyle}"
+                            Background="{Binding InventoryBackground}"
+                            Foreground="{Binding InventoryForeground}">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:IconBlock Icon="Box"
+                                          Width="42"
+                                          FontSize="24"
+                                          Foreground="{Binding InventoryForeground}"
+                                          VerticalAlignment="Center"/>
+                            <TextBlock Text="Inventory"
+                                       FontSize="21"
+                                       FontWeight="SemiBold"
+                                       Foreground="{Binding InventoryForeground}"
+                                       VerticalAlignment="Center"
+                                       Margin="18,0,0,0"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Maintenance: Admin only -->
+                    <Button Command="{Binding MaintenanceCommand}"
+                            Visibility="{Binding CanAccessAdminOnlyModules, Converter={StaticResource BoolToVisibilityConverter}}"
+                            Style="{StaticResource SidebarMenuButtonStyle}"
+                            Background="{Binding MaintenanceBackground}"
+                            Foreground="{Binding MaintenanceForeground}">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:IconBlock Icon="Tools"
+                                          Width="42"
+                                          FontSize="24"
+                                          Foreground="{Binding MaintenanceForeground}"
+                                          VerticalAlignment="Center"/>
+                            <TextBlock Text="Maintenance"
+                                       FontSize="21"
+                                       FontWeight="SemiBold"
+                                       Foreground="{Binding MaintenanceForeground}"
+                                       VerticalAlignment="Center"
+                                       Margin="18,0,0,0"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Reports: Admin only -->
+                    <Button Command="{Binding ReportsCommand}"
+                            Visibility="{Binding CanAccessAdminOnlyModules, Converter={StaticResource BoolToVisibilityConverter}}"
+                            Style="{StaticResource SidebarMenuButtonStyle}"
+                            Background="{Binding ReportsBackground}"
+                            Foreground="{Binding ReportsForeground}">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:IconBlock Icon="ChartBar"
+                                          Width="42"
+                                          FontSize="24"
+                                          Foreground="{Binding ReportsForeground}"
+                                          VerticalAlignment="Center"/>
+                            <TextBlock Text="Reports"
+                                       FontSize="21"
+                                       FontWeight="SemiBold"
+                                       Foreground="{Binding ReportsForeground}"
+                                       VerticalAlignment="Center"
+                                       Margin="18,0,0,0"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Help: available to all roles -->
+                    <Button Command="{Binding HelpCommand}"
+                            Style="{StaticResource SidebarMenuButtonStyle}"
+                            Background="{Binding HelpBackground}"
+                            Foreground="{Binding HelpForeground}">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:IconBlock Icon="QuestionCircle"
+                                          Width="42"
+                                          FontSize="24"
+                                          Foreground="{Binding HelpForeground}"
+                                          VerticalAlignment="Center"/>
+
+                            <TextBlock Text="Help"
+                                       FontSize="21"
+                                       FontWeight="SemiBold"
+                                       Foreground="{Binding HelpForeground}"
+                                       VerticalAlignment="Center"
+                                       Margin="18,0,0,0"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Logout -->
+                    <Button Command="{Binding LogoutCommand}"
+                            Style="{StaticResource SidebarMenuButtonStyle}"
+                            Margin="0,8,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:IconBlock Icon="SignOutAlt"
+                                          Width="42"
+                                          FontSize="24"
+                                          Foreground="White"
+                                          VerticalAlignment="Center"/>
+                            <TextBlock Text="Log Out"
+                                       FontSize="21"
+                                       FontWeight="SemiBold"
+                                       Foreground="White"
+                                       VerticalAlignment="Center"
+                                       Margin="18,0,0,0"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+
+    </Border>
 </UserControl>

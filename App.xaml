@@ -221,7 +221,7 @@
         <SolidColorBrush x:Key="TextSelected" Color="#FFFFFF" />
 
         <SolidColorBrush x:Key="AccentDarkBlue" Color="#223357" />
-        <SolidColorBrush x:Key="AccentBlue" Color="#73ddd1" />
+        <SolidColorBrush x:Key="AccentBlue" Color="#a7a8a9" />
 
         <DropShadowEffect
             x:Key="SoftShadow"
