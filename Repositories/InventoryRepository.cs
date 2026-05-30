@@ -1,5 +1,6 @@
 using CruzNeryClinic.Data;
 using CruzNeryClinic.Models.Inventory;
+using CruzNeryClinic.Services;
 using CruzNeryClinic.ViewModels;
 using Microsoft.Data.Sqlite;
 using System;
@@ -77,6 +78,11 @@ namespace CruzNeryClinic.Repositories
             command.Parameters.AddWithValue("@ItemCreated", timestamp);
             command.Parameters.AddWithValue("@Note", note);
             command.ExecuteNonQuery();
+
+            ActivityLogService.Log(
+                "Create",
+                "Inventory",
+                $"Added inventory item '{itemName}' (quantity {quantity})");
         }
 
         public void UpdateItem(int itemId, string itemName, int quantity, double unitPrice, int minimumThreshold, string stockStatus, string note, string timestamp)
@@ -105,6 +111,11 @@ namespace CruzNeryClinic.Repositories
             command.Parameters.AddWithValue("@UpdatedAt", timestamp);
             command.Parameters.AddWithValue("@ItemId", itemId);
             command.ExecuteNonQuery();
+
+            ActivityLogService.Log(
+                "Update",
+                "Inventory",
+                $"Updated inventory item '{itemName}'");
         }
 
         public void ArchiveItem(int itemId, string timestamp)
@@ -122,6 +133,11 @@ namespace CruzNeryClinic.Repositories
             command.Parameters.AddWithValue("@ItemId", itemId);
             command.Parameters.AddWithValue("@UpdatedAt", timestamp);
             command.ExecuteNonQuery();
+
+            ActivityLogService.Log(
+                "Archive",
+                "Inventory",
+                $"Archived inventory item '{GetItemName(itemId)}'");
         }
 
         public void RestockItem(int itemId, string itemName, int quantityAdded, string restockedDate,
@@ -172,6 +188,11 @@ namespace CruzNeryClinic.Repositories
             }
 
             tx.Commit();
+
+            ActivityLogService.Log(
+                "Update",
+                "Inventory",
+                $"Restocked '{itemName}' by {quantityAdded} (new quantity {newQuantity})");
         }
 
         public List<RecentItemUsage> GetRecentUsages(int count = 5)
@@ -262,6 +283,11 @@ namespace CruzNeryClinic.Repositories
             command.Parameters.AddWithValue("@ItemId", itemId);
             command.Parameters.AddWithValue("@UpdatedAt", timestamp);
             command.ExecuteNonQuery();
+
+            ActivityLogService.Log(
+                "Restore",
+                "Inventory",
+                $"Restored inventory item '{GetItemName(itemId)}'");
         }
 
         public void LogItemUsage(int itemId, string itemName, int quantityUsed, string usageDate,
@@ -308,6 +334,30 @@ namespace CruzNeryClinic.Repositories
             }
 
             tx.Commit();
+
+            ActivityLogService.Log(
+                "Update",
+                "Inventory",
+                $"Logged usage of {quantityUsed} for '{itemName}' (new quantity {newQuantity})");
+        }
+
+        // Looks up an item's name for use in activity-log descriptions.
+        // Returns a "#id" fallback if the name cannot be resolved.
+        private static string GetItemName(int itemId)
+        {
+            try
+            {
+                using SqliteConnection connection = DatabaseService.GetConnection();
+                connection.Open();
+                using SqliteCommand command = connection.CreateCommand();
+                command.CommandText = "SELECT ItemName FROM InventoryItems WHERE ItemId = @ItemId;";
+                command.Parameters.AddWithValue("@ItemId", itemId);
+                return command.ExecuteScalar()?.ToString() ?? $"#{itemId}";
+            }
+            catch
+            {
+                return $"#{itemId}";
+            }
         }
     }
 }

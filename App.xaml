@@ -8,7 +8,7 @@
     <Application.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <!-- Main application font -->
-        <FontFamily x:Key="AppFont">Open Sans</FontFamily>
+        <FontFamily x:Key="AppFont">pack://application:,,,/Assets/Fonts/OpenSans/#Open Sans</FontFamily>
         
         <!-- Default TextBlock font -->
         <Style TargetType="TextBlock">
@@ -27,7 +27,7 @@
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Foreground" Value="#333333"/>
             <Setter Property="Padding" Value="8,0,14,0"/>
-            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
@@ -295,7 +295,7 @@
             <Setter Property="Padding" Value="18,10" />
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Foreground" Value="{StaticResource TextRegular}" />
-            <Setter Property="FontFamily" Value="Segoe UI" />
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
             <Setter Property="FontSize" Value="14" />
 
             <Setter Property="Template">
@@ -337,7 +337,7 @@
             <Setter Property="Background" Value="{StaticResource HeaderBackground}" />
             <Setter Property="Foreground" Value="{StaticResource TextRegular}" />
             <Setter Property="Padding" Value="14,0,42,0" />
-            <Setter Property="FontFamily" Value="Segoe UI" />
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
             <Setter Property="FontSize" Value="14" />
             <Setter Property="Height" Value="42" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -630,7 +630,7 @@
             </Setter>
         </Style>
 
-        <!-- Main dark blue used by the sidebar and primary buttons -->
+        <!-- #region Main dark blue used by the sidebar and primary buttons -->
         <SolidColorBrush x:Key="SidebarBrush" Color="#223357"/>
         <SolidColorBrush x:Key="SelectedMenuBrush" Color="#E6FCFF"/>
         <SolidColorBrush x:Key="AccentBlueBrush" Color="#2F98D0"/>
@@ -638,7 +638,8 @@
         <SolidColorBrush x:Key="DangerRedBrush" Color="#E53935"/>
         <SolidColorBrush x:Key="CardBorderBrush" Color="#D8D8D8"/>
         <SolidColorBrush x:Key="ScreenBackgroundBrush" Color="#FFFDF8"/>
-
+        <!-- #endregion -->
+        
         <!-- Shared White Dashboard/module Card Style -->
         <Style x:Key="DashboardCardStyle" TargetType="Border">
             <Setter Property="Background" Value="White"/>
@@ -668,13 +669,12 @@
 
         <!-- Shared sidebar menu button -->
         <Style x:Key="SidebarMenuButtonStyle" TargetType="Button">
-            <Setter Property="Height" Value="54"/>
-            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="FontSize" Value="20"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Padding" Value="24,0"/>
             <Setter Property="Template">
@@ -682,7 +682,7 @@
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="MenuBorder"
                                 Background="{TemplateBinding Background}"
-                                CornerRadius="10"
+                                CornerRadius="5"
                                 Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Stretch"
                                             VerticalAlignment="Center"/>
@@ -690,11 +690,11 @@
 
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="MenuBorder" Property="Background" Value="#31466F"/>
+                                <Setter TargetName="MenuBorder" Property="Background" Value="#7990be"/>
                             </Trigger>
 
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="MenuBorder" Property="Background" Value="#192846"/>
+                                <Setter TargetName="MenuBorder" Property="Background" Value="#727e97"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -707,7 +707,7 @@
             TargetType="Button"
             BasedOn="{StaticResource SidebarMenuButtonStyle}">
             <Setter Property="Background" Value="{StaticResource SelectedMenuBrush}"/>
-            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="Foreground" Value="White"/>
         </Style>
 
         <!-- Shared search textbox style used in dashboard and module screens -->

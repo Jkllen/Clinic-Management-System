@@ -80,6 +80,11 @@ namespace CruzNeryClinic.Services
 
                 File.Delete(zipPath);
 
+                ActivityLogService.Log(
+                    "Backup",
+                    "Maintenance",
+                    $"Created database backup '{Path.GetFileName(backupFilePath)}'");
+
                 return backupFilePath;
             }
             finally
@@ -140,6 +145,11 @@ namespace CruzNeryClinic.Services
 
                 byte[] rawKey = File.ReadAllBytes(restoredKeyPath);
                 CryptoService.ImportRawKeyFromBackup(rawKey);
+
+                ActivityLogService.Log(
+                    "Restore",
+                    "Maintenance",
+                    $"Restored database from backup '{Path.GetFileName(backupFilePath)}'");
             }
             finally
             {

@@ -26,5 +26,10 @@
     </Content>
   </ItemGroup>
 
-
+  <ItemGroup>
+    <Resource Include="Assets\Fonts\OpenSans\OpenSans-Regular.ttf"/>
+    <Resource Include="Assets\Fonts\OpenSans\OpenSans-SemiBold.ttf"/>
+    <Resource Include="Assets\Fonts\OpenSans\OpenSans-Bold.ttf"/>
+    <Resource Include="Assets\Fonts\OpenSans\OpenSans-Medium.ttf"/>
+  </ItemGroup>
 </Project>

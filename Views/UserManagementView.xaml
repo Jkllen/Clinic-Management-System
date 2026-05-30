@@ -65,9 +65,19 @@
                     Padding="18"
                     Style="{StaticResource DashboardCardStyle}">
 
-                    <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                    <Grid 
+                        VerticalAlignment="Center">
+                        <Grid.ColumnDefinitions>
+                            <!-- Icon column -->
+                            <ColumnDefinition Width="60" />
+                            <!-- Space between icon and text -->   
+                            <ColumnDefinition Width="18" />
+                            <!-- Text column -->
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
 
                         <Border
+                            Grid.Column="0"
                             Width="60"
                             Height="60"
                             Background="#2F98D0"
@@ -81,11 +91,20 @@
                                 Icon="Users" />
                         </Border>
 
-                        <StackPanel Margin="18,0,0,0" VerticalAlignment="Center">
-                            <TextBlock FontSize="17" Text="Total Users" />
-                            <TextBlock Style="{StaticResource SummaryNumberStyle}" Text="{Binding TotalUsers}" />
+                        <StackPanel 
+                            Grid.Column="2"
+                            VerticalAlignment="Center">
+                            <TextBlock 
+                                FontSize="17" 
+                                Text="Total Users"
+                                TextWrapping="Wrap"
+                                TextTrimming="CharacterEllipsis"
+                                MaxWidth="150"/>
+                            <TextBlock 
+                                Style="{StaticResource SummaryNumberStyle}" 
+                                Text="{Binding TotalUsers}" />
                         </StackPanel>
-                    </StackPanel>
+                    </Grid>
                 </Border>
 
                 <!--  Active Accounts  -->
@@ -94,9 +113,19 @@
                     Padding="18"
                     Style="{StaticResource DashboardCardStyle}">
 
-                    <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                    <Grid 
+                        VerticalAlignment="Center">
+                        <Grid.ColumnDefinitions>
+                            <!-- Icon column -->
+                            <ColumnDefinition Width="60" />
+                            <!-- Space between icon and text -->   
+                            <ColumnDefinition Width="18" />
+                            <!-- Text column -->
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
 
                         <Border
+                            Grid.Column="0"
                             Width="60"
                             Height="60"
                             Background="#2F98D0"
@@ -110,11 +139,20 @@
                                 Icon="Server" />
                         </Border>
 
-                        <StackPanel Margin="18,0,0,0" VerticalAlignment="Center">
-                            <TextBlock FontSize="17" Text="Active Accounts" />
-                            <TextBlock Style="{StaticResource SummaryNumberStyle}" Text="{Binding ActiveAccounts}" />
+                        <StackPanel 
+                            Grid.Column="2"
+                            VerticalAlignment="Center">
+                            <TextBlock 
+                                FontSize="17" 
+                                Text="Active Accounts"
+                                TextWrapping="Wrap"
+                                TextTrimming="CharacterEllipsis"
+                                MaxWidth="150"/>
+                            <TextBlock 
+                                Style="{StaticResource SummaryNumberStyle}" 
+                                Text="{Binding ActiveAccounts}" />
                         </StackPanel>
-                    </StackPanel>
+                    </Grid>
                 </Border>
 
                 <!--  Administrators  -->
@@ -123,9 +161,18 @@
                     Padding="18"
                     Style="{StaticResource DashboardCardStyle}">
 
-                    <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                    <Grid VerticalAlignment="Center">
+                        <Grid.ColumnDefinitions>
+                            <!-- Icon column -->
+                            <ColumnDefinition Width="60" />
+                            <!-- Space between icon and text -->   
+                            <ColumnDefinition Width="18" />
+                            <!-- Text column -->
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
 
                         <Border
+                            Grid.Column="0"
                             Width="60"
                             Height="60"
                             Background="#2F98D0"
@@ -139,11 +186,20 @@
                                 Icon="UserShield" />
                         </Border>
 
-                        <StackPanel Margin="18,0,0,0" VerticalAlignment="Center">
-                            <TextBlock FontSize="17" Text="Administrators" />
-                            <TextBlock Style="{StaticResource SummaryNumberStyle}" Text="{Binding AdministratorCount}" />
+                        <StackPanel 
+                            Grid.Column="2" 
+                            VerticalAlignment="Center">
+                            <TextBlock 
+                                FontSize="17" 
+                                Text="Administrators"
+                                TextWrapping="Wrap"
+                                TextTrimming="CharacterEllipsis"
+                                MaxWidth="150"/>
+                            <TextBlock 
+                                Style="{StaticResource SummaryNumberStyle}" 
+                                Text="{Binding AdministratorCount}" />
                         </StackPanel>
-                    </StackPanel>
+                    </Grid>
                 </Border>
 
                 <!--  Staff  -->
@@ -152,9 +208,18 @@
                     Padding="18"
                     Style="{StaticResource DashboardCardStyle}">
 
-                    <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                    <Grid VerticalAlignment="Center">
+                        <Grid.ColumnDefinitions>
+                            <!-- Icon column -->
+                            <ColumnDefinition Width="60" />
+                            <!-- Space between icon and text -->   
+                            <ColumnDefinition Width="18" />
+                            <!-- Text column -->
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
 
                         <Border
+                            Grid.Column="0"
                             Width="60"
                             Height="60"
                             Background="#2F98D0"
@@ -168,11 +233,19 @@
                                 Icon="UserFriends" />
                         </Border>
 
-                        <StackPanel Margin="18,0,0,0" VerticalAlignment="Center">
-                            <TextBlock FontSize="17" Text="Staff" />
+                        <StackPanel 
+                            Grid.Column="2" 
+                            VerticalAlignment="Center">
+
+                            <TextBlock 
+                                FontSize="17" 
+                                Text="Staff"
+                                TextWrapping="Wrap"
+                                TextTrimming="CharacterEllipsis"
+                                MaxWidth="150"/>
                             <TextBlock Style="{StaticResource SummaryNumberStyle}" Text="{Binding StaffCount}" />
                         </StackPanel>
-                    </StackPanel>
+                    </Grid>
                 </Border>
             </Grid>
 

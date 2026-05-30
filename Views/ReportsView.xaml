@@ -240,7 +240,7 @@
                             HorizontalAlignment="Center"
                             FontSize="28"
                             Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
-                            Icon="HeartPulse" />
+                            Icon="WaveSquare" />
                         <TextBlock
                             Margin="0,7,0,0"
                             FontSize="13"
@@ -426,6 +426,7 @@
                                     FontSize="12"
                                     VerticalContentAlignment="Center"
                                     ItemsSource="{Binding AvailableYears}"
+                                    Style="{StaticResource ExactStyleComboBox}"
                                     SelectedItem="{Binding SelectedFilterYear, Mode=TwoWay}" />
                             </StackPanel>
 
@@ -442,9 +443,9 @@
                                     </Style>
                                 </StackPanel.Style>
                                 <TextBlock Margin="0,0,6,0" FontSize="12" Foreground="#888888" Text="From:" VerticalAlignment="Center" />
-                                <DatePicker Width="130" Margin="0,0,10,0" FontSize="12" SelectedDate="{Binding FilterFromDate, Mode=TwoWay}" />
+                                <DatePicker Width="130" Height="42" Margin="0,0,10,0" FontSize="12" VerticalContentAlignment="Center" BorderBrush="#DADADA" BorderThickness="1" SelectedDate="{Binding FilterFromDate, Mode=TwoWay}" />
                                 <TextBlock Margin="0,0,6,0" FontSize="12" Foreground="#888888" Text="To:" VerticalAlignment="Center" />
-                                <DatePicker Width="130" FontSize="12" SelectedDate="{Binding FilterToDate, Mode=TwoWay}" />
+                                <DatePicker Width="130" Height="42" FontSize="12" VerticalContentAlignment="Center" BorderBrush="#DADADA" BorderThickness="1" SelectedDate="{Binding FilterToDate, Mode=TwoWay}" />
                             </StackPanel>
 
                         </Grid>

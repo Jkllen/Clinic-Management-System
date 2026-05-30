@@ -538,10 +538,17 @@ SELECT last_insert_rowid();";
             command.Parameters.AddWithValue("@CreatedByUserId", billing.CreatedByUserId.HasValue ? billing.CreatedByUserId.Value : DBNull.Value);
             
             command.Parameters.AddWithValue("@Notes", CryptoService.EncryptString(billing.Notes));
-            
+
             command.Parameters.AddWithValue("@CreatedAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
 
-            return Convert.ToInt32(command.ExecuteScalar());
+            int newBillingId = Convert.ToInt32(command.ExecuteScalar());
+
+            ActivityLogService.Log(
+                "Create",
+                "Billing",
+                $"Created billing transaction (Receipt {billing.ReceiptNumber}) for '{billing.ServiceName}' totalling ₱{billing.TotalAmount:N2}");
+
+            return newBillingId;
         }
 
         #endregion
@@ -625,6 +632,11 @@ SELECT last_insert_rowid();";
                 updateCommand.ExecuteNonQuery();
 
                 transaction.Commit();
+
+                ActivityLogService.Log(
+                    "Payment",
+                    "Billing",
+                    $"Recorded payment of ₱{payment.AmountPaid:N2} via {payment.PaymentMethod} for billing #{payment.BillingId} (now {paymentStatus})");
             }
             catch
             {

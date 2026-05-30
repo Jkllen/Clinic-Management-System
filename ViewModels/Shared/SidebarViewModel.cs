@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.Input;
 using CruzNeryClinic.Services;
 using System;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -128,6 +129,16 @@ namespace CruzNeryClinic.ViewModels.Shared
 
         private void Logout()
         {
+            MessageBoxResult result = MessageBox.Show(
+                "Are you sure you want to log out?",
+                "Confirm Logout",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question
+            );
+
+            if (result != MessageBoxResult.Yes)
+                return;
+
             SessionService.Logout();
             LogoutRequested?.Invoke();
         }

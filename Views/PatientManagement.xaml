@@ -85,9 +85,20 @@
                     Padding="18"
                     Style="{StaticResource DashboardCardStyle}">
 
-                    <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                    <Grid VerticalAlignment="Center" >
+                        <Grid.ColumnDefinitions>
+                            <!-- Icon column -->
+                            <ColumnDefinition Width="60" />
+
+                            <!-- Space between icon and text -->
+                            <ColumnDefinition Width="18" />
+
+                            <!-- Text column, constrained so wrapping works -->
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
 
                         <Border
+                            Grid.Column="0"
                             Width="60"
                             Height="60"
                             Background="#2F98D0"
@@ -101,11 +112,21 @@
                                 Icon="Users" />
                         </Border>
 
-                        <StackPanel Margin="18,0,0,0" VerticalAlignment="Center">
-                            <TextBlock FontSize="17" Text="Total Patients" />
-                            <TextBlock Style="{StaticResource SummaryNumberStyle}" Text="{Binding TotalPatients}" />
+                        <StackPanel 
+                            Grid.Column="2"
+                            VerticalAlignment="Center">
+
+                            <TextBlock 
+                                FontSize="17" 
+                                Text="Total Patients"
+                                TextWrapping="Wrap"
+                                TextTrimming="CharacterEllipsis"
+                                MaxWidth="150"/>
+                            <TextBlock 
+                                Style="{StaticResource SummaryNumberStyle}" 
+                                Text="{Binding TotalPatients}" />
                         </StackPanel>
-                    </StackPanel>
+                    </Grid>
                 </Border>
 
                 <!-- New Patients This Month -->

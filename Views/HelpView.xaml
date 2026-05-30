@@ -268,7 +268,7 @@
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
 
-                            <!-- Search -->
+                            <!-- #region Search -->
                             <Grid Grid.Row="0" Margin="0,0,0,16">
                                 <Border Height="42" Background="#F3F4F6" CornerRadius="8">
                                     <Grid>
@@ -307,8 +307,9 @@
                                     </Grid>
                                 </Border>
                             </Grid>
+                            <!-- #endregion -->
 
-                            <!-- Empty State -->
+                            <!-- #region Empty State -->
                             <TextBlock
                                 Grid.Row="1"
                                 HorizontalAlignment="Center"
@@ -327,8 +328,9 @@
                                     </Style>
                                 </TextBlock.Style>
                             </TextBlock>
+                            <!-- #endregion -->
 
-                            <!-- Topics List -->
+                            <!-- #region Topics List -->
                             <ScrollViewer
                                 Grid.Row="1"
                                 Style="{x:Null}"
@@ -363,9 +365,12 @@
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
                             </ScrollViewer>
+                            <!-- #endregion -->
+
                         </Grid>
                     </Border>
                 </Grid>
+                
 
                 <!-- =====================
                      FAQ Panel
@@ -392,7 +397,7 @@
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
 
-                            <!-- Search -->
+                            <!-- #region Search -->
                             <Grid Grid.Row="0" Margin="0,0,0,16">
                                 <Border Height="42" Background="#F3F4F6" CornerRadius="8">
                                     <Grid>
@@ -431,8 +436,10 @@
                                     </Grid>
                                 </Border>
                             </Grid>
+                            <!-- #endregion -->
 
-                            <!-- Empty State -->
+
+                            <!-- #region Empty State -->
                             <TextBlock
                                 Grid.Row="1"
                                 HorizontalAlignment="Center"
@@ -451,8 +458,9 @@
                                     </Style>
                                 </TextBlock.Style>
                             </TextBlock>
+                            <!-- #endregion -->
 
-                            <!-- FAQ Accordion -->
+                            <!-- #region FAQ Accordion -->
                             <ScrollViewer
                                 Grid.Row="1"
                                 Style="{x:Null}"

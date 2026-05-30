@@ -480,7 +480,14 @@ SELECT last_insert_rowid();";
             command.Parameters.AddWithValue("@CreatedByUserId", appointment.CreatedByUserId.HasValue ? appointment.CreatedByUserId.Value : DBNull.Value);
             command.Parameters.AddWithValue("@CreatedAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
 
-            return Convert.ToInt32(command.ExecuteScalar());
+            int newAppointmentId = Convert.ToInt32(command.ExecuteScalar());
+
+            ActivityLogService.Log(
+                "Create",
+                "Appointment",
+                $"Created {appointment.AppointmentType} appointment for service '{appointment.ServiceName}' with {appointment.DentistName} on {appointment.AppointmentDate:yyyy-MM-dd} {appointment.AppointmentTime:hh\\:mm}");
+
+            return newAppointmentId;
         }
 
         #endregion
@@ -572,6 +579,11 @@ SELECT last_insert_rowid();";
             command.Parameters.AddWithValue("@AppointmentId", appointment.AppointmentId);
 
             command.ExecuteNonQuery();
+
+            ActivityLogService.Log(
+                "Update",
+                "Appointment",
+                $"Rescheduled appointment #{appointment.AppointmentId} to {appointment.AppointmentDate:yyyy-MM-dd} {appointment.AppointmentTime:hh\\:mm}");
         }
 
         #endregion
@@ -743,6 +755,12 @@ WHERE AppointmentId = @AppointmentId;";
                 updateCommand.ExecuteNonQuery();
 
                 transaction.Commit();
+
+                ActivityLogService.Log(
+                    "Update",
+                    "Appointment",
+                    $"Started treatment for appointment #{appointmentId}");
+
                 return true;
             }
             catch
@@ -797,6 +815,11 @@ WHERE AppointmentId = @AppointmentId;";
             command.Parameters.AddWithValue("@AppointmentId", appointmentId);
 
             command.ExecuteNonQuery();
+
+            ActivityLogService.Log(
+                "Update",
+                "Appointment",
+                $"Marked appointment #{appointmentId} as {(isUrgent ? "urgent" : "not urgent")}");
         }
 
         private void UpdateStatus(
@@ -823,6 +846,11 @@ WHERE AppointmentId = @AppointmentId;";
             configureParameters(command);
 
             command.ExecuteNonQuery();
+
+            ActivityLogService.Log(
+                "Update",
+                "Appointment",
+                $"Changed status of appointment #{appointmentId} to '{status}'");
         }
 
         #endregion

@@ -67,12 +67,23 @@
                         Grid.Column="0"
                         Padding="18"
                         Style="{StaticResource DashboardCardStyle}">
-                        <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                        <Grid VerticalAlignment="Center">
+                            <Grid.ColumnDefinitions>
+                                <!-- Icon column -->
+                                <ColumnDefinition Width="60" />
+                                <!-- Space between icon and text -->
+                                <ColumnDefinition Width="18" />
+                                <!-- Text column, constrained so wrapping works -->
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            
                             <Border
+                                Grid.Column="0"
                                 Width="60"
                                 Height="60"
                                 Background="#2F98D0"
                                 CornerRadius="14">
+                                
                                 <fa:IconBlock
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
@@ -81,23 +92,46 @@
                                     Icon="CalendarDay" />
                             </Border>
 
-                            <StackPanel Margin="18,0,0,0" VerticalAlignment="Center">
-                                <TextBlock FontSize="17" Text="Today’s Appointments" />
-                                <TextBlock Style="{StaticResource SummaryNumberStyle}" Text="{Binding TodaysAppointments}" />
+                            <StackPanel 
+                                Grid.Column="2"
+                                VerticalAlignment="Center">
+
+                                <TextBlock 
+                                    FontSize="17" 
+                                    Text="Today’s Appointments"
+                                    TextWrapping="Wrap"
+                                    TextTrimming="CharacterEllipsis"
+                                    MaxWidth="150" />
+                                <TextBlock 
+                                    Style="{StaticResource SummaryNumberStyle}" 
+                                    Text="{Binding TodaysAppointments}" />
                             </StackPanel>
-                        </StackPanel>
+                        </Grid>
                     </Border>
 
                     <Border
                         Grid.Column="2"
                         Padding="18"
                         Style="{StaticResource DashboardCardStyle}">
-                        <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                        
+                        <Grid 
+                            VerticalAlignment="Center">
+                            <Grid.ColumnDefinitions>
+                                <!-- Icon column -->
+                                <ColumnDefinition Width="60" />
+                                <!-- Space between icon and text -->
+                                <ColumnDefinition Width="18" />
+                                <!-- Text column, constrained so wrapping works -->
+                                <ColumnDefinition Width="*" /> 
+                            </Grid.ColumnDefinitions>
+                            
                             <Border
+                                Grid.Column="0"
                                 Width="60"
                                 Height="60"
                                 Background="#2F98D0"
                                 CornerRadius="14">
+                                
                                 <fa:IconBlock
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
@@ -106,19 +140,41 @@
                                     Icon="CheckCircle" />
                             </Border>
 
-                            <StackPanel Margin="18,0,0,0" VerticalAlignment="Center">
-                                <TextBlock FontSize="17" Text="Completed Today" />
-                                <TextBlock Style="{StaticResource SummaryNumberStyle}" Text="{Binding CompletedToday}" />
+                            <StackPanel 
+                                Grid.Column="2" 
+                                VerticalAlignment="Center">
+
+                                <TextBlock 
+                                    FontSize="17" 
+                                    Text="Completed Today"
+                                    TextWrapping="Wrap"
+                                    TextTrimming="CharacterEllipsis"
+                                    MaxWidth="150"/>
+                                <TextBlock 
+                                    Style="{StaticResource SummaryNumberStyle}" 
+                                    Text="{Binding CompletedToday}" />
                             </StackPanel>
-                        </StackPanel>
+                        </Grid>
                     </Border>
 
                     <Border
                         Grid.Column="4"
                         Padding="18"
                         Style="{StaticResource DashboardCardStyle}">
-                        <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                        
+                        <Grid 
+                            VerticalAlignment="Center">
+                            <Grid.ColumnDefinitions>
+                                <!-- Icon column -->
+                                <ColumnDefinition Width="60" />
+                                <!-- Space between icon and text -->
+                                <ColumnDefinition Width="18" />
+                                <!-- Text column, constrained so wrapping works -->
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            
                             <Border
+                                Grid.Column="0"
                                 Width="60"
                                 Height="60"
                                 Background="#2F98D0"
@@ -131,11 +187,21 @@
                                     Icon="TimesCircle" />
                             </Border>
 
-                            <StackPanel Margin="18,0,0,0" VerticalAlignment="Center">
-                                <TextBlock FontSize="17" Text="Cancelled Today" />
-                                <TextBlock Style="{StaticResource SummaryNumberStyle}" Text="{Binding CancelledToday}" />
+                            <StackPanel 
+                                Grid.Column="2"
+                                VerticalAlignment="Center">
+
+                                <TextBlock 
+                                    FontSize="17" 
+                                    Text="Cancelled Today"
+                                    TextWrapping="Wrap"
+                                    TextTrimming="CharacterEllipsis"
+                                    MaxWidth="150"/>
+                                <TextBlock 
+                                    Style="{StaticResource SummaryNumberStyle}" 
+                                    Text="{Binding CancelledToday}" />
                             </StackPanel>
-                        </StackPanel>
+                        </Grid>
                     </Border>
                 </Grid>
 

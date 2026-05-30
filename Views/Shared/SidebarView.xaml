@@ -75,7 +75,7 @@
                    RenderOptions.BitmapScalingMode="HighQuality">
                 <Image.Effect>
                     <DropShadowEffect Color="#000000"
-                                        Direction="320"
+                                        Direction="180"
                                       BlurRadius="5"
                                       ShadowDepth="5"
                                       Opacity="0.5"/>
@@ -167,12 +167,12 @@
                             Foreground="{Binding DashboardForeground}">
                         <StackPanel Orientation="Horizontal">
                             <fa:IconBlock Icon="ThLarge"
-                                          Width="42"
-                                          FontSize="24"
+                                          Width="32"
+                                          FontSize="18"
                                           Foreground="{Binding DashboardForeground}"
                                           VerticalAlignment="Center"/>
                             <TextBlock Text="Dashboard"
-                                       FontSize="21"
+                                       FontSize="16"
                                        FontWeight="SemiBold"
                                        Foreground="{Binding DashboardForeground}"
                                        VerticalAlignment="Center"
@@ -188,12 +188,12 @@
                             Foreground="{Binding ManageUsersForeground}">
                         <StackPanel Orientation="Horizontal">
                             <fa:IconBlock Icon="UserCog"
-                                          Width="42"
-                                          FontSize="24"
+                                          Width="32"
+                                          FontSize="18"
                                           Foreground="{Binding ManageUsersForeground}"
                                           VerticalAlignment="Center"/>
                             <TextBlock Text="Manage Users"
-                                       FontSize="21"
+                                       FontSize="16"
                                        FontWeight="SemiBold"
                                        Foreground="{Binding ManageUsersForeground}"
                                        VerticalAlignment="Center"
@@ -208,12 +208,13 @@
                             Foreground="{Binding PatientsForeground}">
                         <StackPanel Orientation="Horizontal">
                             <fa:IconBlock Icon="Users"
-                                          Width="42"
-                                          FontSize="24"
+                                          Width="32"
+                                          FontSize="18"
                                           Foreground="{Binding PatientsForeground}"
                                           VerticalAlignment="Center"/>
                             <TextBlock Text="Patients"
-                                       FontSize="21"
+                                       FontSize="16"
+
                                        FontWeight="SemiBold"
                                        Foreground="{Binding PatientsForeground}"
                                        VerticalAlignment="Center"
@@ -228,12 +229,12 @@
                             Foreground="{Binding AppointmentForeground}">
                         <StackPanel Orientation="Horizontal">
                             <fa:IconBlock Icon="CalendarAlt"
-                                          Width="42"
-                                          FontSize="24"
+                                          Width="32"
+                                          FontSize="18"
                                           Foreground="{Binding AppointmentForeground}"
                                           VerticalAlignment="Center"/>
                             <TextBlock Text="Appointment"
-                                       FontSize="21"
+                                       FontSize="16"
                                        FontWeight="SemiBold"
                                        Foreground="{Binding AppointmentForeground}"
                                        VerticalAlignment="Center"
@@ -248,12 +249,12 @@
                             Foreground="{Binding BillingForeground}">
                         <StackPanel Orientation="Horizontal">
                             <fa:IconBlock Icon="CashRegister"
-                                          Width="42"
-                                          FontSize="24"
+                                          Width="32"
+                                          FontSize="18"
                                           Foreground="{Binding BillingForeground}"
                                           VerticalAlignment="Center"/>
                             <TextBlock Text="Billing"
-                                       FontSize="21"
+                                       FontSize="16"
                                        FontWeight="SemiBold"
                                        Foreground="{Binding BillingForeground}"
                                        VerticalAlignment="Center"
@@ -268,12 +269,12 @@
                             Foreground="{Binding InventoryForeground}">
                         <StackPanel Orientation="Horizontal">
                             <fa:IconBlock Icon="Box"
-                                          Width="42"
-                                          FontSize="24"
+                                          Width="32"
+                                          FontSize="18"
                                           Foreground="{Binding InventoryForeground}"
                                           VerticalAlignment="Center"/>
                             <TextBlock Text="Inventory"
-                                       FontSize="21"
+                                       FontSize="16"
                                        FontWeight="SemiBold"
                                        Foreground="{Binding InventoryForeground}"
                                        VerticalAlignment="Center"
@@ -289,12 +290,12 @@
                             Foreground="{Binding MaintenanceForeground}">
                         <StackPanel Orientation="Horizontal">
                             <fa:IconBlock Icon="Tools"
-                                          Width="42"
-                                          FontSize="24"
+                                          Width="32"
+                                          FontSize="18"
                                           Foreground="{Binding MaintenanceForeground}"
                                           VerticalAlignment="Center"/>
                             <TextBlock Text="Maintenance"
-                                       FontSize="21"
+                                       FontSize="16"
                                        FontWeight="SemiBold"
                                        Foreground="{Binding MaintenanceForeground}"
                                        VerticalAlignment="Center"
@@ -310,12 +311,12 @@
                             Foreground="{Binding ReportsForeground}">
                         <StackPanel Orientation="Horizontal">
                             <fa:IconBlock Icon="ChartBar"
-                                          Width="42"
-                                          FontSize="24"
+                                          Width="32"
+                                          FontSize="18"
                                           Foreground="{Binding ReportsForeground}"
                                           VerticalAlignment="Center"/>
                             <TextBlock Text="Reports"
-                                       FontSize="21"
+                                       FontSize="16"
                                        FontWeight="SemiBold"
                                        Foreground="{Binding ReportsForeground}"
                                        VerticalAlignment="Center"
@@ -330,19 +331,25 @@
                             Foreground="{Binding HelpForeground}">
                         <StackPanel Orientation="Horizontal">
                             <fa:IconBlock Icon="QuestionCircle"
-                                          Width="42"
-                                          FontSize="24"
+                                          Width="32"
+                                          FontSize="18"
                                           Foreground="{Binding HelpForeground}"
                                           VerticalAlignment="Center"/>
 
                             <TextBlock Text="Help"
-                                       FontSize="21"
+                                       FontSize="16"
                                        FontWeight="SemiBold"
                                        Foreground="{Binding HelpForeground}"
                                        VerticalAlignment="Center"
                                        Margin="18,0,0,0"/>
                         </StackPanel>
                     </Button>
+                    
+                    <!-- Separator -->
+                    <Rectangle Grid.Row="3"
+                            Height="1"
+                            Fill="#2E4470"
+                            Margin="0,8,0,8"/>
 
                     <!-- Logout -->
                     <Button Command="{Binding LogoutCommand}"
@@ -350,12 +357,12 @@
                             Margin="0,8,0,0">
                         <StackPanel Orientation="Horizontal">
                             <fa:IconBlock Icon="SignOutAlt"
-                                          Width="42"
-                                          FontSize="24"
+                                          Width="32"
+                                          FontSize="18"
                                           Foreground="White"
                                           VerticalAlignment="Center"/>
                             <TextBlock Text="Log Out"
-                                       FontSize="21"
+                                       FontSize="16"
                                        FontWeight="SemiBold"
                                        Foreground="White"
                                        VerticalAlignment="Center"

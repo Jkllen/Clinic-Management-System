@@ -124,19 +124,28 @@
                     <!--  Step content  -->
                     <Grid Grid.Row="2">
 
-                        <!--  STEP 1: Basics  -->
+                        <!--  #region STEP 1: Basics  -->
                         <Grid Visibility="{Binding IsBasicsStepVisible, Converter={StaticResource BoolToVisibilityConverter}}">
                             <Grid.RowDefinitions>
+                                <!-- Let's Get Started -->
                                 <RowDefinition Height="105" />
-                                <RowDefinition Height="*" />
+                                <!-- Form fields -->
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
 
-                            <StackPanel
-                                Grid.Row="0"
-                                Margin="0,8,0,0"
-                                Orientation="Horizontal">
+                            <!-- #region Let's Get Started -->
+                            <Grid Grid.Row="0">
+                                <Grid.ColumnDefinitions>
+                                    <!-- Icon -->
+                                    <ColumnDefinition Width="Auto" />
+                                    <!-- Spacing -->
+                                    <ColumnDefinition Width="15" />
+                                    <!-- Content -->
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
 
                                 <Border
+                                    Grid.Column="0"
                                     Width="86"
                                     Height="86"
                                     Background="#FFF9FD"
@@ -151,20 +160,27 @@
                                         Icon="UserPlus" />
                                 </Border>
 
-                                <StackPanel Margin="20,10,0,0">
+                                <StackPanel 
+                                    Grid.Column="2"
+                                    VerticalAlignment="Center">
+
                                     <TextBlock
-                                        FontSize="28"
+                                        FontSize="16"
                                         FontWeight="Bold"
                                         Foreground="Black"
                                         Text="Let’s get started." />
 
                                     <TextBlock
                                         Margin="0,8,0,0"
-                                        FontSize="18"
+                                        FontSize="14"
                                         Foreground="#6F6F6F"
-                                        Text="Provide the required information then choose a role before proceeding&#x0a;to the next part." />
+                                        TextWrapping="Wrap"
+                                        TextTrimming="CharacterEllipsis"
+                                        MaxWidth="600"
+                                        Text="Provide the required information then choose a role before proceeding to the next part." />
                                 </StackPanel>
-                            </StackPanel>
+                            </Grid>
+                            <!-- #endregion Let's Get Started -->
 
                             <Grid Grid.Row="1" Margin="0,10,0,0">
                                 <Grid.ColumnDefinitions>
@@ -180,10 +196,14 @@
                                     <RowDefinition Height="15" />
                                     <RowDefinition Height="82" />
                                 </Grid.RowDefinitions>
-
+                            <!-- #region Fields -->
                                 <!--  First name  -->
-                                <StackPanel Grid.Row="0" Grid.Column="0">
-                                    <TextBlock FontSize="22" Foreground="#777777">
+                                <StackPanel 
+                                    Grid.Row="0" 
+                                    Grid.Column="0">
+                                    <TextBlock 
+                                        FontSize="16" 
+                                        Foreground="#777777">
                                         <Run Text="First name" />
                                         <Run Foreground="#E53935" Text=" *" />
                                     </TextBlock>
@@ -196,7 +216,7 @@
 
                                 <!--  Role  -->
                                 <StackPanel Grid.Row="0" Grid.Column="2">
-                                    <TextBlock FontSize="22" Foreground="#777777">
+                                    <TextBlock FontSize="16" Foreground="#777777">
                                         <Run Text="Role" />
                                         <Run Foreground="#E53935" Text=" *" />
                                     </TextBlock>
@@ -210,7 +230,7 @@
 
                                 <!--  Last name  -->
                                 <StackPanel Grid.Row="1" Grid.Column="0">
-                                    <TextBlock FontSize="22" Foreground="#777777">
+                                    <TextBlock FontSize="16" Foreground="#777777">
                                         <Run Text="Last name" />
                                         <Run Foreground="#E53935" Text=" *" />
                                     </TextBlock>
@@ -223,7 +243,7 @@
 
                                 <!--  Contact number  -->
                                 <StackPanel Grid.Row="1" Grid.Column="2">
-                                    <TextBlock FontSize="22" Foreground="#777777">
+                                    <TextBlock FontSize="16" Foreground="#777777">
                                         <Run Text="Contact Number" />
                                         <Run Foreground="#E53935" Text=" *" />
                                     </TextBlock>
@@ -240,7 +260,7 @@
                                     Grid.Column="0"
                                     Margin="0,0,0,18">
                                     <TextBlock
-                                        FontSize="22"
+                                        FontSize="16"
                                         Foreground="#777777"
                                         Text="Middle name" />
                                     <TextBox
@@ -340,8 +360,10 @@
                                             Icon="{Binding AddUserConfirmPasswordEyeIcon}" />
                                     </Button>
                                 </Grid>
+                            <!-- #endregion Fields -->
                             </Grid>
                         </Grid>
+                        <!--  #endregion STEP 1: Basics  -->
 
                         <!--  STEP 2: Security Questions  -->
                         <Grid Visibility="{Binding IsSecurityStepVisible, Converter={StaticResource BoolToVisibilityConverter}}">
@@ -350,12 +372,18 @@
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
 
-                            <StackPanel
-                                Grid.Row="0"
-                                Margin="0,8,0,0"
-                                Orientation="Horizontal">
+                            <Grid Grid.Row="0">
+                                <Grid.ColumnDefinitions>
+                                    <!-- Icon -->
+                                    <ColumnDefinition Width="Auto" />
+                                    <!-- Spacing -->
+                                    <ColumnDefinition Width="15" />
+                                    <!-- Content -->
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
 
                                 <Border
+                                    Grid.Column="0"
                                     Width="86"
                                     Height="86"
                                     Background="#FFF9FD"
@@ -370,20 +398,25 @@
                                         Icon="UserShield" />
                                 </Border>
 
-                                <StackPanel Margin="20,10,0,0">
+                                <StackPanel 
+                                    Grid.Column="2"
+                                    VerticalAlignment="Center">
                                     <TextBlock
-                                        FontSize="28"
+                                        FontSize="16"
                                         FontWeight="Bold"
                                         Foreground="Black"
                                         Text="Security Questions" />
 
                                     <TextBlock
                                         Margin="0,8,0,0"
-                                        FontSize="18"
+                                        FontSize="14"
                                         Foreground="#6F6F6F"
-                                        Text="Choose a question that only you can answer. Used for password&#x0a;recovery." />
+                                        TextWrapping="Wrap"
+                                        TextTrimming="CharacterEllipsis"
+                                        MaxWidth="600"
+                                        Text="Choose a question that only you can answer. Used for password recovery." />
                                 </StackPanel>
-                            </StackPanel>
+                            </Grid>
 
                             <Grid Grid.Row="1" Margin="0,20,0,0">
                                 <Grid.RowDefinitions>
@@ -400,7 +433,7 @@
 
                                 <!--  Q1  -->
                                 <StackPanel Grid.Row="0" Grid.Column="0">
-                                    <TextBlock FontSize="22" Foreground="#777777">
+                                    <TextBlock FontSize="16" Foreground="#777777">
                                         <Run Text="Security question 1:" />
                                         <Run Foreground="#E53935" Text=" *" />
                                     </TextBlock>
@@ -435,7 +468,7 @@
 
                                 <!--  Q2  -->
                                 <StackPanel Grid.Row="1" Grid.Column="0">
-                                    <TextBlock FontSize="22" Foreground="#777777">
+                                    <TextBlock FontSize="16" Foreground="#777777">
                                         <Run Text="Security question 2:" />
                                         <Run Foreground="#E53935" Text=" *" />
                                     </TextBlock>
@@ -470,7 +503,7 @@
 
                                 <!--  Q3  -->
                                 <StackPanel Grid.Row="2" Grid.Column="0">
-                                    <TextBlock FontSize="22" Foreground="#777777">
+                                    <TextBlock FontSize="16" Foreground="#777777">
                                         <Run Text="Security question 3:" />
                                         <Run Foreground="#E53935" Text=" *" />
                                     </TextBlock>
@@ -512,12 +545,18 @@
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
 
-                            <StackPanel
-                                Grid.Row="0"
-                                Margin="0,8,0,0"
-                                Orientation="Horizontal">
+                            <Grid Grid.Row="0">
+                                <Grid.ColumnDefinitions>
+                                    <!-- Icon -->
+                                    <ColumnDefinition Width="Auto" />
+                                    <!-- Spacing -->
+                                    <ColumnDefinition Width="15" />
+                                    <!-- Content -->
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
 
                                 <Border
+                                    Grid.Column="0"
                                     Width="86"
                                     Height="86"
                                     Background="#FFF9FD"
@@ -532,20 +571,25 @@
                                         Icon="UserCircle" />
                                 </Border>
 
-                                <StackPanel Margin="20,10,0,0">
+                                <StackPanel 
+                                    Grid.Column="2" 
+                                    VerticalAlignment="Center">
                                     <TextBlock
-                                        FontSize="28"
+                                        FontSize="16"
                                         FontWeight="Bold"
                                         Foreground="Black"
                                         Text="Confirmation" />
 
                                     <TextBlock
                                         Margin="0,8,0,0"
-                                        FontSize="18"
+                                        FontSize="14"
                                         Foreground="#6F6F6F"
+                                        TextWrapping="Wrap"
+                                        TextTrimming="CharacterEllipsis"
+                                        MaxWidth="600"
                                         Text="Review user information before final submission." />
                                 </StackPanel>
-                            </StackPanel>
+                            </Grid>
 
                             <Grid Grid.Row="1" Margin="0,10,0,0">
                                 <Grid.ColumnDefinitions>
@@ -686,7 +730,7 @@
                             Background="#B6B6B6"
                             Command="{Binding PreviousStepCommand}"
                             Content="Back"
-                            FontSize="22"
+                            FontSize="16"
                             FontWeight="Bold"
                             Foreground="White"
                             Style="{StaticResource PrimaryButtonStyle}"
@@ -701,7 +745,7 @@
                             Background="#223357"
                             Command="{Binding NextStepCommand}"
                             Content="Next"
-                            FontSize="22"
+                            FontSize="16"
                             FontWeight="Bold"
                             Foreground="White"
                             Style="{StaticResource PrimaryButtonStyle}"
@@ -716,7 +760,7 @@
                             Background="#223357"
                             Command="{Binding SaveNewUserCommand}"
                             Content="Add User"
-                            FontSize="22"
+                            FontSize="16"
                             FontWeight="Bold"
                             Foreground="White"
                             Style="{StaticResource PrimaryButtonStyle}"
@@ -732,8 +776,8 @@
                         <Border Background="#88FFFFFF" />
 
                         <Border
-                            Width="290"
-                            Height="200"
+                            Width="Auto"
+                            Height="Auto"
                             Padding="20"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
@@ -742,34 +786,91 @@
                             BorderThickness="1"
                             CornerRadius="8">
 
-                            <StackPanel>
-                                <StackPanel Orientation="Horizontal">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <!-- Header -->
+                                    <RowDefinition Height="Auto" />
+                                    <!-- Content -->
+                                    <RowDefinition Height="Auto" />
+                                    <!-- Button -->
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                            <Grid Grid.Row="0">
+                                <Grid.ColumnDefinitions>
+                                    <!-- Icon -->
+                                    <ColumnDefinition Width="Auto" />
+                                    <!-- Spacing -->
+                                    <ColumnDefinition Width="10" />
+                                    <!-- Content -->
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                
+                                <Border 
+                                    Grid.Column="0"
+                                    Width="46"
+                                    Height="46"
+                                    CornerRadius="20"
+                                    Background="#FFF9FD"
+                                    BorderBrush="#F0D7EF">
                                     <fa:IconBlock
-                                        Margin="0,0,10,0"
-                                        FontSize="22"
+                                        FontSize="26"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
                                         Foreground="#19C929"
                                         Icon="CheckSquare" />
+                                </Border>
+
+                                <StackPanel
+                                    Grid.Column="2"
+                                    VerticalAlignment="Center">
+                                    <TextBlock
+                                        FontSize="18"
+                                        FontWeight="SemiBold"
+                                        Text="User created successfully"
+                                        TextWrapping="Wrap"
+                                        TextTrimming="WordEllipsis"
+                                        MaxWidth="300" />
+                                </StackPanel>
+                            </Grid>
+
+
+                            <Grid Grid.Row="1">
+                                <Grid.RowDefinitions>
+                                    <!-- User Display Name -->
+                                    <RowDefinition Height="Auto" />
+                                    <!-- Instruction -->
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                
+                                <StackPanel 
+                                    Grid.Row="0"
+                                    VerticalAlignment="Center">
 
                                     <TextBlock
-                                        FontSize="16"
-                                        FontWeight="SemiBold"
-                                        Text="User created successfully" />
+                                        FontSize="12"
+                                        Foreground="#777777"
+                                        Text="{Binding CreatedUserDisplayName, StringFormat={}{0} has been added as user.}"
+                                        TextTrimming="WordEllipsis"
+                                        TextWrapping="Wrap"
+                                        MaxWidth="300" />
                                 </StackPanel>
 
-                                <TextBlock
-                                    Margin="32,10,0,0"
-                                    FontSize="12"
-                                    Foreground="#777777"
-                                    Text="{Binding CreatedUserDisplayName, StringFormat={}{0} has been added as user.}" />
+                                <StackPanel
+                                    Grid.Row="1"
+                                    VerticalAlignment="Center">
 
-                                <TextBlock
-                                    Margin="32,12,0,0"
-                                    FontSize="11"
-                                    FontStyle="Italic"
-                                    Foreground="#999999"
-                                    Text="You may now close this window or continue managing users."
-                                    TextWrapping="Wrap" />
+                                    <TextBlock
+                                        Margin="32,12,0,0"
+                                        FontSize="11"
+                                        FontStyle="Italic"
+                                        Foreground="#999999"
+                                        Text="You may now close this window or continue managing users."
+                                        TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Grid>
 
+                            <Grid Grid.Row="2">
                                 <StackPanel
                                     Margin="0,18,0,0"
                                     HorizontalAlignment="Right"
@@ -796,7 +897,8 @@
                                         Foreground="White"
                                         Style="{StaticResource PrimaryButtonStyle}" />
                                 </StackPanel>
-                            </StackPanel>
+                            </Grid>
+                            </Grid>
                         </Border>
                     </Grid>
                 </Grid>
