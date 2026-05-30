@@ -20,6 +20,7 @@ namespace CruzNeryClinic.Data
 
             SeedDefaultAdminAccounts(connection);
             SeedDefaultServices(connection);
+            EnsureBillingInvoiceSchema(connection);
         }
 
         private static void EnableForeignKeys(SqliteConnection connection)
@@ -793,9 +794,7 @@ CREATE INDEX IF NOT EXISTS idx_activity_created ON ActivityLogs(CreatedAt);
         }
         private static void SeedDefaultServices(SqliteConnection connection)
         {
-            // These services are based on the clinic services from the interview/documentation.
             // Prices can be updated later through the system if needed.
-
             SeedService(connection, "Prophylaxis", 0);
             SeedService(connection, "Restoration / Pasta", 0);
             SeedService(connection, "Extraction", 0);
@@ -838,5 +837,153 @@ VALUES (
 
             insertCommand.ExecuteNonQuery();
         }
+
+        private static bool ColumnExists(SqliteConnection connection, string tableName, string columnName)
+        {
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = $"PRAGMA table_info({tableName});";
+
+            using SqliteDataReader reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                string existingColumnName = reader["name"]?.ToString() ?? string.Empty;
+
+                if (string.Equals(existingColumnName, columnName, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static void EnsureBillingInvoiceSchema(SqliteConnection connection)
+        {
+            // BillingTransactions invoice/header extensions
+
+            if (!ColumnExists(connection, "BillingTransactions", "InvoiceTitle"))
+            {
+                using SqliteCommand command = connection.CreateCommand();
+                command.CommandText = @"
+        ALTER TABLE BillingTransactions
+        ADD COLUMN InvoiceTitle TEXT;";
+                command.ExecuteNonQuery();
+            }
+
+            if (!ColumnExists(connection, "BillingTransactions", "IsInvoiceOpen"))
+            {
+                using SqliteCommand command = connection.CreateCommand();
+                command.CommandText = @"
+        ALTER TABLE BillingTransactions
+        ADD COLUMN IsInvoiceOpen INTEGER NOT NULL DEFAULT 1;";
+                command.ExecuteNonQuery();
+            }
+
+            // =====================================================
+            // BillingTransactionItems table
+            // This stores all itemized treatments/procedures under one invoice.
+            // Sensitive fields such as ServiceName, ItemDescription, and Amount
+            // will be encrypted by BillingRepository later.
+            // =====================================================
+
+            using (SqliteCommand command = connection.CreateCommand())
+            {
+                command.CommandText = @"
+        CREATE TABLE IF NOT EXISTS BillingTransactionItems (
+            BillingItemId INTEGER PRIMARY KEY AUTOINCREMENT,
+            BillingId INTEGER NOT NULL,
+            AppointmentId INTEGER NULL,
+            TreatmentRecordId INTEGER NULL,
+            ServiceId INTEGER NULL,
+            ServiceName TEXT NOT NULL,
+            ItemDescription TEXT,
+            TreatmentDate TEXT NULL,
+            Amount TEXT NOT NULL,
+            IsIncluded INTEGER NOT NULL DEFAULT 0,
+            CreatedAt TEXT NOT NULL,
+
+            FOREIGN KEY (BillingId)
+                REFERENCES BillingTransactions(BillingId),
+
+            FOREIGN KEY (AppointmentId)
+                REFERENCES Appointments(AppointmentId),
+
+            FOREIGN KEY (TreatmentRecordId)
+                REFERENCES TreatmentRecords(TreatmentRecordId)
+        );";
+                command.ExecuteNonQuery();
+            }
+
+            // TreatmentRecords billing tracking fields
+            // These prevent the same completed treatment from being billed again.
+
+            if (!ColumnExists(connection, "TreatmentRecords", "BillingStatus"))
+            {
+                using SqliteCommand command = connection.CreateCommand();
+                command.CommandText = @"
+        ALTER TABLE TreatmentRecords
+        ADD COLUMN BillingStatus TEXT NOT NULL DEFAULT 'Unbilled'
+        CHECK (BillingStatus IN ('Unbilled', 'AddedToInvoice', 'NoCharge'));";
+                command.ExecuteNonQuery();
+            }
+
+            if (!ColumnExists(connection, "TreatmentRecords", "BillingId"))
+            {
+                using SqliteCommand command = connection.CreateCommand();
+                command.CommandText = @"
+        ALTER TABLE TreatmentRecords
+        ADD COLUMN BillingId INTEGER NULL;";
+                command.ExecuteNonQuery();
+            }
+
+            if (!ColumnExists(connection, "TreatmentRecords", "BillingItemId"))
+            {
+                using SqliteCommand command = connection.CreateCommand();
+                command.CommandText = @"
+        ALTER TABLE TreatmentRecords
+        ADD COLUMN BillingItemId INTEGER NULL;";
+                command.ExecuteNonQuery();
+            }
+
+            using (SqliteCommand command = connection.CreateCommand())
+            {
+                command.CommandText = @"
+            CREATE TABLE IF NOT EXISTS InvoiceNumberSettings (
+                SettingsId INTEGER PRIMARY KEY CHECK (SettingsId = 1),
+                InvoicePrefix TEXT NOT NULL DEFAULT '',
+                NextInvoiceNumber INTEGER NOT NULL DEFAULT 1,
+                MinimumDigits INTEGER NOT NULL DEFAULT 6,
+                ApprovedSeriesStart INTEGER NULL,
+                ApprovedSeriesEnd INTEGER NULL,
+                IsBirOfficialSeries INTEGER NOT NULL DEFAULT 0,
+                AtpOrPermitNumber TEXT,
+                BirPermitNumber TEXT,
+                DateIssued TEXT
+            );";
+                command.ExecuteNonQuery();
+            }
+
+            using (SqliteCommand command = connection.CreateCommand())
+            {
+                command.CommandText = @"
+            INSERT OR IGNORE INTO InvoiceNumberSettings (
+                SettingsId,
+                InvoicePrefix,
+                NextInvoiceNumber,
+                MinimumDigits,
+                IsBirOfficialSeries
+            )
+            VALUES (
+                1,
+                '',
+                1,
+                6,
+                0
+            );";
+                command.ExecuteNonQuery();
+            }        
+
+
+        }    
+    
     }
 }

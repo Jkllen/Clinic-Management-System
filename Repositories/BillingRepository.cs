@@ -21,35 +21,34 @@ namespace CruzNeryClinic.Repositories
 
             using SqliteCommand command = connection.CreateCommand();
             command.CommandText = @"
-SELECT
-    tr.TreatmentRecordId,
-    tr.AppointmentId,
-    tr.PatientId,
-    p.PatientCode,
-    p.FirstName,
-    p.MiddleName,
-    p.LastName,
-    CASE
-        WHEN p.IsPWD = 1 AND p.IsSeniorCitizen = 1 THEN 'PWD / Senior'
-        WHEN p.IsPWD = 1 THEN 'PWD'
-        WHEN p.IsSeniorCitizen = 1 THEN 'Senior Citizen'
-        ELSE 'Regular'
-    END AS Category,
-    tr.ServiceId,
-    tr.ServiceName,
-    tr.DentistName,
-    tr.TreatmentDate,
-    tr.TreatmentTime,
-    COALESCE(s.DefaultPrice, 0) AS DefaultPrice
-FROM TreatmentRecords tr
-INNER JOIN Patients p
-    ON tr.PatientId = p.PatientId
-LEFT JOIN Services s
-    ON tr.ServiceId = s.ServiceId
-LEFT JOIN BillingTransactions bt
-    ON bt.TreatmentRecordId = tr.TreatmentRecordId
-WHERE bt.BillingId IS NULL
-ORDER BY tr.TreatmentDate DESC, tr.TreatmentTime DESC, tr.TreatmentRecordId DESC;";
+            SELECT
+                tr.TreatmentRecordId,
+                tr.AppointmentId,
+                tr.PatientId,
+                p.PatientCode,
+                p.FirstName,
+                p.MiddleName,
+                p.LastName,
+                CASE
+                    WHEN COALESCE(p.IsPWD, 0) = 1 AND COALESCE(p.IsSeniorCitizen, 0) = 1 THEN 'PWD / Senior'
+                    WHEN COALESCE(p.IsPWD, 0) = 1 THEN 'PWD'
+                    WHEN COALESCE(p.IsSeniorCitizen, 0) = 1 THEN 'Senior Citizen'
+                    ELSE 'Regular'
+                END AS Category,
+                tr.ServiceId,
+                tr.ServiceName,
+                tr.DentistName,
+                tr.TreatmentDate,
+                tr.TreatmentTime,
+                COALESCE(s.DefaultPrice, 0) AS DefaultPrice
+            FROM TreatmentRecords tr
+            INNER JOIN Patients p
+                ON tr.PatientId = p.PatientId
+            LEFT JOIN Services s
+                ON tr.ServiceId = s.ServiceId
+            WHERE
+                COALESCE(tr.BillingStatus, 'Unbilled') = 'Unbilled'
+            ORDER BY tr.TreatmentDate DESC, tr.TreatmentTime DESC, tr.TreatmentRecordId DESC;";
 
             using SqliteDataReader reader = command.ExecuteReader();
 
@@ -152,7 +151,6 @@ ORDER BY tr.TreatmentDate DESC, tr.TreatmentTime DESC, tr.TreatmentRecordId DESC
         #endregion
 
         #region Billing Records
-
         public List<BillingRecordListItem> GetBillingRecords()
         {
             List<BillingRecordListItem> items = new();
@@ -217,6 +215,200 @@ ORDER BY bt.TransactionDate DESC, bt.BillingId DESC;";
             return items;
         }
 
+        public List<BillingRecordListItem> GetOpenInvoicesByPatientId(int patientId)
+        {
+            List<BillingRecordListItem> records = new();
+
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+        SELECT
+            bt.BillingId,
+            bt.PatientId,
+            p.PatientCode,
+            p.FirstName,
+            p.MiddleName,
+            p.LastName,
+            bt.ReceiptNumber,
+            bt.BillingSource,
+            bt.ServiceName,
+            bt.InvoiceTitle,
+            bt.TotalAmount,
+            bt.DiscountAmount,
+            bt.SubtotalAfterDiscount,
+            bt.AmountPaid,
+            bt.RemainingBalance,
+            bt.PaymentStatus,
+            bt.TransactionDate,
+            bt.IsInvoiceOpen
+        FROM BillingTransactions bt
+        INNER JOIN Patients p
+            ON bt.PatientId = p.PatientId
+        WHERE
+            bt.PatientId = @PatientId
+            AND COALESCE(bt.IsInvoiceOpen, 1) = 1
+        ORDER BY bt.TransactionDate DESC, bt.BillingId DESC;";
+
+            command.Parameters.AddWithValue("@PatientId", patientId);
+
+            using SqliteDataReader reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                string invoiceTitle = SafeGetSecureString(reader, "InvoiceTitle");
+
+                if (string.IsNullOrWhiteSpace(invoiceTitle))
+                    invoiceTitle = SafeGetSecureString(reader, "ServiceName");
+
+                records.Add(new BillingRecordListItem
+                {
+                    BillingId = Convert.ToInt32(reader["BillingId"]),
+                    PatientId = Convert.ToInt32(reader["PatientId"]),
+                    PatientCode = SafeGetString(reader, "PatientCode"),
+                    PatientName = BuildFullName(
+                        SafeGetString(reader, "FirstName"),
+                        SafeGetString(reader, "MiddleName"),
+                        SafeGetString(reader, "LastName")
+                    ),
+                    ReceiptNumber = SafeGetString(reader, "ReceiptNumber"),
+                    BillingSource = SafeGetString(reader, "BillingSource"),
+
+                    ServiceName = invoiceTitle,
+
+                    TotalAmount = SafeGetSecureDecimal(reader, "TotalAmount"),
+                    DiscountAmount = SafeGetSecureDecimal(reader, "DiscountAmount"),
+                    SubtotalAfterDiscount = SafeGetSecureDecimal(reader, "SubtotalAfterDiscount"),
+                    AmountPaid = SafeGetSecureDecimal(reader, "AmountPaid"),
+                    RemainingBalance = SafeGetSecureDecimal(reader, "RemainingBalance"),
+
+                    PaymentStatus = SafeGetString(reader, "PaymentStatus"),
+                    TransactionDate = ParseDate(SafeGetString(reader, "TransactionDate"))
+                });
+            }
+
+            return records;
+        }
+        
+        public BillingRecordListItem? GetInvoiceHeaderById(int billingId)
+        {
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+        SELECT
+            bt.BillingId,
+            bt.PatientId,
+            p.PatientCode,
+            p.FirstName,
+            p.MiddleName,
+            p.LastName,
+            bt.ReceiptNumber,
+            bt.BillingSource,
+            bt.ServiceName,
+            bt.InvoiceTitle,
+            bt.TotalAmount,
+            bt.DiscountAmount,
+            bt.SubtotalAfterDiscount,
+            bt.AmountPaid,
+            bt.RemainingBalance,
+            bt.PaymentStatus,
+            bt.TransactionDate,
+            bt.IsInvoiceOpen
+        FROM BillingTransactions bt
+        INNER JOIN Patients p
+            ON bt.PatientId = p.PatientId
+        WHERE bt.BillingId = @BillingId
+        LIMIT 1;";
+
+            command.Parameters.AddWithValue("@BillingId", billingId);
+
+            using SqliteDataReader reader = command.ExecuteReader();
+
+            if (!reader.Read())
+                return null;
+
+            string invoiceTitle = SafeGetSecureString(reader, "InvoiceTitle");
+
+            if (string.IsNullOrWhiteSpace(invoiceTitle))
+                invoiceTitle = SafeGetSecureString(reader, "ServiceName");
+
+            return new BillingRecordListItem
+            {
+                BillingId = Convert.ToInt32(reader["BillingId"]),
+                PatientId = Convert.ToInt32(reader["PatientId"]),
+                PatientCode = SafeGetString(reader, "PatientCode"),
+                PatientName = BuildFullName(
+                    SafeGetString(reader, "FirstName"),
+                    SafeGetString(reader, "MiddleName"),
+                    SafeGetString(reader, "LastName")
+                ),
+                ReceiptNumber = SafeGetString(reader, "ReceiptNumber"),
+                BillingSource = SafeGetString(reader, "BillingSource"),
+
+                ServiceName = invoiceTitle,
+
+                TotalAmount = SafeGetSecureDecimal(reader, "TotalAmount"),
+                DiscountAmount = SafeGetSecureDecimal(reader, "DiscountAmount"),
+                SubtotalAfterDiscount = SafeGetSecureDecimal(reader, "SubtotalAfterDiscount"),
+                AmountPaid = SafeGetSecureDecimal(reader, "AmountPaid"),
+                RemainingBalance = SafeGetSecureDecimal(reader, "RemainingBalance"),
+
+                PaymentStatus = SafeGetString(reader, "PaymentStatus"),
+                TransactionDate = ParseDate(SafeGetString(reader, "TransactionDate"))
+            };
+        }        
+        
+        public List<PaymentRecord> GetPaymentHistoryByBillingId(int billingId)
+        {
+            List<PaymentRecord> payments = new();
+
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+        SELECT
+            PaymentRecordId,
+            BillingId,
+            PatientId,
+            AmountPaid,
+            PaymentMethod,
+            PaymentDate,
+            ReceivedByUserId,
+            Notes,
+            CreatedAt
+        FROM PaymentRecords
+        WHERE BillingId = @BillingId
+        ORDER BY PaymentDate ASC, PaymentRecordId ASC;";
+
+            command.Parameters.AddWithValue("@BillingId", billingId);
+
+            using SqliteDataReader reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                payments.Add(new PaymentRecord
+                {
+                    PaymentRecordId = Convert.ToInt32(reader["PaymentRecordId"]),
+                    BillingId = Convert.ToInt32(reader["BillingId"]),
+                    PatientId = Convert.ToInt32(reader["PatientId"]),
+
+                    AmountPaid = SafeGetSecureDecimal(reader, "AmountPaid"),
+                    PaymentMethod = SafeGetSecureString(reader, "PaymentMethod"),
+
+                    PaymentDate = ParseDate(SafeGetString(reader, "PaymentDate")),
+                    ReceivedByUserId = SafeGetNullableInt(reader, "ReceivedByUserId"),
+                    Notes = SafeGetSecureString(reader, "Notes"),
+                    CreatedAt = ParseDate(SafeGetString(reader, "CreatedAt"))
+                });
+            }
+
+            return payments;
+        }       
+        
         #endregion
 
         #region Billing Receipt Details
@@ -295,7 +487,7 @@ ORDER BY bt.TransactionDate DESC, bt.BillingId DESC;";
 
             decimal actualAmountPaid = GetTotalPaidForBilling(connection, null, billingId);
 
-            return new BillingReceiptDetail
+            BillingReceiptDetail detail = new()
             {
                 BillingId = Convert.ToInt32(reader["BillingId"]),
                 PatientId = Convert.ToInt32(reader["PatientId"]),
@@ -329,10 +521,16 @@ ORDER BY bt.TransactionDate DESC, bt.BillingId DESC;";
 
                 TransactionDate = ParseDate(SafeGetString(reader, "TransactionDate")),
                 LatestPaymentDate = ParseNullableDate(SafeGetString(reader, "LatestPaymentDate")),
-                Notes = SafeGetSecureString(reader, "Notes")
+                Notes = SafeGetSecureString(reader, "Notes"),
+
+                InvoiceItems = GetBillingTransactionItems(billingId),
+                PaymentHistory = GetPaymentHistoryByBillingId(billingId)
             };
+            
+            return detail;
         }
         #endregion
+        
         #region Billing Patient Lookup
         public List<BillingPatientLookupItem> SearchPatientsForBillingHistory(string keyword)
         {
@@ -463,7 +661,6 @@ ORDER BY bt.TransactionDate DESC, bt.BillingId DESC;";
         #endregion
 
         #region Create Billing
-
         public int CreateBillingTransaction(BillingTransaction billing)
         {
             using SqliteConnection connection = DatabaseService.GetConnection();
@@ -551,6 +748,179 @@ SELECT last_insert_rowid();";
             return newBillingId;
         }
 
+        public int CreateInvoiceHeader(BillingTransaction invoice)
+        {
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+        INSERT INTO BillingTransactions (
+            PatientId,
+            AppointmentId,
+            TreatmentRecordId,
+            BillingSource,
+            ReceiptNumber,
+            ServiceId,
+            ServiceName,
+            Description,
+            InvoiceTitle,
+            TotalAmount,
+            DiscountType,
+            DiscountAmount,
+            SubtotalAfterDiscount,
+            AmountPaid,
+            RemainingBalance,
+            PaymentStatus,
+            TransactionDate,
+            CreatedByUserId,
+            Notes,
+            IsInvoiceOpen,
+            CreatedAt,
+            UpdatedAt
+        )
+        VALUES (
+            @PatientId,
+            @AppointmentId,
+            @TreatmentRecordId,
+            @BillingSource,
+            @ReceiptNumber,
+            @ServiceId,
+            @ServiceName,
+            @Description,
+            @InvoiceTitle,
+            @TotalAmount,
+            @DiscountType,
+            @DiscountAmount,
+            @SubtotalAfterDiscount,
+            @AmountPaid,
+            @RemainingBalance,
+            @PaymentStatus,
+            @TransactionDate,
+            @CreatedByUserId,
+            @Notes,
+            @IsInvoiceOpen,
+            @CreatedAt,
+            @UpdatedAt
+        );
+
+        SELECT last_insert_rowid();";
+
+            string invoiceTitle = string.IsNullOrWhiteSpace(invoice.InvoiceTitle)
+                ? "Dental Invoice"
+                : invoice.InvoiceTitle.Trim();
+
+            command.Parameters.AddWithValue("@PatientId", invoice.PatientId);
+            command.Parameters.AddWithValue("@AppointmentId", DBNull.Value);
+            command.Parameters.AddWithValue("@TreatmentRecordId", DBNull.Value);
+            command.Parameters.AddWithValue("@BillingSource", invoice.BillingSource);
+            command.Parameters.AddWithValue("@ReceiptNumber", invoice.ReceiptNumber);
+            command.Parameters.AddWithValue("@ServiceId", DBNull.Value);
+
+            // Existing old column. For invoice mode, use the invoice title here.
+            command.Parameters.AddWithValue("@ServiceName", CryptoService.EncryptString(invoiceTitle));
+            command.Parameters.AddWithValue("@Description", CryptoService.EncryptString(invoice.Description));
+            command.Parameters.AddWithValue("@InvoiceTitle", CryptoService.EncryptString(invoiceTitle));
+
+            command.Parameters.AddWithValue("@TotalAmount", CryptoService.EncryptDecimal(0));
+            command.Parameters.AddWithValue("@DiscountType", invoice.DiscountType);
+            command.Parameters.AddWithValue("@DiscountAmount", CryptoService.EncryptDecimal(0));
+            command.Parameters.AddWithValue("@SubtotalAfterDiscount", CryptoService.EncryptDecimal(0));
+            command.Parameters.AddWithValue("@AmountPaid", CryptoService.EncryptDecimal(0));
+            command.Parameters.AddWithValue("@RemainingBalance", CryptoService.EncryptDecimal(0));
+            command.Parameters.AddWithValue("@PaymentStatus", "Unpaid");
+
+            command.Parameters.AddWithValue("@TransactionDate", invoice.TransactionDate.ToString("yyyy-MM-dd"));
+            command.Parameters.AddWithValue("@CreatedByUserId", invoice.CreatedByUserId.HasValue ? invoice.CreatedByUserId.Value : DBNull.Value);
+            command.Parameters.AddWithValue("@Notes", CryptoService.EncryptString(invoice.Notes));
+            command.Parameters.AddWithValue("@IsInvoiceOpen", invoice.IsInvoiceOpen ? 1 : 0);
+            command.Parameters.AddWithValue("@CreatedAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            command.Parameters.AddWithValue("@UpdatedAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+
+            object? result = command.ExecuteScalar();
+
+            return Convert.ToInt32(result);
+        }
+        
+        public int AddBillingTransactionItem(BillingTransactionItem item)
+        {
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteTransaction transaction = connection.BeginTransaction();
+
+            try
+            {
+                using SqliteCommand command = connection.CreateCommand();
+                command.Transaction = transaction;
+                command.CommandText = @"
+        INSERT INTO BillingTransactionItems (
+            BillingId,
+            AppointmentId,
+            TreatmentRecordId,
+            ServiceId,
+            ServiceName,
+            ItemDescription,
+            TreatmentDate,
+            Amount,
+            IsIncluded,
+            CreatedAt
+        )
+        VALUES (
+            @BillingId,
+            @AppointmentId,
+            @TreatmentRecordId,
+            @ServiceId,
+            @ServiceName,
+            @ItemDescription,
+            @TreatmentDate,
+            @Amount,
+            @IsIncluded,
+            @CreatedAt
+        );
+
+        SELECT last_insert_rowid();";
+
+                command.Parameters.AddWithValue("@BillingId", item.BillingId);
+                command.Parameters.AddWithValue("@AppointmentId", item.AppointmentId.HasValue ? item.AppointmentId.Value : DBNull.Value);
+                command.Parameters.AddWithValue("@TreatmentRecordId", item.TreatmentRecordId.HasValue ? item.TreatmentRecordId.Value : DBNull.Value);
+                command.Parameters.AddWithValue("@ServiceId", item.ServiceId.HasValue ? item.ServiceId.Value : DBNull.Value);
+
+                command.Parameters.AddWithValue("@ServiceName", CryptoService.EncryptString(item.ServiceName));
+                command.Parameters.AddWithValue("@ItemDescription", CryptoService.EncryptString(item.ItemDescription));
+                command.Parameters.AddWithValue("@TreatmentDate", item.TreatmentDate.HasValue ? item.TreatmentDate.Value.ToString("yyyy-MM-dd") : DBNull.Value);
+
+                command.Parameters.AddWithValue("@Amount", CryptoService.EncryptDecimal(item.IsIncluded ? 0 : item.Amount));
+                command.Parameters.AddWithValue("@IsIncluded", item.IsIncluded ? 1 : 0);
+                command.Parameters.AddWithValue("@CreatedAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+
+                object? result = command.ExecuteScalar();
+                int billingItemId = Convert.ToInt32(result);
+
+                if (item.TreatmentRecordId.HasValue)
+                {
+                    MarkTreatmentRecordAsBilled(
+                        connection,
+                        transaction,
+                        item.TreatmentRecordId.Value,
+                        item.BillingId,
+                        billingItemId,
+                        item.IsIncluded
+                    );
+                }
+
+                RecalculateInvoiceTotals(connection, transaction, item.BillingId);
+
+                transaction.Commit();
+
+                return billingItemId;
+            }
+            catch
+            {
+                transaction.Rollback();
+                throw;
+            }
+        }        
         #endregion
 
         #region Payments
@@ -647,6 +1017,75 @@ SELECT last_insert_rowid();";
         #endregion
 
         #region Helpers
+
+        public string GenerateNextInvoiceNumber()
+        {
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteTransaction transaction = connection.BeginTransaction();
+
+            try
+            {
+                using SqliteCommand selectCommand = connection.CreateCommand();
+                selectCommand.Transaction = transaction;
+                selectCommand.CommandText = @"
+        SELECT
+            InvoicePrefix,
+            NextInvoiceNumber,
+            MinimumDigits,
+            ApprovedSeriesEnd,
+            IsBirOfficialSeries
+        FROM InvoiceNumberSettings
+        WHERE SettingsId = 1
+        LIMIT 1;";
+
+                using SqliteDataReader reader = selectCommand.ExecuteReader();
+
+                if (!reader.Read())
+                    throw new InvalidOperationException("Invoice number settings were not found.");
+
+                string prefix = reader["InvoicePrefix"]?.ToString() ?? string.Empty;
+                long nextNumber = Convert.ToInt64(reader["NextInvoiceNumber"]);
+                int minimumDigits = Convert.ToInt32(reader["MinimumDigits"]);
+
+                long? approvedSeriesEnd = reader["ApprovedSeriesEnd"] == DBNull.Value
+                    ? null
+                    : Convert.ToInt64(reader["ApprovedSeriesEnd"]);
+
+                bool isBirOfficialSeries = Convert.ToInt32(reader["IsBirOfficialSeries"]) == 1;
+
+                reader.Close();
+
+                if (isBirOfficialSeries &&
+                    approvedSeriesEnd.HasValue &&
+                    nextNumber > approvedSeriesEnd.Value)
+                {
+                    throw new InvalidOperationException("The approved BIR invoice serial number range has been exhausted.");
+                }
+
+                string invoiceNumber = $"{prefix}{nextNumber.ToString().PadLeft(minimumDigits, '0')}";
+
+                using SqliteCommand updateCommand = connection.CreateCommand();
+                updateCommand.Transaction = transaction;
+                updateCommand.CommandText = @"
+        UPDATE InvoiceNumberSettings
+        SET NextInvoiceNumber = @NextInvoiceNumber
+        WHERE SettingsId = 1;";
+
+                updateCommand.Parameters.AddWithValue("@NextInvoiceNumber", nextNumber + 1);
+                updateCommand.ExecuteNonQuery();
+
+                transaction.Commit();
+
+                return invoiceNumber;
+            }
+            catch
+            {
+                transaction.Rollback();
+                throw;
+            }
+        }
 
         public string GenerateReceiptNumber()
         {
@@ -846,6 +1285,219 @@ SELECT last_insert_rowid();";
             return totalPaid;
         }
 
+        private void MarkTreatmentRecordAsBilled(
+            SqliteConnection connection,
+            SqliteTransaction transaction,
+            int treatmentRecordId,
+            int billingId,
+            int billingItemId,
+            bool isIncluded)
+        {
+            using SqliteCommand command = connection.CreateCommand();
+            command.Transaction = transaction;
+            command.CommandText = @"
+        UPDATE TreatmentRecords
+        SET
+            BillingStatus = @BillingStatus,
+            BillingId = @BillingId,
+            BillingItemId = @BillingItemId
+        WHERE TreatmentRecordId = @TreatmentRecordId;";
+
+            command.Parameters.AddWithValue("@BillingStatus", isIncluded ? "NoCharge" : "AddedToInvoice");
+            command.Parameters.AddWithValue("@BillingId", billingId);
+            command.Parameters.AddWithValue("@BillingItemId", billingItemId);
+            command.Parameters.AddWithValue("@TreatmentRecordId", treatmentRecordId);
+
+            command.ExecuteNonQuery();
+        }
+
+        private void RecalculateInvoiceTotals(
+            SqliteConnection connection,
+            SqliteTransaction transaction,
+            int billingId)
+        {
+            decimal totalAmount = GetInvoiceItemsTotal(connection, transaction, billingId);
+            decimal discountAmount = GetInvoiceDiscountAmount(connection, transaction, billingId);
+            decimal subtotalAfterDiscount = Math.Max(totalAmount - discountAmount, 0);
+
+            decimal totalPaid = GetTotalPaidForBilling(connection, transaction, billingId);
+            decimal remainingBalance = Math.Max(subtotalAfterDiscount - totalPaid, 0);
+
+            string paymentStatus;
+
+            if (totalPaid <= 0)
+                paymentStatus = "Unpaid";
+            else if (remainingBalance <= 0)
+                paymentStatus = "Paid";
+            else
+                paymentStatus = "Partial";
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.Transaction = transaction;
+            command.CommandText = @"
+        UPDATE BillingTransactions
+        SET
+            TotalAmount = @TotalAmount,
+            DiscountAmount = @DiscountAmount,
+            SubtotalAfterDiscount = @SubtotalAfterDiscount,
+            AmountPaid = @AmountPaid,
+            RemainingBalance = @RemainingBalance,
+            PaymentStatus = @PaymentStatus,
+            UpdatedAt = @UpdatedAt
+        WHERE BillingId = @BillingId;";
+
+            command.Parameters.AddWithValue("@TotalAmount", CryptoService.EncryptDecimal(totalAmount));
+            command.Parameters.AddWithValue("@DiscountAmount", CryptoService.EncryptDecimal(discountAmount));
+            command.Parameters.AddWithValue("@SubtotalAfterDiscount", CryptoService.EncryptDecimal(subtotalAfterDiscount));
+            command.Parameters.AddWithValue("@AmountPaid", CryptoService.EncryptDecimal(totalPaid));
+            command.Parameters.AddWithValue("@RemainingBalance", CryptoService.EncryptDecimal(remainingBalance));
+            command.Parameters.AddWithValue("@PaymentStatus", paymentStatus);
+            command.Parameters.AddWithValue("@UpdatedAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            command.Parameters.AddWithValue("@BillingId", billingId);
+
+            command.ExecuteNonQuery();
+        }
+
+        private decimal GetInvoiceItemsTotal(
+            SqliteConnection connection,
+            SqliteTransaction transaction,
+            int billingId)
+        {
+            decimal total = 0m;
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.Transaction = transaction;
+            command.CommandText = @"
+        SELECT Amount, IsIncluded
+        FROM BillingTransactionItems
+        WHERE BillingId = @BillingId;";
+
+            command.Parameters.AddWithValue("@BillingId", billingId);
+
+            using SqliteDataReader reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                bool isIncluded = Convert.ToInt32(reader["IsIncluded"]) == 1;
+
+                if (isIncluded)
+                    continue;
+
+                string rawAmount = reader["Amount"]?.ToString() ?? string.Empty;
+
+                if (rawAmount.StartsWith("ENC:", StringComparison.Ordinal))
+                    total += CryptoService.DecryptDecimal(rawAmount);
+                else if (decimal.TryParse(rawAmount, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal amount))
+                    total += amount;
+            }
+
+            return total;
+        }
+
+        private decimal GetInvoiceDiscountAmount(
+            SqliteConnection connection,
+            SqliteTransaction transaction,
+            int billingId)
+        {
+            using SqliteCommand command = connection.CreateCommand();
+            command.Transaction = transaction;
+            command.CommandText = @"
+        SELECT DiscountAmount
+        FROM BillingTransactions
+        WHERE BillingId = @BillingId;";
+
+            command.Parameters.AddWithValue("@BillingId", billingId);
+
+            object? value = command.ExecuteScalar();
+
+            if (value == null || value == DBNull.Value)
+                return 0m;
+
+            string rawValue = value.ToString() ?? string.Empty;
+
+            if (rawValue.StartsWith("ENC:", StringComparison.Ordinal))
+                return CryptoService.DecryptDecimal(rawValue);
+
+            if (decimal.TryParse(rawValue, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal result))
+                return result;
+
+            return 0m;
+        }
+
+        public List<BillingTransactionItem> GetBillingTransactionItems(int billingId)
+        {
+            List<BillingTransactionItem> items = new();
+
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+        SELECT
+            BillingItemId,
+            BillingId,
+            AppointmentId,
+            TreatmentRecordId,
+            ServiceId,
+            ServiceName,
+            ItemDescription,
+            TreatmentDate,
+            Amount,
+            IsIncluded,
+            CreatedAt
+        FROM BillingTransactionItems
+        WHERE BillingId = @BillingId
+        ORDER BY
+            CASE
+                WHEN TreatmentDate IS NULL THEN 1
+                ELSE 0
+            END,
+            TreatmentDate ASC,
+            BillingItemId ASC;";
+
+            command.Parameters.AddWithValue("@BillingId", billingId);
+
+            using SqliteDataReader reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                items.Add(new BillingTransactionItem
+                {
+                    BillingItemId = Convert.ToInt32(reader["BillingItemId"]),
+                    BillingId = Convert.ToInt32(reader["BillingId"]),
+                    AppointmentId = SafeGetNullableInt(reader, "AppointmentId"),
+                    TreatmentRecordId = SafeGetNullableInt(reader, "TreatmentRecordId"),
+                    ServiceId = SafeGetNullableInt(reader, "ServiceId"),
+                    ServiceName = SafeGetSecureString(reader, "ServiceName"),
+                    ItemDescription = SafeGetSecureString(reader, "ItemDescription"),
+                    TreatmentDate = ParseNullableDate(SafeGetString(reader, "TreatmentDate")),
+                    Amount = SafeGetSecureDecimal(reader, "Amount"),
+                    IsIncluded = Convert.ToInt32(reader["IsIncluded"]) == 1,
+                    CreatedAt = ParseDate(SafeGetString(reader, "CreatedAt"))
+                });
+            }
+
+            return items;
+        }
+
+        public void CloseInvoice(int billingId)
+        {
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+        UPDATE BillingTransactions
+        SET
+            IsInvoiceOpen = 0,
+            UpdatedAt = @UpdatedAt
+        WHERE BillingId = @BillingId;";
+
+            command.Parameters.AddWithValue("@UpdatedAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            command.Parameters.AddWithValue("@BillingId", billingId);
+
+            command.ExecuteNonQuery();
+        }
         #endregion
     }
 }

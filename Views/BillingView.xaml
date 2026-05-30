@@ -97,7 +97,7 @@
                             FontSize="13"
                             FontWeight="Bold"
                             Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
-                            Text="Appointment Payment" />
+                            Text="Invoice Payment" />
                     </StackPanel>
                 </Button>
 
@@ -247,7 +247,7 @@
                                     Width="1*"
                                     MinWidth="120"
                                     Binding="{Binding ReceiptNumber}"
-                                    Header="Receipt No." />
+                                    Header="Invoice No." />
                                 <DataGridTextColumn
                                     Width="1*"
                                     MinWidth="105"
@@ -644,14 +644,27 @@
                             </Grid.Style>
 
                             <Grid.RowDefinitions>
+                                <!-- Header + search -->
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="22" />
+
+                                <!-- Patient/category/amount/payment row -->
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="18" />
+
+                                <!-- Patient name/discount/billable row -->
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="18" />
+
+                                <!-- Service/date/invoice number row -->
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="18" />
+
+                                <!-- Invoice Builder row -->
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="18" />
+
+                                <!-- Appointment type row -->
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
 
@@ -676,13 +689,13 @@
                                     FontSize="24"
                                     FontWeight="Bold"
                                     Foreground="#111111"
-                                    Text="Appointment Payment" />
+                                    Text="Invoice Payment" />
 
                                 <TextBlock
                                     Margin="0,6,0,0"
                                     FontSize="15"
                                     Foreground="#777777"
-                                    Text="Process payments connected to completed appointments." />
+                                    Text="Create or update invoices from completed appointments, then record payments." />
 
                                 <!--  Completed appointment lookup  -->
                                 <Grid
@@ -711,7 +724,7 @@
                                         FontSize="17"
                                         Foreground="#8A8A8A"
                                         IsHitTestVisible="False"
-                                        Text="Search completed appointment">
+                                        Text="Search completed treatment">
 
                                         <TextBlock.Style>
                                             <Style TargetType="TextBlock">
@@ -851,7 +864,7 @@
                                     Tag="Auto-Filled"
                                     Text="{Binding AppointmentCategory, Mode=OneWay}" />
                             </StackPanel>
-
+ 
                             <StackPanel Grid.Row="2" Grid.Column="4">
                                 <TextBlock
                                     FontSize="16"
@@ -1053,13 +1066,13 @@
                                 <TextBlock
                                     FontSize="16"
                                     FontWeight="Bold"
-                                    Text="Receipt Number" />
+                                    Text="Invoice Item Name *" />
                                 <TextBox
                                     Height="52"
                                     Margin="0,8,0,0"
-                                    IsReadOnly="True"
                                     Style="{StaticResource ModernTextBoxStyle}"
-                                    Text="{Binding AppointmentReceiptNumber, Mode=OneWay}" />
+                                    Tag="Example: Dentures"
+                                    Text="{Binding AppointmentInvoiceItemName, UpdateSourceTrigger=PropertyChanged}" />
                             </StackPanel>
 
                             <!--  Notes and action buttons  -->
@@ -1098,7 +1111,7 @@
                                         <TextBlock
                                             FontSize="14"
                                             FontWeight="Bold"
-                                            Text="₱ Process Transaction" />
+                                            Text="₱ Save / Pay Invoice" />
                                     </Button>
 
                                     <Button
@@ -1114,9 +1127,302 @@
                                         Style="{StaticResource OutlineActionButtonStyle}" />
                                 </StackPanel>
                             </StackPanel>
+                            
+                            <!-- =====================================================
+                                Invoice Builder Section
+                                ===================================================== -->
+                            <Border
+                                Grid.Row="8"
+                                Grid.Column="0"
+                                Grid.ColumnSpan="7"
+                                Margin="0,16,0,0"
+                                Padding="16"
+                                Background="#F7F8FB"
+                                BorderBrush="#D8D8D8"
+                                BorderThickness="1"
+                                CornerRadius="8">
 
-                            <!--  Row 8  -->
-                            <StackPanel Grid.Row="8" Grid.Column="0">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <!-- Header -->
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="12" />
+
+                                        <!-- Open invoice selector -->
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="12" />
+
+                                        <!-- Create new invoice -->
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="12" />
+
+                                        <!-- Selected invoice summary -->
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="12" />
+
+                                        <!-- Selected invoice items -->
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <!-- Header -->
+                                    <Grid Grid.Row="0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock
+                                                FontSize="16"
+                                                FontWeight="Bold"
+                                                Foreground="#111111"
+                                                Text="Invoice Builder" />
+
+                                            <TextBlock
+                                                Margin="0,3,0,0"
+                                                FontSize="12"
+                                                Foreground="#777777"
+                                                Text="Select an existing open invoice or create a new invoice for this treatment." />
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <!-- Open invoice selector -->
+                                    <StackPanel Grid.Row="2">
+                                        <TextBlock
+                                            FontSize="13"
+                                            FontWeight="SemiBold"
+                                            Foreground="#333333"
+                                            Text="Open Invoices" />
+
+                                        <ComboBox
+                                            Height="42"
+                                            Margin="0,7,0,0"
+                                            ItemsSource="{Binding PatientOpenInvoices}"
+                                            SelectedItem="{Binding SelectedOpenInvoice, Mode=TwoWay}"
+                                            Style="{StaticResource ExactStyleComboBox}"
+                                            Tag="Select existing invoice">
+
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock>
+                                                        <Run Text="{Binding ReceiptNumber}" />
+                                                        <Run Text=" - " />
+                                                        <Run Text="{Binding ServiceName}" />
+                                                        <Run Text=" | Balance: " />
+                                                        <Run Text="{Binding RemainingBalanceDisplay}" />
+                                                    </TextBlock>
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
+                                    </StackPanel>
+
+                                    <!-- Create new invoice -->
+                                    <Grid Grid.Row="4">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="12" />
+                                            <ColumnDefinition Width="150" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock
+                                                FontSize="13"
+                                                FontWeight="SemiBold"
+                                                Foreground="#333333"
+                                                Text="New Invoice Title" />
+
+                                            <TextBox
+                                                Height="42"
+                                                Margin="0,7,0,0"
+                                                Style="{StaticResource ModernTextBoxStyle}"
+                                                Tag="Example: Denture Case"
+                                                Text="{Binding NewInvoiceTitle, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+
+                                        <Button
+                                            Grid.Column="2"
+                                            Height="42"
+                                            Margin="0,25,0,0"
+                                            Background="#223357"
+                                            Command="{Binding CreateNewInvoiceForSelectedTreatmentCommand}"
+                                            Foreground="White"
+                                            Style="{StaticResource SecondaryButtonStyle}">
+
+                                            <TextBlock
+                                                FontSize="13"
+                                                FontWeight="Bold"
+                                                Text="Create Invoice" />
+                                        </Button>
+                                    </Grid>
+
+                                    <!-- Selected invoice summary -->
+                                    <Border
+                                        Grid.Row="6"
+                                        Padding="12"
+                                        Background="White"
+                                        BorderBrush="#E1E1E1"
+                                        BorderThickness="1"
+                                        CornerRadius="6">
+
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="8" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="10" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+
+                                            <TextBlock
+                                                Grid.Row="0"
+                                                FontSize="13"
+                                                FontWeight="Bold"
+                                                Foreground="#111111"
+                                                Text="Selected Invoice Summary" />
+
+                                            <Grid Grid.Row="2">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <StackPanel Grid.Column="0">
+                                                    <TextBlock
+                                                        FontSize="11"
+                                                        Foreground="#777777"
+                                                        Text="Invoice No." />
+                                                    <TextBlock
+                                                        Margin="0,2,0,0"
+                                                        FontSize="13"
+                                                        FontWeight="SemiBold"
+                                                        Foreground="#111111"
+                                                        Text="{Binding SelectedInvoiceNumberDisplay}" />
+                                                </StackPanel>
+
+                                                <StackPanel Grid.Column="1">
+                                                    <TextBlock
+                                                        FontSize="11"
+                                                        Foreground="#777777"
+                                                        Text="Total" />
+                                                    <TextBlock
+                                                        Margin="0,2,0,0"
+                                                        FontSize="13"
+                                                        FontWeight="SemiBold"
+                                                        Foreground="#111111"
+                                                        Text="{Binding SelectedInvoiceTotalDisplay}" />
+                                                </StackPanel>
+
+                                                <StackPanel Grid.Column="2">
+                                                    <TextBlock
+                                                        FontSize="11"
+                                                        Foreground="#777777"
+                                                        Text="Remaining Balance" />
+                                                    <TextBlock
+                                                        Margin="0,2,0,0"
+                                                        FontSize="13"
+                                                        FontWeight="SemiBold"
+                                                        Foreground="#C62828"
+                                                        Text="{Binding SelectedInvoiceBalanceDisplay}" />
+                                                </StackPanel>
+                                            </Grid>
+
+                                            <Button
+                                                Grid.Row="4"
+                                                Height="40"
+                                                Background="#223357"
+                                                Command="{Binding AddSelectedTreatmentToInvoiceCommand}"
+                                                Foreground="White"
+                                                Style="{StaticResource SecondaryButtonStyle}">
+
+                                                <TextBlock
+                                                    FontSize="13"
+                                                    FontWeight="Bold"
+                                                    Text="Add Item to Selected Invoice" />
+                                            </Button>
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- Selected invoice items -->
+                                    <Border
+                                        Grid.Row="8"
+                                        Padding="12"
+                                        Background="White"
+                                        BorderBrush="#E1E1E1"
+                                        BorderThickness="1"
+                                        CornerRadius="6">
+
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="8" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+
+                                            <TextBlock
+                                                Grid.Row="0"
+                                                FontSize="13"
+                                                FontWeight="Bold"
+                                                Foreground="#111111"
+                                                Text="Items in Selected Invoice" />
+
+                                            <ItemsControl Grid.Row="2" ItemsSource="{Binding SelectedInvoiceItems}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border
+                                                            Margin="0,0,0,8"
+                                                            Padding="10"
+                                                            Background="#F5F6FA"
+                                                            CornerRadius="5">
+
+                                                            <Grid>
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="*" />
+                                                                    <ColumnDefinition Width="110" />
+                                                                </Grid.ColumnDefinitions>
+
+                                                                <StackPanel Grid.Column="0">
+                                                                    <TextBlock
+                                                                        FontSize="13"
+                                                                        FontWeight="SemiBold"
+                                                                        Foreground="#111111"
+                                                                        Text="{Binding ServiceName}" />
+
+                                                                    <TextBlock
+                                                                        Margin="0,3,0,0"
+                                                                        FontSize="11"
+                                                                        Foreground="#777777"
+                                                                        Text="{Binding TreatmentDateDisplay}" />
+                                                                </StackPanel>
+
+                                                                <TextBlock
+                                                                    Grid.Column="1"
+                                                                    HorizontalAlignment="Right"
+                                                                    VerticalAlignment="Center"
+                                                                    FontSize="13"
+                                                                    FontWeight="Bold"
+                                                                    Foreground="#223357"
+                                                                    Text="{Binding AmountDisplay}" />
+                                                            </Grid>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+
+                                            <TextBlock
+                                                Grid.Row="2"
+                                                HorizontalAlignment="Center"
+                                                FontSize="12"
+                                                Foreground="#777777"
+                                                Text="No items added yet."
+                                                Visibility="{Binding SelectedInvoiceItems.Count, Converter={StaticResource CountToVisibilityConverter}}" />
+                                        </Grid>
+                                    </Border>
+                                </Grid>
+                            </Border>
+
+                            <!--  Row 10  -->
+                            <StackPanel Grid.Row="10" Grid.Column="0">
                                 <TextBlock
                                     FontSize="16"
                                     FontWeight="Bold"
@@ -1370,7 +1676,7 @@
                                 FontSize="28"
                                 FontWeight="Bold"
                                 Foreground="White"
-                                Text="Dental Receipt" />
+                                Text="Dental Invoice" />
 
                             <StackPanel HorizontalAlignment="Right" VerticalAlignment="Center">
 
@@ -1378,7 +1684,7 @@
                                     FontSize="12"
                                     FontWeight="SemiBold"
                                     Foreground="White"
-                                    Text="Receipt Number" />
+                                    Text="Invoice Number" />
 
                                 <TextBlock
                                     Margin="0,4,0,0"
@@ -1443,7 +1749,7 @@
                                         <TextBlock
                                             FontSize="16"
                                             FontWeight="Bold"
-                                            Text="Transaction Information" />
+                                            Text="Invoice Information" />
                                     </Border>
 
                                     <StackPanel Margin="0,14,0,0">
@@ -1481,55 +1787,168 @@
                                 Margin="0,28,0,20"
                                 Background="#DDDDDD" />
 
-                            <!--  Service / Treatment  -->
+                            <!--  Invoice Items  -->
                             <TextBlock
                                 FontSize="19"
                                 FontWeight="Bold"
-                                Text="Service / Treatment" />
+                                Text="Invoice Items" />
 
-                            <Grid Margin="0,12,0,0">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="160" />
-                                </Grid.ColumnDefinitions>
+                            <DataGrid
+                                Margin="0,12,0,0"
+                                AutoGenerateColumns="False"
+                                CanUserAddRows="False"
+                                CanUserDeleteRows="False"
+                                CanUserResizeRows="False"
+                                HeadersVisibility="Column"
+                                GridLinesVisibility="Horizontal"
+                                ItemsSource="{Binding SelectedReceiptDetail.InvoiceItems}"
+                                RowHeight="46"
+                                Background="White"
+                                BorderBrush="#E0E0E0"
+                                BorderThickness="1"
+                                IsReadOnly="True"
+                                ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                MaxHeight="190">
 
-                                <Border
-                                    Grid.Column="0"
-                                    Padding="14"
-                                    Background="#F8F8F8"
-                                    BorderBrush="#E0E0E0"
-                                    BorderThickness="1">
+                                <DataGrid.Resources>
+                                    <Style BasedOn="{StaticResource BlueDataGridScrollBarStyle}" TargetType="{x:Type ScrollBar}" />
 
-                                    <StackPanel>
-                                        <TextBlock
-                                            FontSize="14"
-                                            FontWeight="SemiBold"
-                                            Text="{Binding SelectedReceiptDetail.ServiceName}" />
+                                    <Style TargetType="{x:Type DataGridColumnHeader}">
+                                        <Setter Property="FontSize" Value="13" />
+                                        <Setter Property="FontWeight" Value="Bold" />
+                                        <Setter Property="Foreground" Value="#111111" />
+                                        <Setter Property="Background" Value="#F3F7FA" />
+                                        <Setter Property="BorderBrush" Value="#DDDDDD" />
+                                        <Setter Property="BorderThickness" Value="0,0,0,1" />
+                                        <Setter Property="Padding" Value="10,8" />
+                                    </Style>
 
-                                        <TextBlock
-                                            Margin="0,6,0,0"
-                                            FontSize="12"
-                                            Foreground="#555555"
-                                            Text="{Binding SelectedReceiptDetail.Description}"
-                                            TextWrapping="Wrap" />
-                                    </StackPanel>
-                                </Border>
+                                    <Style TargetType="{x:Type DataGridCell}">
+                                        <Setter Property="FontSize" Value="13" />
+                                        <Setter Property="Foreground" Value="#333333" />
+                                        <Setter Property="BorderBrush" Value="#EEEEEE" />
+                                        <Setter Property="BorderThickness" Value="0,0,0,1" />
+                                        <Setter Property="Padding" Value="10,6" />
+                                        <Setter Property="VerticalContentAlignment" Value="Center" />
+                                        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                                    </Style>
+                                </DataGrid.Resources>
 
-                                <Border
-                                    Grid.Column="1"
-                                    Padding="14"
-                                    Background="#F8F8F8"
-                                    BorderBrush="#E0E0E0"
-                                    BorderThickness="1">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn
+                                        Width="1.5*"
+                                        Binding="{Binding ServiceName}"
+                                        Header="Description / Nature of Service" />
 
-                                    <TextBlock
-                                        HorizontalAlignment="Right"
-                                        FontSize="14"
-                                        FontWeight="SemiBold"
-                                        Text="{Binding SelectedReceiptDetail.TotalAmountDisplay}" />
-                                </Border>
-                            </Grid>
+                                    <DataGridTextColumn
+                                        Width="0.7*"
+                                        Binding="{Binding TreatmentDateDisplay}"
+                                        Header="Date" />
 
+                                    <DataGridTextColumn
+                                        Width="0.45*"
+                                        Header="Qty">
+                                        <DataGridTextColumn.Binding>
+                                            <Binding Source="1" />
+                                        </DataGridTextColumn.Binding>
+                                    </DataGridTextColumn>
+
+                                    <DataGridTextColumn
+                                        Width="0.7*"
+                                        Binding="{Binding AmountDisplay}"
+                                        Header="Amount" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+
+                            <TextBlock
+                                Margin="0,8,0,0"
+                                HorizontalAlignment="Center"
+                                FontSize="12"
+                                Foreground="#777777"
+                                Text="No invoice items found."
+                                Visibility="{Binding SelectedReceiptDetail.InvoiceItems.Count, Converter={StaticResource CountToVisibilityConverter}}" />
+
+                            <!--  Payment History  -->
+                            <TextBlock
+                                Margin="0,26,0,0"
+                                FontSize="19"
+                                FontWeight="Bold"
+                                Text="Payment History" />
+
+                            <DataGrid
+                                Margin="0,12,0,0"
+                                AutoGenerateColumns="False"
+                                CanUserAddRows="False"
+                                CanUserDeleteRows="False"
+                                CanUserResizeRows="False"
+                                HeadersVisibility="Column"
+                                GridLinesVisibility="Horizontal"
+                                ItemsSource="{Binding SelectedReceiptDetail.PaymentHistory}"
+                                RowHeight="44"
+                                Background="White"
+                                BorderBrush="#E0E0E0"
+                                BorderThickness="1"
+                                IsReadOnly="True"
+                                ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                MaxHeight="170">
+
+                                <DataGrid.Resources>
+                                    <Style BasedOn="{StaticResource BlueDataGridScrollBarStyle}" TargetType="{x:Type ScrollBar}" />
+
+                                    <Style TargetType="{x:Type DataGridColumnHeader}">
+                                        <Setter Property="FontSize" Value="13" />
+                                        <Setter Property="FontWeight" Value="Bold" />
+                                        <Setter Property="Foreground" Value="#111111" />
+                                        <Setter Property="Background" Value="#F3F7FA" />
+                                        <Setter Property="BorderBrush" Value="#DDDDDD" />
+                                        <Setter Property="BorderThickness" Value="0,0,0,1" />
+                                        <Setter Property="Padding" Value="10,8" />
+                                    </Style>
+
+                                    <Style TargetType="{x:Type DataGridCell}">
+                                        <Setter Property="FontSize" Value="13" />
+                                        <Setter Property="Foreground" Value="#333333" />
+                                        <Setter Property="BorderBrush" Value="#EEEEEE" />
+                                        <Setter Property="BorderThickness" Value="0,0,0,1" />
+                                        <Setter Property="Padding" Value="10,6" />
+                                        <Setter Property="VerticalContentAlignment" Value="Center" />
+                                        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                                    </Style>
+                                </DataGrid.Resources>
+
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn
+                                        Width="0.8*"
+                                        Binding="{Binding PaymentDate, StringFormat=MM/dd/yyyy}"
+                                        Header="Payment Date" />
+
+                                    <DataGridTextColumn
+                                        Width="0.8*"
+                                        Binding="{Binding PaymentMethod}"
+                                        Header="Method" />
+
+                                    <DataGridTextColumn
+                                        Width="1.3*"
+                                        Binding="{Binding Notes}"
+                                        Header="Notes" />
+
+                                    <DataGridTextColumn
+                                        Width="0.8*"
+                                        Binding="{Binding AmountPaid, StringFormat=₱ {0:N2}}"
+                                        Header="Amount" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+
+                            <TextBlock
+                                Margin="0,8,0,0"
+                                HorizontalAlignment="Center"
+                                FontSize="12"
+                                Foreground="#777777"
+                                Text="No payment records found."
+                                Visibility="{Binding SelectedReceiptDetail.PaymentHistory.Count, Converter={StaticResource CountToVisibilityConverter}}" />
+                                                                
                             <!--  Billing Summary  -->
                             <Grid Margin="0,30,0,0">
                                 <Grid.ColumnDefinitions>
@@ -1703,7 +2122,7 @@
                         FontSize="24"
                         FontWeight="Bold"
                         Foreground="#223357"
-                        Text="Receipt Print Preview" />
+                        Text="Invoice Print Preview" />
 
                     <wv2:WebView2 x:Name="ReceiptPrintWebView" Grid.Row="2" />
 
@@ -1784,8 +2203,5 @@
                 </StackPanel>
             </Border>
         </Grid>
-
-
-
     </Grid>
 </UserControl>

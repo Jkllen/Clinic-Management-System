@@ -45,5 +45,9 @@ namespace CruzNeryClinic.Models
         public DateTime CreatedAt { get; set; }
 
         public DateTime? UpdatedAt { get; set; }
+
+        public string InvoiceTitle { get; set; } = string.Empty;
+
+        public bool IsInvoiceOpen { get; set; } = true;
     }
 }

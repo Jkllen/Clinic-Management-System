@@ -249,10 +249,10 @@
                         </Grid.ColumnDefinitions>
 
                         <Grid.RowDefinitions>
-                            <!-- Row 0: Receipt Number and Patient ID -->
+                            <!-- Row 0: Invoice Number and Patient ID -->
                             <RowDefinition Height="Auto" />
 
-                            <!-- Row 1: Gap after Receipt Number / Patient ID -->
+                            <!-- Row 1: Gap after Invoice Number / Patient ID -->
                             <RowDefinition Height="Auto" />
 
                             <!-- Row 2: Patient Name and Category -->
@@ -277,7 +277,7 @@
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
-                        <!-- Receipt Number -->
+                        <!-- Invoice Number -->
                         <StackPanel 
                                 Grid.Row="0" 
                                 Grid.Column="0">
@@ -286,7 +286,7 @@
                                 Margin="0,8,0,0"
                                 FontWeight="Bold"
                                 Foreground="#111111"
-                                Text="Receipt Number" />
+                                Text="Invoice Number" />
 
                             <TextBox
                                 Height="46"

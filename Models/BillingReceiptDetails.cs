@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace CruzNeryClinic.Models
 {
@@ -48,6 +49,10 @@ namespace CruzNeryClinic.Models
         public DateTime TransactionDate { get; set; }
 
         public DateTime? LatestPaymentDate { get; set; }
+
+        public List<BillingTransactionItem> InvoiceItems { get; set; } = new();
+
+        public List<PaymentRecord> PaymentHistory { get; set; } = new();
 
         public string Notes { get; set; } = string.Empty;
 

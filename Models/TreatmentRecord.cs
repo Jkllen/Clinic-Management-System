@@ -27,5 +27,11 @@ namespace CruzNeryClinic.Models
         public DateTime CreatedAt { get; set; }
 
         public DateTime? UpdatedAt { get; set; }
+
+        public string BillingStatus { get; set; } = "Unbilled";
+
+        public int? BillingId { get; set; }
+
+        public int? BillingItemId { get; set; }
     }
 }

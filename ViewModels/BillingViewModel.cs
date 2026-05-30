@@ -21,6 +21,13 @@ namespace CruzNeryClinic.ViewModels
 
         private AppointmentPaymentItem? selectedAppointmentPaymentItem;
 
+        private BillingRecordListItem? selectedOpenInvoice;
+        private int? appointmentInvoicePatientId;
+        private int? selectedInvoiceIdForPayment;
+
+        private string newInvoiceTitle = string.Empty;
+        private bool isCreatingNewInvoice;
+
         private string selectedBillingStatusFilter = "All";
 
         private string appointmentReceiptNumber = string.Empty;
@@ -69,7 +76,7 @@ namespace CruzNeryClinic.ViewModels
         private bool hasError;
 
         #endregion
-        
+
         #region Backing Fields for Balance Payment Module
 
         private BalancePaymentItem? selectedBalancePaymentItem;
@@ -121,6 +128,10 @@ namespace CruzNeryClinic.ViewModels
         public ObservableCollection<BalancePaymentItem> BalancePaymentItems { get; }
         public ObservableCollection<BalancePaymentItem> FilteredBalancePaymentItems { get; }
 
+        public ObservableCollection<BillingRecordListItem> PatientOpenInvoices { get; }
+
+        public ObservableCollection<BillingTransactionItem> SelectedInvoiceItems { get; }
+
         public ObservableCollection<BillingPatientLookupItem> PaymentHistoryPatientResults { get; }
 
         public ObservableCollection<BillingRecordListItem> SelectedPatientBillingRecords { get; }
@@ -134,6 +145,49 @@ namespace CruzNeryClinic.ViewModels
         #endregion
 
         #region Properties
+
+        public BillingRecordListItem? SelectedOpenInvoice
+        {
+            get => selectedOpenInvoice;
+            set
+            {
+                if (SetProperty(ref selectedOpenInvoice, value))
+                {
+                    if (value != null)
+                    {
+                        selectedInvoiceIdForPayment = value.BillingId;
+                        appointmentInvoicePatientId = value.PatientId;
+                        AppointmentReceiptNumber = value.ReceiptNumber;
+                        AppointmentBalance = value.RemainingBalance;
+                    }
+                    else
+                    {
+                        selectedInvoiceIdForPayment = null;
+                        AppointmentReceiptNumber = string.Empty;
+                    }
+
+                    LoadSelectedInvoiceItems();
+                    NotifySelectedInvoiceDisplayChanged();
+
+                    RecalculateAppointmentPayment();
+                }
+            }
+        }     
+        
+        public string NewInvoiceTitle
+        {
+            get => newInvoiceTitle;
+            set => SetProperty(ref newInvoiceTitle, value);
+        }
+
+        public bool IsCreatingNewInvoice
+        {
+            get => isCreatingNewInvoice;
+            set => SetProperty(ref isCreatingNewInvoice, value);
+        }
+
+        public bool HasSelectedOpenInvoice =>
+            SelectedOpenInvoice != null;
 
         public string SelectedBillingModule
         {
@@ -205,7 +259,7 @@ namespace CruzNeryClinic.ViewModels
             SelectedBillingModule switch
             {
                 "Appointment Payment" => "Process payments connected to completed appointments.",
-                "Balance Payment" => "Record payments for existing unpaid or partial balances.",
+                "Balance Payment" => "Record payments for existing unpaid or partial invoices.",
                 "Manual Transaction" => "Create staff-entered billing transactions not pulled from appointments.",
                 _ => string.Empty
             };
@@ -510,6 +564,13 @@ namespace CruzNeryClinic.ViewModels
             set => SetProperty(ref hasAppointmentPaymentError, value);
         }
 
+        private string appointmentInvoiceItemName = string.Empty;
+
+        public string AppointmentInvoiceItemName
+        {
+            get => appointmentInvoiceItemName;
+            set => SetProperty(ref appointmentInvoiceItemName, value);
+        }
         #endregion
 
         #region Balance Payment Properties
@@ -622,6 +683,27 @@ namespace CruzNeryClinic.ViewModels
 
         public string ViewMoreBalancePaymentText =>
             ShowAllBalancePaymentItems ? "Show Less" : "View More";
+
+        public string SelectedInvoiceNumberDisplay =>
+            SelectedOpenInvoice?.ReceiptNumber ?? "No invoice selected";
+
+        public string SelectedInvoiceTitleDisplay =>
+            SelectedOpenInvoice?.ServiceName ?? "No invoice selected";
+
+        public string SelectedInvoiceTotalDisplay =>
+            SelectedOpenInvoice == null
+                ? "₱0.00"
+                : $"₱{SelectedOpenInvoice.TotalAmount:N2}";
+
+        public string SelectedInvoicePaidDisplay =>
+            SelectedOpenInvoice == null
+                ? "₱0.00"
+                : $"₱{SelectedOpenInvoice.AmountPaid:N2}";
+
+        public string SelectedInvoiceBalanceDisplay =>
+            SelectedOpenInvoice == null
+                ? "₱0.00"
+                : $"₱{SelectedOpenInvoice.RemainingBalance:N2}";
         #endregion
 
         #region Manual Transaction Properties
@@ -803,11 +885,16 @@ namespace CruzNeryClinic.ViewModels
 
         public ICommand ClosePromptCommand { get; }
 
+
         public ICommand OpenTransactionHistoryOverlayCommand { get; }
 
         public ICommand CloseTransactionHistoryOverlayCommand { get; }
 
         public ICommand ExpandReceiptCommand { get; }
+
+        public ICommand CreateNewInvoiceForSelectedTreatmentCommand { get; }
+
+        public ICommand AddSelectedTreatmentToInvoiceCommand { get; }
 
         public ICommand CloseReceiptOverlayCommand { get; }
 
@@ -819,15 +906,15 @@ namespace CruzNeryClinic.ViewModels
         public ICommand ClearBalancePaymentFormCommand { get; }
 
         public ICommand ToggleBalancePaymentItemsCommand { get; }
-        
-        
+
+
         // Manual Transaction Commands
         public ICommand SelectManualPatientCommand { get; }
 
         public ICommand ProcessManualTransactionCommand { get; }
 
-        public ICommand ClearManualTransactionFormCommand { get; }       
-       
+        public ICommand ClearManualTransactionFormCommand { get; }
+
         #endregion
 
         #region Constructor
@@ -874,6 +961,12 @@ namespace CruzNeryClinic.ViewModels
             SelectBillingModuleCommand = new RelayCommand<string>(SelectBillingModule);
             RefreshBillingCommand = new RelayCommand(LoadBillingData);
 
+            PatientOpenInvoices = new ObservableCollection<BillingRecordListItem>();
+            SelectedInvoiceItems = new ObservableCollection<BillingTransactionItem>();
+
+            CreateNewInvoiceForSelectedTreatmentCommand = new RelayCommand(CreateNewInvoiceForSelectedTreatment);
+            AddSelectedTreatmentToInvoiceCommand = new RelayCommand(AddSelectedTreatmentToInvoice);
+
             ViewReceiptCommand = new RelayCommand<BillingRecordListItem>(ViewReceipt);
             SaveReceiptPdfCommand = new RelayCommand<BillingReceiptDetail>(SaveReceiptPdf);
             PrintReceiptPdfCommand = new RelayCommand<BillingReceiptDetail>(PrintReceiptPdf);
@@ -913,7 +1006,63 @@ namespace CruzNeryClinic.ViewModels
         #endregion
 
         #region Load Methods
+        private void LoadOpenInvoicesForSelectedAppointmentPatient()
+        {
+            PatientOpenInvoices.Clear();
 
+            if (SelectedAppointmentPaymentItem == null)
+                return;
+
+            try
+            {
+                foreach (BillingRecordListItem invoice in billingRepository.GetOpenInvoicesByPatientId(SelectedAppointmentPaymentItem.PatientId))
+                    PatientOpenInvoices.Add(invoice);
+            }
+            catch (Exception ex)
+            {
+                ShowAppointmentPaymentError($"Failed to load patient invoices: {ex.Message}");
+            }
+        }
+        private void LoadGlobalOpenInvoicesForPayment()
+        {
+            PatientOpenInvoices.Clear();
+
+            try
+            {
+                foreach (BillingRecordListItem invoice in BillingRecords
+                    .Where(invoice =>
+                        !string.Equals(invoice.PaymentStatus, "Paid", StringComparison.OrdinalIgnoreCase)))
+                {
+                    PatientOpenInvoices.Add(invoice);
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowAppointmentPaymentError($"Failed to load open invoices: {ex.Message}");
+            }
+        }
+        private void LoadSelectedInvoiceItems()
+        {
+            SelectedInvoiceItems.Clear();
+
+            if (SelectedOpenInvoice == null)
+            {
+                OnPropertyChanged(nameof(HasSelectedOpenInvoice));
+                return;
+            }
+
+            try
+            {
+                foreach (BillingTransactionItem item in billingRepository.GetBillingTransactionItems(SelectedOpenInvoice.BillingId))
+                    SelectedInvoiceItems.Add(item);
+
+                OnPropertyChanged(nameof(HasSelectedOpenInvoice));
+            }
+            catch (Exception ex)
+            {
+                ShowAppointmentPaymentError($"Failed to load invoice items: {ex.Message}");
+            }
+        }
         private void LoadBillingData()
         {
             try
@@ -921,6 +1070,8 @@ namespace CruzNeryClinic.ViewModels
                 ClearError();
 
                 LoadBillingRecords();
+                if (IsAppointmentPaymentSelected && SelectedAppointmentPaymentItem == null)
+                    LoadGlobalOpenInvoicesForPayment();
                 LoadAppointmentPaymentItems();
                 LoadBalancePaymentItems();
             }
@@ -1020,7 +1171,7 @@ namespace CruzNeryClinic.ViewModels
 
             foreach (BalancePaymentItem item in billingRepository.GetBillingsWithBalance())
                 BalancePaymentItems.Add(item);
-            
+
             FilterBalancePaymentItems();
         }
 
@@ -1062,7 +1213,7 @@ namespace CruzNeryClinic.ViewModels
         {
             if (billing == null)
                 return;
-            
+
             ExpandReceipt(billing);
         }
 
@@ -1189,7 +1340,218 @@ namespace CruzNeryClinic.ViewModels
         #endregion
 
         #region Appointment Payment Methods
+        private void CreateNewInvoiceForSelectedTreatment()
+        {
+            if (SelectedAppointmentPaymentItem == null)
+            {
+                ShowAppointmentPaymentError("Please select a completed treatment first.");
+                return;
+            }
 
+            if (string.IsNullOrWhiteSpace(NewInvoiceTitle))
+            {
+                ShowAppointmentPaymentError("Please enter an invoice title.");
+                return;
+            }
+
+            try
+            {
+                string invoiceNumber = billingRepository.GenerateNextInvoiceNumber();
+
+                BillingTransaction invoice = new()
+                {
+                    PatientId = SelectedAppointmentPaymentItem.PatientId,
+                    AppointmentId = null,
+                    TreatmentRecordId = null,
+                    BillingSource = "Appointment",
+                    ReceiptNumber = invoiceNumber,
+
+                    ServiceId = null,
+                    ServiceName = NewInvoiceTitle.Trim(),
+                    Description = $"Invoice created for {SelectedAppointmentPaymentItem.PatientName}",
+
+                    InvoiceTitle = NewInvoiceTitle.Trim(),
+                    IsInvoiceOpen = true,
+
+                    TotalAmount = 0,
+                    DiscountType = AppointmentDiscountType,
+                    DiscountAmount = 0,
+                    SubtotalAfterDiscount = 0,
+                    AmountPaid = 0,
+                    RemainingBalance = 0,
+                    PaymentStatus = "Unpaid",
+                    TransactionDate = DateTime.Today,
+                    CreatedByUserId = null,
+                    Notes = AppointmentNotes
+                };
+
+                int billingId = billingRepository.CreateInvoiceHeader(invoice);
+
+                ReloadSelectedInvoiceForPayment(SelectedAppointmentPaymentItem.PatientId, billingId);
+
+                IsCreatingNewInvoice = false;
+
+                ShowPrompt("Invoice Created", $"Invoice {invoiceNumber} was created successfully.");
+            }
+            catch (Exception ex)
+            {
+                ShowAppointmentPaymentError($"Failed to create invoice: {ex.Message}");
+            }
+        }
+
+        private void NotifySelectedInvoiceDisplayChanged()
+        {
+            OnPropertyChanged(nameof(HasSelectedOpenInvoice));
+            OnPropertyChanged(nameof(SelectedInvoiceNumberDisplay));
+            OnPropertyChanged(nameof(SelectedInvoiceTitleDisplay));
+            OnPropertyChanged(nameof(SelectedInvoiceTotalDisplay));
+            OnPropertyChanged(nameof(SelectedInvoicePaidDisplay));
+            OnPropertyChanged(nameof(SelectedInvoiceBalanceDisplay));
+            OnPropertyChanged(nameof(AppointmentBalanceDisplay));
+        }
+
+        private void ReloadSelectedInvoiceForPayment(int patientId, int billingId)
+        {
+            PatientOpenInvoices.Clear();
+
+            foreach (BillingRecordListItem invoice in billingRepository.GetOpenInvoicesByPatientId(patientId))
+                PatientOpenInvoices.Add(invoice);
+
+            BillingRecordListItem? invoiceToSelect = PatientOpenInvoices
+                .FirstOrDefault(invoice => invoice.BillingId == billingId);
+
+            invoiceToSelect ??= billingRepository.GetInvoiceHeaderById(billingId);
+
+            if (invoiceToSelect != null &&
+                !PatientOpenInvoices.Any(invoice => invoice.BillingId == invoiceToSelect.BillingId))
+            {
+                PatientOpenInvoices.Add(invoiceToSelect);
+            }
+
+            SelectedOpenInvoice = invoiceToSelect;
+
+            if (SelectedOpenInvoice != null)
+            {
+                appointmentInvoicePatientId = patientId;
+                selectedInvoiceIdForPayment = billingId;
+                AppointmentReceiptNumber = SelectedOpenInvoice.ReceiptNumber;
+                AppointmentBalance = SelectedOpenInvoice.RemainingBalance;
+            }
+
+            NotifySelectedInvoiceDisplayChanged();
+        }
+
+        private void AddSelectedTreatmentToInvoice()
+        {
+            ClearAppointmentPaymentError();
+
+            if (SelectedOpenInvoice == null)
+            {
+                ShowAppointmentPaymentError("Please select or create an invoice first.");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(AppointmentInvoiceItemName))
+            {
+                ShowAppointmentPaymentError("Please enter an invoice item name.");
+                return;
+            }
+
+            if (AppointmentTotalAmount < 0)
+            {
+                ShowAppointmentPaymentError("Amount cannot be negative.");
+                return;
+            }
+
+            try
+            {
+                int selectedInvoiceId = SelectedOpenInvoice.BillingId;
+                int selectedInvoicePatientId = SelectedOpenInvoice.PatientId;
+                string selectedInvoiceNumber = SelectedOpenInvoice.ReceiptNumber;
+
+                bool hasCompletedTreatment = SelectedAppointmentPaymentItem != null;
+
+                if (hasCompletedTreatment &&
+                    SelectedOpenInvoice.PatientId != SelectedAppointmentPaymentItem!.PatientId)
+                {
+                    ShowAppointmentPaymentError("The selected invoice belongs to a different patient. Please select an invoice for the same patient.");
+                    return;
+                }
+
+                string sourceTreatmentName = hasCompletedTreatment
+                    ? SelectedAppointmentPaymentItem!.ServiceName
+                    : "Manual invoice item";
+
+                string invoiceItemName = AppointmentInvoiceItemName.Trim();
+
+                BillingTransactionItem item = new()
+                {
+                    BillingId = selectedInvoiceId,
+
+                    AppointmentId = hasCompletedTreatment
+                        ? SelectedAppointmentPaymentItem!.AppointmentId
+                        : null,
+
+                    TreatmentRecordId = hasCompletedTreatment
+                        ? SelectedAppointmentPaymentItem!.TreatmentRecordId
+                        : null,
+
+                    ServiceId = hasCompletedTreatment
+                        ? SelectedAppointmentPaymentItem!.ServiceId
+                        : null,
+
+                    ServiceName = invoiceItemName,
+
+                    ItemDescription = string.IsNullOrWhiteSpace(AppointmentNotes)
+                        ? $"Source: {sourceTreatmentName}"
+                        : AppointmentNotes.Trim(),
+
+                    TreatmentDate = hasCompletedTreatment
+                        ? SelectedAppointmentPaymentItem!.TreatmentDate
+                        : DateTime.Today,
+
+                    Amount = AppointmentTotalAmount,
+                    IsIncluded = AppointmentTotalAmount == 0,
+                    CreatedAt = DateTime.Now
+                };
+
+                billingRepository.AddBillingTransactionItem(item);
+
+                LoadBillingRecords();
+                LoadBalancePaymentItems();
+
+                ReloadSelectedInvoiceForPayment(selectedInvoicePatientId, selectedInvoiceId);
+                LoadSelectedInvoiceItems();
+
+                AppointmentTotalAmount = 0;
+                AppointmentPaymentAmount = 0;
+                AppointmentNotes = string.Empty;
+
+                // Keep item name only if no completed treatment was selected,
+                // so staff can add multiple manual invoice items faster.
+                if (hasCompletedTreatment)
+                    AppointmentInvoiceItemName = string.Empty;
+
+                if (SelectedOpenInvoice != null)
+                    AppointmentBalance = SelectedOpenInvoice.RemainingBalance;
+
+                OnPropertyChanged(nameof(AppointmentBalanceDisplay));
+                OnPropertyChanged(nameof(SelectedInvoiceNumberDisplay));
+                OnPropertyChanged(nameof(SelectedInvoiceTitleDisplay));
+                OnPropertyChanged(nameof(SelectedInvoiceTotalDisplay));
+                OnPropertyChanged(nameof(SelectedInvoicePaidDisplay));
+                OnPropertyChanged(nameof(SelectedInvoiceBalanceDisplay));
+
+                ShowPrompt(
+                    "Invoice Updated",
+                    $"{invoiceItemName} was added to invoice {selectedInvoiceNumber}."
+                );
+            }
+            catch (Exception ex)
+            {
+                ShowAppointmentPaymentError($"Failed to add item to invoice: {ex.Message}");
+            }
+        }
         private bool IsAppointmentPatientDiscountEligible()
         {
             return AppointmentCategory == "PWD"
@@ -1249,15 +1611,32 @@ namespace CruzNeryClinic.ViewModels
             if (item == null)
             {
                 ClearAppointmentPaymentFormFieldsOnly();
+
+                // When no completed treatment is selected,
+                // still show existing unpaid/partial invoices so staff can pay them.
+                LoadGlobalOpenInvoicesForPayment();
+
+                SelectedOpenInvoice = null;
+                SelectedInvoiceItems.Clear();
+
+                OnPropertyChanged(nameof(SelectedInvoiceNumberDisplay));
+                OnPropertyChanged(nameof(SelectedInvoiceTitleDisplay));
+                OnPropertyChanged(nameof(SelectedInvoiceTotalDisplay));
+                OnPropertyChanged(nameof(SelectedInvoicePaidDisplay));
+                OnPropertyChanged(nameof(SelectedInvoiceBalanceDisplay));
+                OnPropertyChanged(nameof(AppointmentBalanceDisplay));
+
                 return;
             }
 
-            AppointmentReceiptNumber = billingRepository.GenerateReceiptNumber();
+            AppointmentReceiptNumber = string.Empty;
             AppointmentPatientCode = item.PatientCode;
             AppointmentPatientName = item.PatientName;
             AppointmentCategory = item.Category;
             AppointmentDate = item.TreatmentDateDisplay;
             AppointmentServiceName = item.ServiceName;
+            
+            AppointmentInvoiceItemName = item.ServiceName;
 
             AppointmentTotalAmount = 0;
             AppointmentDiscountType = "None";
@@ -1265,6 +1644,16 @@ namespace CruzNeryClinic.ViewModels
             AppointmentPaymentAmount = 0;
             AppointmentPaymentMethod = "Cash";
             AppointmentNotes = string.Empty;
+
+            SelectedOpenInvoice = null;
+            SelectedInvoiceItems.Clear();
+            
+            NewInvoiceTitle = $"{item.ServiceName} Invoice";
+            IsCreatingNewInvoice = false;
+
+            // When a completed treatment is selected,
+            // show only that patient's open invoices so the treatment is not added to the wrong patient.
+            LoadOpenInvoicesForSelectedAppointmentPatient();
 
             RecalculateAppointmentPayment();
         }
@@ -1301,112 +1690,164 @@ namespace CruzNeryClinic.ViewModels
 
             decimal billableAmount = CalculateAppointmentBillableAmount();
 
-            if (AppointmentPaymentAmount > billableAmount)
-                AppointmentPaymentAmount = billableAmount;
+            decimal currentInvoiceBalance;
 
-            AppointmentBalance = billingRepository.CalculateBalance(billableAmount, AppointmentPaymentAmount);
+            if (SelectedOpenInvoice != null)
+                currentInvoiceBalance = SelectedOpenInvoice.RemainingBalance;
+            else if (selectedInvoiceIdForPayment.HasValue && AppointmentBalance > 0)
+                currentInvoiceBalance = AppointmentBalance;
+            else
+                currentInvoiceBalance = billableAmount;
+
+            // Do not force the payment back to 0 unless there is truly no payable balance.
+            if (AppointmentPaymentAmount > currentInvoiceBalance)
+                AppointmentPaymentAmount = currentInvoiceBalance;
+
+            AppointmentBalance = Math.Max(currentInvoiceBalance - AppointmentPaymentAmount, 0);
 
             OnPropertyChanged(nameof(AppointmentVatExemptSalesDisplay));
             OnPropertyChanged(nameof(AppointmentDiscountLabel));
             OnPropertyChanged(nameof(AppointmentBillableAmountDisplay));
             OnPropertyChanged(nameof(AppointmentSubtotalDisplay));
             OnPropertyChanged(nameof(AppointmentBalanceDisplay));
+            OnPropertyChanged(nameof(SelectedInvoiceBalanceDisplay));
         }
 
         private void ProcessAppointmentPayment()
         {
             ClearAppointmentPaymentError();
 
-            if (SelectedAppointmentPaymentItem == null)
+            if (SelectedOpenInvoice == null)
             {
-                ShowAppointmentPaymentError("Please select a completed appointment or treatment record to bill.");
+                ShowAppointmentPaymentError("Please select or create an invoice first.");
                 return;
             }
 
-            if (AppointmentTotalAmount <= 0)
+            if (AppointmentPaymentAmount <= 0)
             {
-                ShowAppointmentPaymentError("Please enter a valid total amount.");
-                return;
-            }
-
-            if (AppointmentDiscountAmount < 0)
-            {
-                ShowAppointmentPaymentError("Discount cannot be negative.");
-                return;
-            }
-
-            decimal netAmount = CalculateAppointmentBillableAmount();
-
-            if (AppointmentPaymentAmount < 0)
-            {
-                ShowAppointmentPaymentError("Payment amount cannot be negative.");
-                return;
-            }
-
-            if (AppointmentPaymentAmount > netAmount)
-            {
-                ShowAppointmentPaymentError("Payment amount cannot be greater than the billable amount.");
+                ShowAppointmentPaymentError("Please enter a valid payment amount.");
                 return;
             }
 
             try
             {
-                BillingTransaction billing = new()
+                int selectedInvoiceId = SelectedOpenInvoice.BillingId;
+                int selectedInvoicePatientId = SelectedOpenInvoice.PatientId;
+
+                bool shouldAddItemBeforePayment =
+                    !string.IsNullOrWhiteSpace(AppointmentInvoiceItemName) &&
+                    AppointmentTotalAmount > 0;
+
+                if (shouldAddItemBeforePayment)
                 {
-                    PatientId = SelectedAppointmentPaymentItem.PatientId,
-                    AppointmentId = SelectedAppointmentPaymentItem.AppointmentId,
-                    TreatmentRecordId = SelectedAppointmentPaymentItem.TreatmentRecordId,
-                    BillingSource = "Appointment",
-                    ReceiptNumber = AppointmentReceiptNumber,
-                    ServiceId = SelectedAppointmentPaymentItem.ServiceId,
-                    ServiceName = SelectedAppointmentPaymentItem.ServiceName,
-                    Description = $"Appointment payment for {SelectedAppointmentPaymentItem.ServiceName}",
-                    TotalAmount = AppointmentTotalAmount,
-                    DiscountType = AppointmentDiscountType,
-                    DiscountAmount = AppointmentDiscountAmount,
-                    SubtotalAfterDiscount = netAmount,
-                    AmountPaid = 0,
-                    RemainingBalance = netAmount,
-                    PaymentStatus = "Unpaid",
-                    TransactionDate = DateTime.Today,
-                    CreatedByUserId = null,
+                    bool hasCompletedTreatment = SelectedAppointmentPaymentItem != null;
+
+                    if (hasCompletedTreatment &&
+                        SelectedOpenInvoice.PatientId != SelectedAppointmentPaymentItem!.PatientId)
+                    {
+                        ShowAppointmentPaymentError("The selected invoice belongs to a different patient. Please select an invoice for the same patient.");
+                        return;
+                    }
+
+                    string sourceTreatmentName = hasCompletedTreatment
+                        ? SelectedAppointmentPaymentItem!.ServiceName
+                        : "Manual invoice item";
+
+                    BillingTransactionItem item = new()
+                    {
+                        BillingId = selectedInvoiceId,
+
+                        AppointmentId = hasCompletedTreatment
+                            ? SelectedAppointmentPaymentItem!.AppointmentId
+                            : null,
+
+                        TreatmentRecordId = hasCompletedTreatment
+                            ? SelectedAppointmentPaymentItem!.TreatmentRecordId
+                            : null,
+
+                        ServiceId = hasCompletedTreatment
+                            ? SelectedAppointmentPaymentItem!.ServiceId
+                            : null,
+
+                        ServiceName = AppointmentInvoiceItemName.Trim(),
+
+                        ItemDescription = string.IsNullOrWhiteSpace(AppointmentNotes)
+                            ? $"Source: {sourceTreatmentName}"
+                            : AppointmentNotes.Trim(),
+
+                        TreatmentDate = hasCompletedTreatment
+                            ? SelectedAppointmentPaymentItem!.TreatmentDate
+                            : DateTime.Today,
+
+                        Amount = AppointmentTotalAmount,
+                        IsIncluded = AppointmentTotalAmount == 0,
+                        CreatedAt = DateTime.Now
+                    };
+
+                    billingRepository.AddBillingTransactionItem(item);
+
+                    LoadBillingRecords();
+                    LoadBalancePaymentItems();
+                    ReloadSelectedInvoiceForPayment(selectedInvoicePatientId, selectedInvoiceId);
+                    LoadSelectedInvoiceItems();
+                }
+
+                if (SelectedOpenInvoice == null)
+                {
+                    ShowAppointmentPaymentError("Selected invoice could not be reloaded.");
+                    return;
+                }
+
+                if (AppointmentPaymentAmount > SelectedOpenInvoice.RemainingBalance)
+                {
+                    ShowAppointmentPaymentError("Payment amount cannot be greater than the selected invoice balance.");
+                    return;
+                }
+
+                PaymentRecord payment = new()
+                {
+                    BillingId = SelectedOpenInvoice.BillingId,
+                    PatientId = SelectedOpenInvoice.PatientId,
+                    AmountPaid = AppointmentPaymentAmount,
+                    PaymentMethod = AppointmentPaymentMethod,
+                    PaymentDate = DateTime.Today,
+                    ReceivedByUserId = null,
                     Notes = AppointmentNotes
                 };
 
-                int billingId = billingRepository.CreateBillingTransaction(billing);
+                billingRepository.AddPaymentRecord(payment);
 
-                if (AppointmentPaymentAmount > 0)
-                {
-                    PaymentRecord payment = new()
-                    {
-                        BillingId = billingId,
-                        PatientId = SelectedAppointmentPaymentItem.PatientId,
-                        AmountPaid = AppointmentPaymentAmount,
-                        PaymentMethod = AppointmentPaymentMethod,
-                        PaymentDate = DateTime.Today,
-                        ReceivedByUserId = null,
-                        Notes = AppointmentNotes
-                    };
+                LoadBillingRecords();
+                LoadBalancePaymentItems();
+                ReloadSelectedInvoiceForPayment(selectedInvoicePatientId, selectedInvoiceId);
+                LoadSelectedInvoiceItems();
 
-                    billingRepository.AddPaymentRecord(payment);
-                }
+                AppointmentTotalAmount = 0;
+                AppointmentPaymentAmount = 0;
+                AppointmentNotes = string.Empty;
+                AppointmentInvoiceItemName = string.Empty;
 
-                LoadBillingData();
-                ClearAppointmentPaymentForm();
+                OnPropertyChanged(nameof(AppointmentBalanceDisplay));
+                OnPropertyChanged(nameof(SelectedInvoiceNumberDisplay));
+                OnPropertyChanged(nameof(SelectedInvoiceTitleDisplay));
+                OnPropertyChanged(nameof(SelectedInvoiceTotalDisplay));
+                OnPropertyChanged(nameof(SelectedInvoicePaidDisplay));
+                OnPropertyChanged(nameof(SelectedInvoiceBalanceDisplay));
 
-                SelectedBillingModule = "Appointment Payment";
+                ShowPrompt("Invoice Payment", "Invoice item/payment has been recorded successfully.");
             }
             catch (Exception ex)
             {
-                ShowAppointmentPaymentError($"Failed to process appointment payment: {ex.Message}");
+                ShowAppointmentPaymentError($"Failed to record invoice payment: {ex.Message}");
             }
         }
-
         private void ClearAppointmentPaymentForm()
         {
             SelectedAppointmentPaymentItem = null;
             ClearAppointmentPaymentFormFieldsOnly();
             ClearAppointmentPaymentError();
+
+            LoadGlobalOpenInvoicesForPayment();
         }
 
         private void ClearAppointmentPaymentFormFieldsOnly()
@@ -1428,6 +1869,14 @@ namespace CruzNeryClinic.ViewModels
             AppointmentBalance = 0;
             AppointmentPaymentMethod = "Cash";
             AppointmentNotes = string.Empty;
+
+            PatientOpenInvoices.Clear();
+            SelectedInvoiceItems.Clear();
+            appointmentInvoicePatientId = null;
+            selectedInvoiceIdForPayment = null;
+            selectedOpenInvoice = null;
+            OnPropertyChanged(nameof(SelectedOpenInvoice));
+            NotifySelectedInvoiceDisplayChanged();
 
             OnPropertyChanged(nameof(AppointmentVatExemptSalesDisplay));
             OnPropertyChanged(nameof(AppointmentDiscountLabel));
@@ -1648,7 +2097,7 @@ namespace CruzNeryClinic.ViewModels
                 return;
             }
 
-            ManualReceiptNumber = billingRepository.GenerateReceiptNumber();
+            ManualReceiptNumber = string.Empty;
             ManualPatientCode = patient.PatientCode;
             ManualPatientName = patient.PatientName;
             ManualCategory = patient.Category;
@@ -1745,31 +2194,56 @@ namespace CruzNeryClinic.ViewModels
 
             try
             {
-                BillingTransaction billing = new()
+                string invoiceNumber = billingRepository.GenerateNextInvoiceNumber();
+
+                BillingTransaction invoice = new()
                 {
                     PatientId = SelectedManualPatient.PatientId,
                     AppointmentId = null,
                     TreatmentRecordId = null,
                     BillingSource = "Manual",
-                    ReceiptNumber = ManualReceiptNumber,
+                    ReceiptNumber = invoiceNumber,
+
                     ServiceId = null,
-                    ServiceName = ManualServiceName,
+                    ServiceName = ManualServiceName.Trim(),
                     Description = string.IsNullOrWhiteSpace(ManualDescription)
-                        ? $"Manual transaction for {ManualServiceName}"
-                        : ManualDescription,
-                    TotalAmount = ManualTotalAmount,
+                        ? $"Manual invoice for {ManualServiceName}"
+                        : ManualDescription.Trim(),
+
+                    InvoiceTitle = ManualServiceName.Trim(),
+                    IsInvoiceOpen = true,
+
+                    TotalAmount = 0,
                     DiscountType = ManualDiscountType,
                     DiscountAmount = ManualDiscountAmount,
-                    SubtotalAfterDiscount = billableAmount,
+                    SubtotalAfterDiscount = 0,
                     AmountPaid = 0,
-                    RemainingBalance = billableAmount,
+                    RemainingBalance = 0,
                     PaymentStatus = "Unpaid",
                     TransactionDate = DateTime.Today,
                     CreatedByUserId = null,
                     Notes = ManualNotes
                 };
 
-                int billingId = billingRepository.CreateBillingTransaction(billing);
+                int billingId = billingRepository.CreateInvoiceHeader(invoice);
+
+                BillingTransactionItem item = new()
+                {
+                    BillingId = billingId,
+                    AppointmentId = null,
+                    TreatmentRecordId = null,
+                    ServiceId = null,
+                    ServiceName = ManualServiceName.Trim(),
+                    ItemDescription = string.IsNullOrWhiteSpace(ManualDescription)
+                        ? $"Manual transaction for {ManualServiceName}"
+                        : ManualDescription.Trim(),
+                    TreatmentDate = DateTime.Today,
+                    Amount = ManualTotalAmount,
+                    IsIncluded = false,
+                    CreatedAt = DateTime.Now
+                };
+
+                billingRepository.AddBillingTransactionItem(item);
 
                 if (ManualPaymentAmount > 0)
                 {
@@ -1792,14 +2266,13 @@ namespace CruzNeryClinic.ViewModels
 
                 SelectedBillingModule = "Manual Transaction";
 
-                ShowPrompt("Manual Transaction", "Manual transaction has been recorded successfully.");
+                ShowPrompt("Manual Transaction", $"Manual invoice {invoiceNumber} has been recorded successfully.");
             }
             catch (Exception ex)
             {
                 ShowPrompt("Manual Transaction", $"Failed to process manual transaction: {ex.Message}");
             }
         }
-
         private void ClearManualTransactionForm()
         {
             SelectedManualPatient = null;

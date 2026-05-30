@@ -632,7 +632,7 @@
 
         <!-- #region Main dark blue used by the sidebar and primary buttons -->
         <SolidColorBrush x:Key="SidebarBrush" Color="#223357"/>
-        <SolidColorBrush x:Key="SelectedMenuBrush" Color="#E6FCFF"/>
+        <SolidColorBrush x:Key="SelectedMenuBrush" Color="#33FFFFFF"/>
         <SolidColorBrush x:Key="AccentBlueBrush" Color="#2F98D0"/>
         <SolidColorBrush x:Key="SuccessGreenBrush" Color="#50C878"/>
         <SolidColorBrush x:Key="DangerRedBrush" Color="#E53935"/>
@@ -669,7 +669,7 @@
 
         <!-- Shared sidebar menu button -->
         <Style x:Key="SidebarMenuButtonStyle" TargetType="Button">
-            <Setter Property="Height" Value="40"/>
+            <Setter Property="Height" Value="52"/>
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="White"/>
@@ -682,7 +682,7 @@
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="MenuBorder"
                                 Background="{TemplateBinding Background}"
-                                CornerRadius="5"
+                                CornerRadius="10"
                                 Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Stretch"
                                             VerticalAlignment="Center"/>
@@ -690,11 +690,11 @@
 
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="MenuBorder" Property="Background" Value="#7990be"/>
+                                <Setter TargetName="MenuBorder" Property="Background" Value="#19FFFFFF"/>
                             </Trigger>
 
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="MenuBorder" Property="Background" Value="#727e97"/>
+                                <Setter TargetName="MenuBorder" Property="Background" Value="#0CFFFFFF"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -706,7 +706,9 @@
         <Style x:Key="SelectedSidebarMenuButtonStyle"
             TargetType="Button"
             BasedOn="{StaticResource SidebarMenuButtonStyle}">
-            <Setter Property="Background" Value="{StaticResource SelectedMenuBrush}"/>
+            <Setter 
+                Property="Background" 
+                Value="{StaticResource SelectedMenuBrush}"/>
             <Setter Property="Foreground" Value="White"/>
         </Style>
 

@@ -71,13 +71,13 @@
                         FontSize="16"
                         FontWeight="Bold"
                         Foreground="#111111"
-                        Text="Receipt Number" />
+                        Text="Invoice Number" />
 
                     <TextBox
                         Height="46"
                         FontSize="14"
                         Style="{StaticResource ModernTextBoxStyle}"
-                        Tag="Enter receipt number"
+                        Tag="Enter invoice number"
                         Text="{Binding BalanceSearchText, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
 
@@ -350,7 +350,7 @@
                                 FontSize="16"
                                 FontWeight="Bold"
                                 Foreground="#111111"
-                                Text="Receipt Number" />
+                                Text="Invoice Number" />
 
                             <TextBox
                                 Height="46"
@@ -578,7 +578,7 @@
                                     <TextBlock
                                         FontSize="14"
                                         FontWeight="Bold"
-                                        Text="₱ Process Transaction" />
+                                        Text="₱ Pay Selected Invoice" />
                                 </Button>
 
                                 <Button

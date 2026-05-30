@@ -34,43 +34,61 @@ namespace CruzNeryClinic.Services
 
                     page.Header().Element(header =>
                     {
-                        header.Background("#223357").Padding(18).Row(row =>
+                        header.BorderBottom(1).BorderColor("#222222").PaddingBottom(10).Column(col =>
                         {
-                            row.RelativeItem().Column(col =>
+                            col.Item().Row(row =>
                             {
-                                col.Item().Text("CRUZ-NERY DENTAL CLINIC")
-                                    .FontSize(20)
-                                    .Bold()
-                                    .FontColor(Colors.White);
+                                row.RelativeItem().Column(left =>
+                                {
+                                    left.Item().Text("CRUZ-NERY DENTAL CLINIC")
+                                        .FontSize(18)
+                                        .Bold()
+                                        .FontColor("#111111");
 
-                                col.Item().PaddingTop(4).Text("Dental Receipt")
-                                    .FontSize(12)
-                                    .FontColor(Colors.White);
-                            });
+                                    left.Item().PaddingTop(2).Text("Registered Name: Cruz-Nery Dental Clinic")
+                                        .FontSize(9)
+                                        .FontColor("#333333");
 
-                            row.ConstantItem(180).AlignRight().Column(col =>
-                            {
-                                col.Item().Text("Receipt Number")
-                                    .FontSize(9)
-                                    .FontColor(Colors.White);
+                                    left.Item().Text("Address: Rodriguez, Rizal")
+                                        .FontSize(9)
+                                        .FontColor("#333333");
 
-                                col.Item().Text(receipt.ReceiptNumber)
-                                    .FontSize(11)
-                                    .Bold()
-                                    .FontColor(Colors.White);
+                                    left.Item().Text("TIN: Not configured")
+                                        .FontSize(9)
+                                        .FontColor("#333333");
 
-                                col.Item().PaddingTop(8).Text("Transaction Date")
-                                    .FontSize(9)
-                                    .FontColor(Colors.White);
+                                    left.Item().Text("Registration Type: Non-VAT / VAT status not configured")
+                                        .FontSize(9)
+                                        .FontColor("#333333");
+                                });
 
-                                col.Item().Text(receipt.TransactionDateDisplay)
-                                    .FontSize(11)
-                                    .Bold()
-                                    .FontColor(Colors.White);
+                                row.ConstantItem(190).AlignRight().Column(right =>
+                                {
+                                    right.Item().AlignRight().Text("INVOICE")
+                                        .FontSize(24)
+                                        .Bold()
+                                        .FontColor("#111111");
+
+                                    right.Item().PaddingTop(4).Text($"Invoice No.: {receipt.ReceiptNumber}")
+                                        .FontSize(10)
+                                        .Bold()
+                                        .FontColor("#111111");
+
+                                    right.Item().Text($"Date: {receipt.TransactionDateDisplay}")
+                                        .FontSize(10)
+                                        .FontColor("#333333");
+
+                                    right.Item().PaddingTop(4).Text("☑ CASH SALES")
+                                        .FontSize(9)
+                                        .FontColor("#333333");
+
+                                    right.Item().Text("☐ CHARGE SALES")
+                                        .FontSize(9)
+                                        .FontColor("#333333");
+                                });
                             });
                         });
                     });
-
                     page.Content().PaddingTop(24).Column(col =>
                     {
                         col.Spacing(18);
@@ -81,10 +99,11 @@ namespace CruzNeryClinic.Services
                             {
                                 InfoBox(
                                     box,
-                                    "Patient Information",
+                                    "SOLD TO",
+                                    $"Customer / Patient Name: {receipt.PatientName}\n" +
                                     $"Patient ID: {receipt.PatientCode}\n" +
-                                    $"Patient Name: {receipt.PatientName}\n" +
-                                    $"Category: {receipt.PatientCategory}"
+                                    $"TIN: N/A\n" +
+                                    $"Business Address: N/A"
                                 );
                             });
 
@@ -94,15 +113,14 @@ namespace CruzNeryClinic.Services
                             {
                                 InfoBox(
                                     box,
-                                    "Transaction Information",
-                                    $"Payment Method: {receipt.PaymentMethod}\n" +
+                                    "INVOICE DETAILS",
+                                    $"Category: {receipt.PatientCategory}\n" +
                                     $"Payment Status: {receipt.PaymentStatus}\n" +
                                     $"Billing Source: {receipt.BillingSource}"
                                 );
                             });
                         });
-
-                        col.Item().Text("Service / Treatment")
+                        col.Item().Text("Invoice Items")
                             .FontSize(15)
                             .Bold()
                             .FontColor("#333333");
@@ -111,23 +129,111 @@ namespace CruzNeryClinic.Services
                         {
                             table.ColumnsDefinition(columns =>
                             {
-                                columns.RelativeColumn(3);
-                                columns.RelativeColumn(1);
+                                columns.RelativeColumn(2.6f); // Description / Nature of Service
+                                columns.RelativeColumn(0.7f); // Quantity
+                                columns.RelativeColumn(1.1f); // Unit Cost
+                                columns.RelativeColumn(1.1f); // Amount
                             });
 
                             table.Header(header =>
                             {
-                                header.Cell().Element(TableHeaderCell).Text("Description");
+                                header.Cell().Element(TableHeaderCell).Text("Description / Nature of Service");
+                                header.Cell().Element(TableHeaderCell).AlignCenter().Text("Qty");
+                                header.Cell().Element(TableHeaderCell).AlignRight().Text("Unit Cost");
                                 header.Cell().Element(TableHeaderCell).AlignRight().Text("Amount");
                             });
 
-                            table.Cell().Element(TableBodyCell).Text(
-                                string.IsNullOrWhiteSpace(receipt.Description)
-                                    ? receipt.ServiceName
-                                    : receipt.Description
-                            );
+                            if (receipt.InvoiceItems != null && receipt.InvoiceItems.Count > 0)
+                            {
+                                foreach (BillingTransactionItem item in receipt.InvoiceItems)
+                                {
+                                    string description = string.IsNullOrWhiteSpace(item.ItemDescription)
+                                        ? item.ServiceName
+                                        : $"{item.ServiceName} - {item.ItemDescription}";
 
-                            table.Cell().Element(TableBodyCell).AlignRight().Text(receipt.TotalAmountDisplay);
+                                    if (item.TreatmentDate.HasValue)
+                                        description = $"{description}\nDate: {item.TreatmentDateDisplay}";
+
+                                    string unitCost = item.IsIncluded
+                                        ? "Included"
+                                        : $"₱{item.Amount:N2}";
+
+                                    string amount = item.IsIncluded
+                                        ? "₱0.00"
+                                        : $"₱{item.Amount:N2}";
+
+                                    table.Cell().Element(TableBodyCell).Text(description);
+                                    table.Cell().Element(TableBodyCell).AlignCenter().Text("1");
+                                    table.Cell().Element(TableBodyCell).AlignRight().Text(unitCost);
+                                    table.Cell().Element(TableBodyCell).AlignRight().Text(amount);
+                                }
+                            }
+                            else
+                            {
+                                // Fallback for older billing records that do not have BillingTransactionItems yet.
+                                table.Cell().Element(TableBodyCell).Text(
+                                    string.IsNullOrWhiteSpace(receipt.Description)
+                                        ? receipt.ServiceName
+                                        : receipt.Description
+                                );
+
+                                table.Cell().Element(TableBodyCell).AlignCenter().Text("1");
+                                table.Cell().Element(TableBodyCell).AlignRight().Text(receipt.TotalAmountDisplay);
+                                table.Cell().Element(TableBodyCell).AlignRight().Text(receipt.TotalAmountDisplay);
+                            }
+                        });
+
+                        col.Item().PaddingTop(4).Text("Payment History")
+                            .FontSize(15)
+                            .Bold()
+                            .FontColor("#333333");
+
+                        col.Item().Table(table =>
+                        {
+                            table.ColumnsDefinition(columns =>
+                            {
+                                columns.RelativeColumn(1.2f); // Payment Date
+                                columns.RelativeColumn(1.0f); // Method
+                                columns.RelativeColumn(2.0f); // Notes
+                                columns.RelativeColumn(1.1f); // Amount
+                            });
+
+                            table.Header(header =>
+                            {
+                                header.Cell().Element(TableHeaderCell).Text("Payment Date");
+                                header.Cell().Element(TableHeaderCell).Text("Method");
+                                header.Cell().Element(TableHeaderCell).Text("Notes");
+                                header.Cell().Element(TableHeaderCell).AlignRight().Text("Amount");
+                            });
+
+                            if (receipt.PaymentHistory != null && receipt.PaymentHistory.Count > 0)
+                            {
+                                foreach (PaymentRecord payment in receipt.PaymentHistory)
+                                {
+                                    table.Cell().Element(TableBodyCell).Text(payment.PaymentDate.ToString("MM/dd/yyyy"));
+
+                                    table.Cell().Element(TableBodyCell).Text(
+                                        string.IsNullOrWhiteSpace(payment.PaymentMethod)
+                                            ? "Cash"
+                                            : payment.PaymentMethod
+                                    );
+
+                                    table.Cell().Element(TableBodyCell).Text(
+                                        string.IsNullOrWhiteSpace(payment.Notes)
+                                            ? "-"
+                                            : payment.Notes
+                                    );
+
+                                    table.Cell().Element(TableBodyCell).AlignRight().Text($"₱{payment.AmountPaid:N2}");
+                                }
+                            }
+                            else
+                            {
+                                table.Cell().Element(TableBodyCell).Text("-");
+                                table.Cell().Element(TableBodyCell).Text("-");
+                                table.Cell().Element(TableBodyCell).Text("No payment recorded yet.");
+                                table.Cell().Element(TableBodyCell).AlignRight().Text("₱0.00");
+                            }
                         });
 
                         col.Item().AlignRight().Width(260).Table(table =>
@@ -161,11 +267,42 @@ namespace CruzNeryClinic.Services
                         }
                     });
 
-                    page.Footer().AlignCenter().Text(text =>
+                    page.Footer().Column(footer =>
                     {
-                        text.Span("This receipt was generated by Cruz-Nery Dental Clinic Management System.")
-                            .FontSize(9)
-                            .FontColor(Colors.Grey.Darken1);
+                        footer.Item().PaddingTop(8).BorderTop(1).BorderColor("#CCCCCC").PaddingTop(6).Row(row =>
+                        {
+                            row.RelativeItem().Column(left =>
+                            {
+                                left.Item().Text("PERMIT / AUTHORITY DETAILS")
+                                    .FontSize(7)
+                                    .Bold()
+                                    .FontColor("#333333");
+
+                                left.Item().Text("Permit to Use / ATP No.: Not configured")
+                                    .FontSize(7)
+                                    .FontColor("#555555");
+
+                                left.Item().Text("BIR Permit No.: Not configured")
+                                    .FontSize(7)
+                                    .FontColor("#555555");
+
+                                left.Item().Text("Approved Series: Not configured")
+                                    .FontSize(7)
+                                    .FontColor("#555555");
+                            });
+
+                            row.RelativeItem().AlignRight().Column(right =>
+                            {
+                                right.Item().Text("“THIS DOCUMENT IS NOT VALID FOR CLAIM OF INPUT TAX.”")
+                                    .FontSize(7)
+                                    .Bold()
+                                    .FontColor("#333333");
+
+                                right.Item().PaddingTop(4).Text("This invoice was generated by Cruz-Nery Dental Clinic Management System.")
+                                    .FontSize(7)
+                                    .FontColor("#777777");
+                            });
+                        });
                     });
                 });
             }).GeneratePdf(filePath);
