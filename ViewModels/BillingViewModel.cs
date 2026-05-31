@@ -75,6 +75,17 @@ namespace CruzNeryClinic.ViewModels
         private string errorMessage = string.Empty;
         private bool hasError;
 
+        private int unpaidCount;
+        private int partialCount;
+        private int paidTodayCount;
+        private decimal collectedToday;
+
+        private string recentSearchText = string.Empty;
+
+        private bool isInvoicePaymentOverlayOpen;
+        private bool isBalancePaymentOverlayOpen;
+        private bool isManualTransactionOverlayOpen;
+
         #endregion
 
         #region Backing Fields for Balance Payment Module
@@ -360,6 +371,65 @@ namespace CruzNeryClinic.ViewModels
         {
             get => searchText;
             set => SetProperty(ref searchText, value);
+        }
+
+        public string RecentSearchText
+        {
+            get => recentSearchText;
+            set
+            {
+                if (SetProperty(ref recentSearchText, value))
+                    LoadBillingRecords();
+            }
+        }
+
+        public int UnpaidCount
+        {
+            get => unpaidCount;
+            set => SetProperty(ref unpaidCount, value);
+        }
+
+        public int PartialCount
+        {
+            get => partialCount;
+            set => SetProperty(ref partialCount, value);
+        }
+
+        public int PaidTodayCount
+        {
+            get => paidTodayCount;
+            set => SetProperty(ref paidTodayCount, value);
+        }
+
+        public decimal CollectedToday
+        {
+            get => collectedToday;
+            set
+            {
+                if (SetProperty(ref collectedToday, value))
+                    OnPropertyChanged(nameof(CollectedTodayDisplay));
+            }
+        }
+
+        public string CollectedTodayDisplay =>
+            $"₱{CollectedToday:N2}";
+
+        public bool IsInvoicePaymentOverlayOpen
+        {
+            get => isInvoicePaymentOverlayOpen;
+            set => SetProperty(ref isInvoicePaymentOverlayOpen, value);
+        }
+
+        public bool IsBalancePaymentOverlayOpen
+        {
+            get => isBalancePaymentOverlayOpen;
+            set => SetProperty(ref isBalancePaymentOverlayOpen, value);
+        }
+
+        public bool IsManualTransactionOverlayOpen
+        {
+            get => isManualTransactionOverlayOpen;
+            set => SetProperty(ref isManualTransactionOverlayOpen, value);
         }
 
         public bool IsPromptOpen
@@ -869,6 +939,11 @@ namespace CruzNeryClinic.ViewModels
 
         public ICommand SelectBillingModuleCommand { get; }
 
+        public ICommand OpenInvoicePaymentOverlayCommand { get; }
+        public ICommand OpenBalancePaymentOverlayCommand { get; }
+        public ICommand OpenManualTransactionOverlayCommand { get; }
+        public ICommand CloseBillingModuleOverlayCommand { get; }
+
         public ICommand RefreshBillingCommand { get; }
 
         public ICommand ViewReceiptCommand { get; }
@@ -959,6 +1034,12 @@ namespace CruzNeryClinic.ViewModels
             FilteredBalancePaymentItems = new ObservableCollection<BalancePaymentItem>();
 
             SelectBillingModuleCommand = new RelayCommand<string>(SelectBillingModule);
+
+            OpenInvoicePaymentOverlayCommand = new RelayCommand(OpenInvoicePaymentOverlay);
+            OpenBalancePaymentOverlayCommand = new RelayCommand(OpenBalancePaymentOverlay);
+            OpenManualTransactionOverlayCommand = new RelayCommand(OpenManualTransactionOverlay);
+            CloseBillingModuleOverlayCommand = new RelayCommand(CloseBillingModuleOverlay);
+
             RefreshBillingCommand = new RelayCommand(LoadBillingData);
 
             PatientOpenInvoices = new ObservableCollection<BillingRecordListItem>();
@@ -1085,7 +1166,13 @@ namespace CruzNeryClinic.ViewModels
         {
             BillingRecords.Clear();
 
-            IEnumerable<BillingRecordListItem> records = billingRepository.GetBillingRecords();
+            List<BillingRecordListItem> allRecords = billingRepository.GetBillingRecords();
+
+            // Summary cards are computed from the full, unfiltered list so that the
+            // search box and status filter never distort the totals.
+            UpdateBillingSummary(allRecords);
+
+            IEnumerable<BillingRecordListItem> records = allRecords;
 
             if (!string.IsNullOrWhiteSpace(SelectedBillingStatusFilter) &&
                 SelectedBillingStatusFilter != "All")
@@ -1098,8 +1185,32 @@ namespace CruzNeryClinic.ViewModels
                     ));
             }
 
+            string keyword = RecentSearchText?.Trim() ?? string.Empty;
+
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                records = records.Where(record =>
+                    record.PatientName.Contains(keyword, StringComparison.OrdinalIgnoreCase)
+                    || record.PatientCode.Contains(keyword, StringComparison.OrdinalIgnoreCase)
+                    || record.ReceiptNumber.Contains(keyword, StringComparison.OrdinalIgnoreCase));
+            }
+
             foreach (BillingRecordListItem item in records)
                 BillingRecords.Add(item);
+        }
+
+        private void UpdateBillingSummary(IEnumerable<BillingRecordListItem> allRecords)
+        {
+            UnpaidCount = allRecords.Count(record =>
+                string.Equals(record.PaymentStatus, "Unpaid", StringComparison.OrdinalIgnoreCase));
+
+            PartialCount = allRecords.Count(record =>
+                string.Equals(record.PaymentStatus, "Partial", StringComparison.OrdinalIgnoreCase));
+
+            (int paidTodayCount, decimal collectedTodayTotal) = billingRepository.GetTodayCollectionSummary();
+
+            PaidTodayCount = paidTodayCount;
+            CollectedToday = collectedTodayTotal;
         }
         private void SearchPatientsForPaymentHistory()
         {
@@ -1206,6 +1317,31 @@ namespace CruzNeryClinic.ViewModels
                 return;
 
             SelectedBillingModule = moduleName;
+        }
+
+        private void OpenInvoicePaymentOverlay()
+        {
+            SelectedBillingModule = "Appointment Payment";
+            IsInvoicePaymentOverlayOpen = true;
+        }
+
+        private void OpenBalancePaymentOverlay()
+        {
+            SelectedBillingModule = "Balance Payment";
+            IsBalancePaymentOverlayOpen = true;
+        }
+
+        private void OpenManualTransactionOverlay()
+        {
+            SelectedBillingModule = "Manual Transaction";
+            IsManualTransactionOverlayOpen = true;
+        }
+
+        private void CloseBillingModuleOverlay()
+        {
+            IsInvoicePaymentOverlayOpen = false;
+            IsBalancePaymentOverlayOpen = false;
+            IsManualTransactionOverlayOpen = false;
         }
 
         // This method is currently used for the "View Receipt" button (Action Section)

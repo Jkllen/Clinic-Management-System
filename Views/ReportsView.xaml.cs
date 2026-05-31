@@ -210,7 +210,7 @@ namespace CruzNeryClinic.Views
             if (maxVal == 0) maxVal = 1;
 
             var lineBrush = BrushFromHex(hexColor);
-            var areaColor = BrushFromHex(hexColor, 45);
+            var areaColor = MakeVerticalFade(hexColor, 120, 8);
             var gridBrush = new SolidColorBrush(Color.FromRgb(230, 230, 230));
             var textBrush = new SolidColorBrush(Color.FromRgb(130, 130, 130));
 
@@ -247,18 +247,14 @@ namespace CruzNeryClinic.Views
 
             // Compute points
             double step = data.Count > 1 ? chartW / (data.Count - 1) : chartW;
-            var linePoints = new PointCollection();
-            var areaPoints = new PointCollection();
-
-            // Area starts at baseline left
-            areaPoints.Add(new Point(padLeft, padTop + chartH));
+            double baselineY = padTop + chartH;
+            var points = new List<Point>();
 
             for (int i = 0; i < data.Count; i++)
             {
                 double x = padLeft + i * step;
-                double y = padTop + chartH - data[i].Value / maxVal * chartH;
-                linePoints.Add(new Point(x, y));
-                areaPoints.Add(new Point(x, y));
+                double y = baselineY - data[i].Value / maxVal * chartH;
+                points.Add(new Point(x, y));
 
                 // X label (every Nth to avoid overlap)
                 if (i == 0 || i == data.Count - 1 || data.Count <= 8 || i % Math.Max(1, data.Count / 6) == 0)
@@ -270,38 +266,31 @@ namespace CruzNeryClinic.Views
                 }
             }
 
-            // Area closes at baseline right
-            areaPoints.Add(new Point(padLeft + (data.Count - 1) * step, padTop + chartH));
+            // Filled area under a smooth curve (gradient fade to baseline)
+            var areaFig = new PathFigure { StartPoint = new Point(points[0].X, baselineY), IsClosed = true, IsFilled = true };
+            areaFig.Segments.Add(new LineSegment(points[0], false));
+            foreach (var seg in SmoothSegments(points))
+                areaFig.Segments.Add(seg);
+            areaFig.Segments.Add(new LineSegment(new Point(points[points.Count - 1].X, baselineY), false));
+            var areaGeo = new PathGeometry();
+            areaGeo.Figures.Add(areaFig);
+            canvas.Children.Add(new Path { Data = areaGeo, Fill = areaColor });
 
-            // Filled area
-            var area = new Polygon
+            // Smooth line on top
+            var lineFig = new PathFigure { StartPoint = points[0], IsClosed = false, IsFilled = false };
+            foreach (var seg in SmoothSegments(points))
+                lineFig.Segments.Add(seg);
+            var lineGeo = new PathGeometry();
+            lineGeo.Figures.Add(lineFig);
+            canvas.Children.Add(new Path
             {
-                Points = areaPoints,
-                Fill = areaColor,
-                Stroke = Brushes.Transparent,
-            };
-            canvas.Children.Add(area);
-
-            // Line on top
-            var polyline = new Polyline
-            {
-                Points = linePoints,
+                Data = lineGeo,
                 Stroke = lineBrush,
-                StrokeThickness = 2.2,
+                StrokeThickness = 2.4,
                 StrokeLineJoin = PenLineJoin.Round,
                 StrokeStartLineCap = PenLineCap.Round,
                 StrokeEndLineCap = PenLineCap.Round,
-            };
-            canvas.Children.Add(polyline);
-
-            // Dots at data points
-            foreach (var pt in linePoints)
-            {
-                var dot = new Ellipse { Width = 5, Height = 5, Fill = lineBrush };
-                Canvas.SetLeft(dot, pt.X - 2.5);
-                Canvas.SetTop(dot, pt.Y - 2.5);
-                canvas.Children.Add(dot);
-            }
+            });
         }
 
         // ── Dual-series line chart ─────────────────────────────────────────────
@@ -363,8 +352,8 @@ namespace CruzNeryClinic.Views
             });
 
             double step = data.Count > 1 ? chartW / (data.Count - 1) : chartW;
-            var pts1 = new PointCollection();
-            var pts2 = new PointCollection();
+            var pts1 = new List<Point>();
+            var pts2 = new List<Point>();
 
             for (int i = 0; i < data.Count; i++)
             {
@@ -383,38 +372,15 @@ namespace CruzNeryClinic.Views
                 }
             }
 
-            // Series 1 (Scheduled)
-            canvas.Children.Add(new Polyline
-            {
-                Points = pts1,
-                Stroke = brush1,
-                StrokeThickness = 2,
-                StrokeLineJoin = PenLineJoin.Round,
-            });
-            // Series 2 (Walk-in)
-            canvas.Children.Add(new Polyline
-            {
-                Points = pts2,
-                Stroke = brush2,
-                StrokeThickness = 2,
-                StrokeLineJoin = PenLineJoin.Round,
-            });
+            // Smooth series lines
+            canvas.Children.Add(SmoothLinePath(pts1, brush1, 2.4));
+            canvas.Children.Add(SmoothLinePath(pts2, brush2, 2.4));
 
-            // Dots
+            // Markers (filled circle with white ring)
             foreach (var pt in pts1)
-            {
-                var dot = new Ellipse { Width = 5, Height = 5, Fill = brush1 };
-                Canvas.SetLeft(dot, pt.X - 2.5);
-                Canvas.SetTop(dot, pt.Y - 2.5);
-                canvas.Children.Add(dot);
-            }
+                AddMarker(canvas, pt, brush1);
             foreach (var pt in pts2)
-            {
-                var dot = new Ellipse { Width = 5, Height = 5, Fill = brush2 };
-                Canvas.SetLeft(dot, pt.X - 2.5);
-                Canvas.SetTop(dot, pt.Y - 2.5);
-                canvas.Children.Add(dot);
-            }
+                AddMarker(canvas, pt, brush2);
 
             // Legend
             double legendY = padTop + chartH + 26;
@@ -511,6 +477,88 @@ namespace CruzNeryClinic.Views
         }
 
         // ── Helpers ────────────────────────────────────────────────────────────
+
+        /// <summary>Catmull-Rom → Bézier smoothing: builds curved segments through the given points.</summary>
+        private static List<PathSegment> SmoothSegments(IReadOnlyList<Point> pts)
+        {
+            var segments = new List<PathSegment>();
+            if (pts.Count < 3)
+            {
+                for (int i = 1; i < pts.Count; i++)
+                    segments.Add(new LineSegment(pts[i], true));
+                return segments;
+            }
+
+            for (int i = 0; i < pts.Count - 1; i++)
+            {
+                Point p0 = pts[Math.Max(i - 1, 0)];
+                Point p1 = pts[i];
+                Point p2 = pts[i + 1];
+                Point p3 = pts[Math.Min(i + 2, pts.Count - 1)];
+
+                var c1 = new Point(p1.X + (p2.X - p0.X) / 6.0, p1.Y + (p2.Y - p0.Y) / 6.0);
+                var c2 = new Point(p2.X - (p3.X - p1.X) / 6.0, p2.Y - (p3.Y - p1.Y) / 6.0);
+                segments.Add(new BezierSegment(c1, c2, p2, true));
+            }
+            return segments;
+        }
+
+        /// <summary>A stroked smooth-curve Path through the given points.</summary>
+        private static Path SmoothLinePath(IReadOnlyList<Point> pts, Brush stroke, double thickness)
+        {
+            var fig = new PathFigure { StartPoint = pts[0], IsClosed = false, IsFilled = false };
+            foreach (var seg in SmoothSegments(pts))
+                fig.Segments.Add(seg);
+            var geo = new PathGeometry();
+            geo.Figures.Add(fig);
+            return new Path
+            {
+                Data = geo,
+                Stroke = stroke,
+                StrokeThickness = thickness,
+                StrokeLineJoin = PenLineJoin.Round,
+                StrokeStartLineCap = PenLineCap.Round,
+                StrokeEndLineCap = PenLineCap.Round,
+            };
+        }
+
+        /// <summary>Draws a filled data-point marker with a white ring.</summary>
+        private static void AddMarker(Canvas canvas, Point pt, Brush fill)
+        {
+            var dot = new Ellipse
+            {
+                Width = 8,
+                Height = 8,
+                Fill = fill,
+                Stroke = Brushes.White,
+                StrokeThickness = 1.5,
+            };
+            Canvas.SetLeft(dot, pt.X - 4);
+            Canvas.SetTop(dot, pt.Y - 4);
+            canvas.Children.Add(dot);
+        }
+
+        /// <summary>Top-to-bottom gradient of a colour, fading from <paramref name="topAlpha"/> to <paramref name="bottomAlpha"/>.</summary>
+        private static LinearGradientBrush MakeVerticalFade(string hex, byte topAlpha, byte bottomAlpha)
+        {
+            Color baseColor;
+            try { baseColor = (Color)ColorConverter.ConvertFromString(hex); }
+            catch { baseColor = Colors.Gray; }
+
+            var top = Color.FromArgb(topAlpha, baseColor.R, baseColor.G, baseColor.B);
+            var bottom = Color.FromArgb(bottomAlpha, baseColor.R, baseColor.G, baseColor.B);
+
+            return new LinearGradientBrush
+            {
+                StartPoint = new Point(0, 0),
+                EndPoint = new Point(0, 1),
+                GradientStops = new GradientStopCollection
+                {
+                    new GradientStop(top, 0),
+                    new GradientStop(bottom, 1),
+                },
+            };
+        }
 
         private static void DrawLegendItem(Canvas canvas, double x, double y, string hexColor, string label)
         {

@@ -12,6 +12,15 @@
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
 
+        <!--  Soft drop shadow shared by the top info cards and the table panel  -->
+        <DropShadowEffect
+            x:Key="CardDropShadow"
+            BlurRadius="16"
+            Direction="270"
+            Opacity="0.16"
+            ShadowDepth="3"
+            Color="#444444" />
+
         <!--  Summary card number styles  -->
         <Style x:Key="SummaryNumberStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="18" />
@@ -499,6 +508,7 @@
                 <Border
                     Grid.Column="0"
                     Padding="20,16"
+                    Effect="{StaticResource CardDropShadow}"
                     Style="{StaticResource DashboardCardStyle}">
                     <StackPanel>
                         <TextBlock
@@ -508,12 +518,18 @@
 
                         <!--  Total Items  -->
                         <StackPanel Margin="0,16,0,0" Orientation="Horizontal">
-                            <Border Width="55" Height="55" Background="#F5DEF5" CornerRadius="10">
+                            <Border
+                                Width="55"
+                                Height="55"
+                                Background="#F5DEF5"
+                                BorderBrush="#A6D7F3"
+                                BorderThickness="2"
+                                CornerRadius="10">
                                 <fa:IconBlock
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
                                     FontSize="30"
-                                    Foreground="#080341"
+                                    Foreground="#525151"
                                     Icon = "BoxOpen" />
                             </Border>
                             <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
@@ -524,12 +540,18 @@
 
                         <!--  Low Stock  -->
                         <StackPanel Margin="0,20,0,0" Orientation="Horizontal">
-                            <Border Width="55" Height="55" Background="#FEF3C7" CornerRadius="10">
+                            <Border
+                                Width="55"
+                                Height="55"
+                                Background="#FEF3C7"
+                                BorderBrush="#65C77F"
+                                BorderThickness="2"
+                                CornerRadius="10">
                                 <fa:IconBlock
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
                                     FontSize="30"
-                                    Foreground="#F59E0B"
+                                    Foreground="#525151"
                                     Icon="ExclamationTriangle" />
                             </Border>
                             <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
@@ -540,12 +562,18 @@
 
                         <!--  Out of Stock  -->
                         <StackPanel Margin="0,20,0,0" Orientation="Horizontal">
-                            <Border Width="55" Height="55" Background="#FEE2E2" CornerRadius="10">
+                            <Border
+                                Width="55"
+                                Height="55"
+                                Background="#FF0000"
+                                BorderBrush="#FFA500"
+                                BorderThickness="2"
+                                CornerRadius="10">
                                 <fa:IconBlock
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
                                     FontSize="30"
-                                    Foreground="#EF4444"
+                                    Foreground="White"
                                     Icon="Ban" />
                             </Border>
                             <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
@@ -560,6 +588,7 @@
                 <Border
                     Grid.Column="2"
                     Padding="16,16"
+                    Effect="{StaticResource CardDropShadow}"
                     Style="{StaticResource DashboardCardStyle}">
                     <Grid>
                         <Grid.RowDefinitions>
@@ -676,6 +705,7 @@
                 <Border
                     Grid.Column="4"
                     Padding="20,16"
+                    Effect="{StaticResource CardDropShadow}"
                     Style="{StaticResource DashboardCardStyle}">
                     <Grid>
                         <Grid.RowDefinitions>
@@ -896,6 +926,7 @@
                 <!--  Main table container  -->
                 <Border
                     Padding="20"
+                    Effect="{StaticResource CardDropShadow}"
                     Style="{StaticResource LargePanelStyle}">
                     <Grid>
                         <Grid.RowDefinitions>
@@ -1725,13 +1756,31 @@
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0">
                                     <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Item Name :" />
-                                    <TextBox Style="{StaticResource InventoryOverlayTextBoxStyle}" Tag="Enter Item Name" Text="{Binding EditItemName, UpdateSourceTrigger=PropertyChanged}" />
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Grid.Column="0" Style="{StaticResource InventoryOverlayTextBoxStyle}" Tag="Enter Item Name" Text="{Binding EditItemName, UpdateSourceTrigger=PropertyChanged}" />
+                                        <Border Grid.Column="1" Width="34" Height="34" Margin="8,0,0,0" VerticalAlignment="Center" Background="#FFF3CD" CornerRadius="17" ToolTip="Editable field">
+                                            <fa:IconBlock Icon="Edit" FontSize="13" Foreground="#E08600" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                    </Grid>
                                 </StackPanel>
                                 <StackPanel Grid.Column="2">
                                     <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Item Id :" />
-                                    <Border Height="46" Background="#F0F0F0" BorderBrush="#D8D8D8" BorderThickness="1" CornerRadius="14">
-                                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13" FontWeight="SemiBold" Foreground="#666666" Text="{Binding PreviewItemId}" />
-                                    </Border>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Height="46" Background="#F0F0F0" BorderBrush="#D8D8D8" BorderThickness="1" CornerRadius="14">
+                                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13" FontWeight="SemiBold" Foreground="#666666" Text="{Binding PreviewItemId}" />
+                                        </Border>
+                                        <Border Grid.Column="1" Width="34" Height="34" Margin="8,0,0,0" VerticalAlignment="Center" Background="#FFF3CD" CornerRadius="17" ToolTip="Auto-generated">
+                                            <fa:IconBlock Icon="Edit" FontSize="13" Foreground="#E08600" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                    </Grid>
                                 </StackPanel>
                             </Grid>
 
@@ -1745,11 +1794,29 @@
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0">
                                     <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Current Stock :" />
-                                    <TextBox x:Name="StockTextBox" Style="{StaticResource InventoryOverlayTextBoxStyle}" Tag="Enter Item Stock" Text="{Binding EditStock, UpdateSourceTrigger=PropertyChanged}" PreviewTextInput="IntegerOnly_PreviewTextInput" />
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Grid.Column="0" x:Name="StockTextBox" Style="{StaticResource InventoryOverlayTextBoxStyle}" Tag="Enter Item Stock" Text="{Binding EditStock, UpdateSourceTrigger=PropertyChanged}" PreviewTextInput="IntegerOnly_PreviewTextInput" />
+                                        <Border Grid.Column="1" Width="34" Height="34" Margin="8,0,0,0" VerticalAlignment="Center" Background="#FFF3CD" CornerRadius="17" ToolTip="Editable field" Visibility="{Binding EditIsEditMode, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            <fa:IconBlock Icon="Edit" FontSize="13" Foreground="#E08600" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                    </Grid>
                                 </StackPanel>
                                 <StackPanel Grid.Column="2">
                                     <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Unit Price :" />
-                                    <TextBox x:Name="UnitPriceTextBox" Style="{StaticResource InventoryOverlayPriceTextBoxStyle}" Tag="0.00" Text="{Binding EditUnitPrice, UpdateSourceTrigger=PropertyChanged}" PreviewTextInput="DecimalOnly_PreviewTextInput" />
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Grid.Column="0" x:Name="UnitPriceTextBox" Style="{StaticResource InventoryOverlayPriceTextBoxStyle}" Tag="0.00" Text="{Binding EditUnitPrice, UpdateSourceTrigger=PropertyChanged}" PreviewTextInput="DecimalOnly_PreviewTextInput" />
+                                        <Border Grid.Column="1" Width="34" Height="34" Margin="8,0,0,0" VerticalAlignment="Center" Background="#FFF3CD" CornerRadius="17" ToolTip="Editable field" Visibility="{Binding EditIsEditMode, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            <fa:IconBlock Icon="Edit" FontSize="13" Foreground="#E08600" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                    </Grid>
                                 </StackPanel>
                                 <StackPanel Grid.Column="3" Margin="12,0,0,0" VerticalAlignment="Bottom" Visibility="{Binding EditIsEditMode, Converter={StaticResource BoolToVisibilityConverter}}">
                                     <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Stock Status :" />
@@ -1836,14 +1903,14 @@
                             </Grid>
 
                             <!--  Low Stock Threshold  -->
-                            <StackPanel Margin="0,0,0,12">
+                            <StackPanel Margin="0,0,0,12" Visibility="{Binding EditIsAddMode, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Low Stock Threshold :" />
                                 <TextBox x:Name="ThresholdTextBox" Style="{StaticResource InventoryOverlayTextBoxStyle}" Tag="Enter the minimum stock level for this item" Text="{Binding EditLowStockThreshold, UpdateSourceTrigger=PropertyChanged}" PreviewTextInput="IntegerOnly_PreviewTextInput" />
                                 <TextBlock Margin="4,5,0,0" FontSize="11" Foreground="#7A7A7A" Text="Note: Set the minimum stock level for this item. The system will trigger a Low Stock alert when the available quantity reaches this threshold." TextWrapping="Wrap" />
                             </StackPanel>
 
                             <!--  Notes (optional)  -->
-                            <StackPanel Margin="0,0,0,4">
+                            <StackPanel Margin="0,0,0,4" Visibility="{Binding EditIsAddMode, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Notes (optional) :" />
                                 <Border BorderBrush="#C8DCF0" BorderThickness="1" CornerRadius="10">
                                     <TextBox
@@ -1893,6 +1960,48 @@
                                     </TextBox>
                                 </Border>
                             </StackPanel>
+
+                            <!--  Update modal only: Low Stock Threshold + Notes side by side  -->
+                            <Grid Margin="0,0,0,4" Visibility="{Binding EditIsEditMode, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="20" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <!--  Low Stock Threshold (left)  -->
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Low Stock Threshold :" />
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Grid.Column="0" Style="{StaticResource InventoryOverlayTextBoxStyle}" Tag="Enter the minimum stock level for this item" Text="{Binding EditLowStockThreshold, UpdateSourceTrigger=PropertyChanged}" PreviewTextInput="IntegerOnly_PreviewTextInput" />
+                                        <Border Grid.Column="1" Width="34" Height="34" Margin="8,0,0,0" VerticalAlignment="Center" Background="#FFF3CD" CornerRadius="17" ToolTip="Editable field">
+                                            <fa:IconBlock Icon="Edit" FontSize="13" Foreground="#E08600" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                    </Grid>
+                                    <TextBlock Margin="4,5,0,0" FontSize="11" Foreground="#7A7A7A" Text="Note: Set the minimum stock level for this item. The system will trigger a Low Stock alert when the available quantity reaches this threshold." TextWrapping="Wrap" />
+                                </StackPanel>
+
+                                <!--  Notes (optional) (right)  -->
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Notes (optional) :" />
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" BorderBrush="#C8DCF0" BorderThickness="1" CornerRadius="10">
+                                            <TextBox Height="90" Padding="12,8" AcceptsReturn="True" Background="#FFFDFD" BorderThickness="0" FontSize="13" Foreground="#111111" Text="{Binding EditNotes, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" />
+                                        </Border>
+                                        <Border Grid.Column="1" Width="34" Height="34" Margin="8,0,0,0" VerticalAlignment="Center" Background="#FFF3CD" CornerRadius="17" ToolTip="Editable field">
+                                            <fa:IconBlock Icon="Edit" FontSize="13" Foreground="#E08600" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                    </Grid>
+                                </StackPanel>
+                            </Grid>
 
                         </StackPanel>
                     </ScrollViewer>

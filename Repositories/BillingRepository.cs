@@ -215,6 +215,37 @@ ORDER BY bt.TransactionDate DESC, bt.BillingId DESC;";
             return items;
         }
 
+        /// <summary>
+        /// Returns the number of payments recorded today and the total cash collected today.
+        /// AmountPaid is encrypted at rest, so the sum is computed in C# after decryption.
+        /// </summary>
+        public (int PaidTodayCount, decimal CollectedToday) GetTodayCollectionSummary()
+        {
+            int paidTodayCount = 0;
+            decimal collectedToday = 0m;
+
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+        SELECT AmountPaid
+        FROM PaymentRecords
+        WHERE date(PaymentDate) = date(@Today);";
+
+            command.Parameters.AddWithValue("@Today", DateTime.Today.ToString("yyyy-MM-dd"));
+
+            using SqliteDataReader reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                paidTodayCount++;
+                collectedToday += SafeGetSecureDecimal(reader, "AmountPaid");
+            }
+
+            return (paidTodayCount, collectedToday);
+        }
+
         public List<BillingRecordListItem> GetOpenInvoicesByPatientId(int patientId)
         {
             List<BillingRecordListItem> records = new();

@@ -1,11 +1,9 @@
 using CommunityToolkit.Mvvm.Input;
 using CruzNeryClinic.Models;
+using CruzNeryClinic.Services;
+using System;
 using System.Collections.ObjectModel;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
 
 namespace CruzNeryClinic.ViewModels
 {
@@ -16,6 +14,8 @@ namespace CruzNeryClinic.ViewModels
         private string _manualSearchText = string.Empty;
         private string _faqSearchText = string.Empty;
         private string _selectedTab = "Manual";
+        private bool _isManualPrintPreviewOpen;
+        private Uri? _manualPrintPreviewUri;
 
         #endregion
 
@@ -29,12 +29,9 @@ namespace CruzNeryClinic.ViewModels
             FilteredFaqs = new ObservableCollection<FaqItem>();
 
             PrintUserManualCommand = new RelayCommand(PrintUserManual);
+            CloseManualPrintPreviewCommand = new RelayCommand(() => IsManualPrintPreviewOpen = false);
             SelectManualTabCommand = new RelayCommand(() => SelectedTab = "Manual");
             SelectFaqTabCommand = new RelayCommand(() => SelectedTab = "FAQ");
-            ToggleFaqCommand = new RelayCommand<FaqItem>(faq =>
-            {
-                if (faq != null) faq.IsExpanded = !faq.IsExpanded;
-            });
 
             LoadHelpContent();
             RefreshFilteredContent();
@@ -76,7 +73,32 @@ namespace CruzNeryClinic.ViewModels
         public string SelectedTab
         {
             get => _selectedTab;
-            set => SetProperty(ref _selectedTab, value);
+            set
+            {
+                if (SetProperty(ref _selectedTab, value))
+                {
+                    OnPropertyChanged(nameof(PrintButtonText));
+                    OnPropertyChanged(nameof(PrintPreviewTitle));
+                }
+            }
+        }
+
+        // Label for the header print button, reflecting which tab will be printed.
+        public string PrintButtonText => SelectedTab == "FAQ" ? "Print FAQs" : "Print Manual";
+
+        // Title shown on the print-preview overlay, reflecting the active tab.
+        public string PrintPreviewTitle => SelectedTab == "FAQ" ? "FAQs Print Preview" : "User Manual Print Preview";
+
+        public bool IsManualPrintPreviewOpen
+        {
+            get => _isManualPrintPreviewOpen;
+            set => SetProperty(ref _isManualPrintPreviewOpen, value);
+        }
+
+        public Uri? ManualPrintPreviewUri
+        {
+            get => _manualPrintPreviewUri;
+            set => SetProperty(ref _manualPrintPreviewUri, value);
         }
 
         #endregion
@@ -84,9 +106,9 @@ namespace CruzNeryClinic.ViewModels
         #region Commands
 
         public ICommand PrintUserManualCommand { get; }
+        public ICommand CloseManualPrintPreviewCommand { get; }
         public ICommand SelectManualTabCommand { get; }
         public ICommand SelectFaqTabCommand { get; }
-        public ICommand ToggleFaqCommand { get; }
 
         #endregion
 
@@ -314,87 +336,27 @@ namespace CruzNeryClinic.ViewModels
 
         private void PrintUserManual()
         {
-            PrintDialog printDialog = new PrintDialog();
-            if (printDialog.ShowDialog() != true)
-                return;
+            string filePath;
 
-            FlowDocument doc = new FlowDocument
+            if (SelectedTab == "FAQ")
             {
-                FontFamily = new FontFamily("Segoe UI"),
-                FontSize = 12,
-                PageWidth = printDialog.PrintableAreaWidth,
-                PageHeight = printDialog.PrintableAreaHeight,
-                PagePadding = new Thickness(60),
-                ColumnGap = 0,
-                ColumnWidth = printDialog.PrintableAreaWidth
-            };
-
-            doc.Blocks.Add(new Paragraph(new Run("Cruz-Nery Dental Clinic"))
+                filePath = UserManualPDFService.GenerateHelpPdf(
+                    Array.Empty<HelpManualTopic>(),
+                    Faqs,
+                    "Frequently Asked Questions",
+                    "FAQs.pdf");
+            }
+            else
             {
-                FontSize = 22,
-                FontWeight = FontWeights.Bold,
-                TextAlignment = TextAlignment.Center,
-                Margin = new Thickness(0, 0, 0, 4)
-            });
-
-            doc.Blocks.Add(new Paragraph(new Run("User Manual and Frequently Asked Questions"))
-            {
-                FontSize = 14,
-                TextAlignment = TextAlignment.Center,
-                Foreground = Brushes.Gray,
-                Margin = new Thickness(0, 0, 0, 24)
-            });
-
-            doc.Blocks.Add(new Paragraph(new Run("USER MANUAL"))
-            {
-                FontSize = 16,
-                FontWeight = FontWeights.Bold,
-                Foreground = new SolidColorBrush(Color.FromRgb(34, 51, 87)),
-                Margin = new Thickness(0, 0, 0, 10)
-            });
-
-            foreach (HelpManualTopic topic in ManualTopics)
-            {
-                doc.Blocks.Add(new Paragraph(new Run(topic.Title))
-                {
-                    FontSize = 13,
-                    FontWeight = FontWeights.Bold,
-                    Margin = new Thickness(0, 10, 0, 3)
-                });
-
-                doc.Blocks.Add(new Paragraph(new Run(topic.Content))
-                {
-                    FontSize = 11,
-                    Margin = new Thickness(16, 0, 0, 4)
-                });
+                filePath = UserManualPDFService.GenerateHelpPdf(
+                    ManualTopics,
+                    Array.Empty<FaqItem>(),
+                    "User Manual",
+                    "UserManual.pdf");
             }
 
-            doc.Blocks.Add(new Paragraph(new Run("FREQUENTLY ASKED QUESTIONS"))
-            {
-                FontSize = 16,
-                FontWeight = FontWeights.Bold,
-                Foreground = new SolidColorBrush(Color.FromRgb(34, 51, 87)),
-                Margin = new Thickness(0, 24, 0, 10)
-            });
-
-            foreach (FaqItem faq in Faqs)
-            {
-                doc.Blocks.Add(new Paragraph(new Run($"Q: {faq.Question}"))
-                {
-                    FontSize = 12,
-                    FontWeight = FontWeights.Bold,
-                    Margin = new Thickness(0, 8, 0, 3)
-                });
-
-                doc.Blocks.Add(new Paragraph(new Run($"A: {faq.Answer}"))
-                {
-                    FontSize = 11,
-                    Margin = new Thickness(16, 0, 0, 4)
-                });
-            }
-
-            IDocumentPaginatorSource paginatorSource = doc;
-            printDialog.PrintDocument(paginatorSource.DocumentPaginator, "Cruz-Nery Dental Clinic - User Manual");
+            ManualPrintPreviewUri = new Uri(filePath);
+            IsManualPrintPreviewOpen = true;
         }
 
         #endregion

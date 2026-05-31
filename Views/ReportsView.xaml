@@ -88,6 +88,112 @@
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Margin" Value="0,0,0,8" />
         </Style>
+
+        <!-- ── Custom range DatePickerTextBox sub-style (clears default chrome) ── -->
+        <Style x:Key="ReportDatePickerTextBoxStyle" TargetType="DatePickerTextBox">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="#111111" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DatePickerTextBox">
+                        <Grid>
+                            <ContentControl
+                                x:Name="PART_Watermark"
+                                Focusable="False"
+                                Foreground="#A0A0A0"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Visibility="Hidden" />
+                            <ScrollViewer
+                                x:Name="PART_ContentHost"
+                                Background="Transparent"
+                                Focusable="False"
+                                HorizontalScrollBarVisibility="Hidden"
+                                VerticalScrollBarVisibility="Hidden"
+                                VerticalAlignment="Center" />
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ── Custom range DatePicker (rounded, app-themed) ── -->
+        <Style x:Key="ReportDatePickerStyle" TargetType="DatePicker">
+            <Setter Property="Height" Value="42" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="#111111" />
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderBrush" Value="#DADADA" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DatePicker">
+                        <Border
+                            x:Name="DatePickerBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="8">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <DatePickerTextBox
+                                    x:Name="PART_TextBox"
+                                    Grid.Column="0"
+                                    Margin="10,0,0,0"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Focusable="True"
+                                    FontSize="{TemplateBinding FontSize}"
+                                    Foreground="{TemplateBinding Foreground}"
+                                    Style="{StaticResource ReportDatePickerTextBoxStyle}"
+                                    VerticalAlignment="Center" />
+                                <Button
+                                    x:Name="PART_Button"
+                                    Grid.Column="1"
+                                    Width="32"
+                                    Margin="0,0,4,0"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Cursor="Hand"
+                                    Focusable="False"
+                                    VerticalAlignment="Center">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="BtnBorder" Background="Transparent" CornerRadius="6" Padding="4">
+                                                <ContentPresenter />
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="BtnBorder" Property="Background" Value="#F0F0F0" />
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                    <fa:IconBlock FontSize="13" Foreground="#777777" Icon="CalendarAlt" />
+                                </Button>
+                                <Popup
+                                    x:Name="PART_Popup"
+                                    AllowsTransparency="True"
+                                    Placement="Bottom"
+                                    StaysOpen="False" />
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                <Setter TargetName="DatePickerBorder" Property="BorderBrush" Value="#223357" />
+                                <Setter TargetName="DatePickerBorder" Property="BorderThickness" Value="2" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </UserControl.Resources>
 
     <Grid Background="{StaticResource ScreenBackgroundBrush}">
@@ -401,7 +507,7 @@
                                     Style="{StaticResource ExactStyleComboBox}"
                                     SelectedIndex="{Binding SelectedFilterMonthIndex, Mode=TwoWay}" />
                                 <ComboBox
-                                    Width="75"
+                                    Width="95"
                                     FontSize="12"
                                     VerticalContentAlignment="Center"
                                     ItemsSource="{Binding AvailableYears}"
@@ -422,7 +528,7 @@
                                     </Style>
                                 </StackPanel.Style>
                                 <ComboBox
-                                    Width="75"
+                                    Width="95"
                                     FontSize="12"
                                     VerticalContentAlignment="Center"
                                     ItemsSource="{Binding AvailableYears}"
@@ -443,9 +549,9 @@
                                     </Style>
                                 </StackPanel.Style>
                                 <TextBlock Margin="0,0,6,0" FontSize="12" Foreground="#888888" Text="From:" VerticalAlignment="Center" />
-                                <DatePicker Width="130" Height="42" Margin="0,0,10,0" FontSize="12" VerticalContentAlignment="Center" BorderBrush="#DADADA" BorderThickness="1" SelectedDate="{Binding FilterFromDate, Mode=TwoWay}" />
+                                <DatePicker Width="140" Margin="0,0,10,0" Style="{StaticResource ReportDatePickerStyle}" SelectedDate="{Binding FilterFromDate, Mode=TwoWay}" />
                                 <TextBlock Margin="0,0,6,0" FontSize="12" Foreground="#888888" Text="To:" VerticalAlignment="Center" />
-                                <DatePicker Width="130" Height="42" FontSize="12" VerticalContentAlignment="Center" BorderBrush="#DADADA" BorderThickness="1" SelectedDate="{Binding FilterToDate, Mode=TwoWay}" />
+                                <DatePicker Width="140" Style="{StaticResource ReportDatePickerStyle}" SelectedDate="{Binding FilterToDate, Mode=TwoWay}" />
                             </StackPanel>
 
                         </Grid>
