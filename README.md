@@ -168,12 +168,29 @@ CruzNeryClinic
 
 ```
 
+---
 
+## Summary of Changes (June 2, 2026)
 
-Things Need To Do:
-Dashboard - filter beside the search also make the search functional.
-Manage User Add user security question - fix layout alignment.
-Manage User Update form - fix layout.
-Patient Management - add view in actions
-Appointment - overhaul of treatment service (uploading of teeths, trials etc.)
-Billing - make it 15% discount. 
+### Billing
+- Senior Citizen / PWD discount changed from **20% to 15%** (applies to invoice payments and manual transactions).
+
+### Dashboard
+- Made the **search bar functional** — typing a patient or user name/ID shows live suggestions; selecting one navigates to Patient Management or Manage Users with the record pre-searched.
+- Added a **Month / Year selector** beside the search bar that re-scopes the Patient Visits Trend, Revenue Trend, and Recent Activity Log.
+- The **New Patients** card now follows the selected period (relabels to "This Month" / "This Year").
+
+### Appointments
+- Add Walk-in and Add Schedule now support **multiple services/treatments** in one appointment.
+- Added **teeth image upload** (multiple photos) when creating an appointment and from the **View** (Appointment Details) screen, with view/remove support.
+- Restyled the **calendar** day cells (selected, today, and hover states) and fixed clipped day numbers.
+- Fixed the treatment dropdown that displayed the class name instead of the treatment name.
+
+### Inventory
+- Added **text labels** to the table action buttons (View / Edit / Archive), matching the Manage Users style.
+
+### Maintenance
+- Fixed the **Backup History table** layout (enabled scrolling, rebalanced columns, and stopped the action buttons from being clipped).
+
+### General UI
+- Fixed the **Add Schedule** button being cut off the right side of the Appointment toolbar.
