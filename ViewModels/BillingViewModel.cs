@@ -611,7 +611,7 @@ namespace CruzNeryClinic.ViewModels
 
         public string AppointmentDiscountLabel =>
             IsAppointmentPatientDiscountEligible()
-                ? "20% Senior/PWD Discount:"
+                ? "15% Senior/PWD Discount:"
                 : "Discount:";
 
         public string AppointmentBillableAmountDisplay =>
@@ -1702,7 +1702,7 @@ namespace CruzNeryClinic.ViewModels
 
         private decimal CalculateSeniorPwdDiscount(decimal vatExemptSales)
         {
-            return Math.Round(vatExemptSales * 0.20m, 2);
+            return Math.Round(vatExemptSales * 0.15m, 2);
         }
 
         private decimal CalculateAppointmentBillableAmount()
@@ -2266,7 +2266,7 @@ namespace CruzNeryClinic.ViewModels
             if (HasManualVatExemption && ManualTotalAmount > 0)
             {
                 ManualVatExemptSales = Math.Round(ManualTotalAmount / 1.12m, 2);
-                ManualDiscountAmount = Math.Round(ManualVatExemptSales * 0.20m, 2);
+                ManualDiscountAmount = Math.Round(ManualVatExemptSales * 0.15m, 2);
             }
             else
             {

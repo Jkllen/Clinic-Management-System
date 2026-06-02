@@ -68,6 +68,9 @@ namespace CruzNeryClinic.ViewModels
             // It uses NavigateTo(), the sidebar selected item also updates.
             dashboardViewModel.NavigationRequested += NavigateTo;
 
+            // Lets the Dashboard global search jump to a patient/user record.
+            dashboardViewModel.NavigationWithSearchRequested += NavigateToModuleWithSearch;
+
             DashboardView dashboardView = new DashboardView
             {
                 DataContext = dashboardViewModel
@@ -142,6 +145,35 @@ namespace CruzNeryClinic.ViewModels
             {
                 DataContext = new HelpViewModel()
             };
+        }
+
+        // Navigates to the Patients or Manage Users module and pre-fills its
+        // search box so the chosen record is shown immediately.
+        private void NavigateToModuleWithSearch(string moduleName, string searchKey)
+        {
+            if (!SessionService.CanAccessModule(moduleName))
+                return;
+
+            SelectedModule = moduleName;
+
+            switch (moduleName)
+            {
+                case "Patients":
+                    PatientManagementViewModel patientViewModel = new();
+                    patientViewModel.SearchText = searchKey;
+                    CurrentModuleView = new PatientManagementView { DataContext = patientViewModel };
+                    break;
+
+                case "ManageUsers":
+                    UserManagementViewModel userViewModel = new();
+                    userViewModel.SearchText = searchKey;
+                    CurrentModuleView = new UserManagementView { DataContext = userViewModel };
+                    break;
+
+                default:
+                    NavigateTo(moduleName);
+                    break;
+            }
         }
 
         private void NavigateToPatientsAndOpenAddPatient()

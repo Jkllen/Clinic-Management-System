@@ -24,17 +24,20 @@ namespace CruzNeryClinic.Models
             HasAppointments ? Visibility.Visible : Visibility.Collapsed;
 
         public Brush DayForeground =>
-            !IsCurrentMonth ? Brushes.Gray :
+            !IsCurrentMonth ? new SolidColorBrush(Color.FromRgb(193, 199, 209)) :
             IsSelected ? Brushes.White :
-            Brushes.Black;
+            IsToday ? new SolidColorBrush(Color.FromRgb(7, 60, 152)) :
+            new SolidColorBrush(Color.FromRgb(45, 51, 64));
 
         public Brush DayBackground =>
             IsSelected ? new SolidColorBrush(Color.FromRgb(7, 60, 152)) :
-            HasAppointments ? new SolidColorBrush(Color.FromRgb(220, 242, 255)) :
+            HasAppointments ? new SolidColorBrush(Color.FromRgb(227, 240, 255)) :
             Brushes.Transparent;
 
+        // Today is shown with a brand-blue ring when it is not the selected day.
         public Brush DayBorderBrush =>
-            IsToday ? new SolidColorBrush(Color.FromRgb(47, 152, 208)) :
+            IsSelected ? new SolidColorBrush(Color.FromRgb(7, 60, 152)) :
+            IsToday ? new SolidColorBrush(Color.FromRgb(7, 60, 152)) :
             Brushes.Transparent;
     }
 }

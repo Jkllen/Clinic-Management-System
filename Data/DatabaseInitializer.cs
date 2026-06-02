@@ -21,6 +21,37 @@ namespace CruzNeryClinic.Data
             SeedDefaultAdminAccounts(connection);
             SeedDefaultServices(connection);
             EnsureBillingInvoiceSchema(connection);
+            EnsureAppointmentSchema(connection);
+        }
+
+        // Adds the appointment columns/tables introduced after the initial schema:
+        // a ServiceStage column (Consultation / Fitting for Dentures & Orthodontics)
+        // and the AppointmentImages table that stores uploaded teeth photo paths.
+        private static void EnsureAppointmentSchema(SqliteConnection connection)
+        {
+            if (!ColumnExists(connection, "Appointments", "ServiceStage"))
+            {
+                using SqliteCommand command = connection.CreateCommand();
+                command.CommandText = @"
+        ALTER TABLE Appointments
+        ADD COLUMN ServiceStage TEXT;";
+                command.ExecuteNonQuery();
+            }
+
+            using (SqliteCommand command = connection.CreateCommand())
+            {
+                command.CommandText = @"
+        CREATE TABLE IF NOT EXISTS AppointmentImages (
+            AppointmentImageId INTEGER PRIMARY KEY AUTOINCREMENT,
+            AppointmentId INTEGER NOT NULL,
+            FilePath TEXT NOT NULL,
+            CreatedAt TEXT NOT NULL,
+
+            FOREIGN KEY (AppointmentId)
+                REFERENCES Appointments(AppointmentId)
+        );";
+                command.ExecuteNonQuery();
+            }
         }
 
         private static void EnableForeignKeys(SqliteConnection connection)
@@ -563,22 +594,22 @@ CREATE INDEX IF NOT EXISTS idx_activity_created ON ActivityLogs(CreatedAt);
             SeedUser(
                 connection,
                 userCode: "2026-001",
-                firstName: "Clinic",
+                firstName: "Nery",
                 middleName: "",
-                lastName: "Administrator One",
+                lastName: "Cruz",
                 username: "admin01",
-                plainPassword: "AdminClinic@2025",
+                plainPassword: "Admin@2026",
                 role: "Admin",
                 contactNumber: "N/A",
 
                 securityQuestionId1: motherQuestionId,
-                securityAnswer1: "admin01-mother",
+                securityAnswer1: "mother",
 
                 securityQuestionId2: teacherQuestionId,
-                securityAnswer2: "admin01-teacher",
+                securityAnswer2: "teacher",
 
                 securityQuestionId3: foodQuestionId,
-                securityAnswer3: "admin01-food"
+                securityAnswer3: "food"
             );
 
             SeedUser(

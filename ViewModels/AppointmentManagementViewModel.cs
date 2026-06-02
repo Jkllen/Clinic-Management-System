@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.Input;
 using CruzNeryClinic.Models;
 using CruzNeryClinic.Repositories;
+using CruzNeryClinic.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -102,6 +103,10 @@ namespace CruzNeryClinic.ViewModels
             ServiceOptions = new ObservableCollection<AppointmentServiceOption>();
             DentistOptions = new ObservableCollection<AppointmentDentistOption>();
 
+            SelectedServices = new ObservableCollection<AppointmentServiceOption>();
+            TeethImages = new ObservableCollection<AppointmentImageItem>();
+            AppointmentDetailsImages = new ObservableCollection<AppointmentImageItem>();
+
             waitingDurationTimer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromMinutes(1)
@@ -141,6 +146,11 @@ namespace CruzNeryClinic.ViewModels
 
             SaveWalkInCommand = new RelayCommand(SaveWalkInAppointment);
             SaveScheduledCommand = new RelayCommand(SaveScheduledAppointment);
+
+            AddServiceCommand = new RelayCommand(AddSelectedServiceToList);
+            RemoveServiceCommand = new RelayCommand<AppointmentServiceOption>(RemoveServiceFromList);
+            RemoveTeethImageCommand = new RelayCommand<AppointmentImageItem>(RemoveTeethImage);
+            RemoveAppointmentDetailsImageCommand = new RelayCommand<AppointmentImageItem>(RemoveAppointmentDetailsImage);
 
             PreviousCalendarMonthCommand = new RelayCommand(GoToPreviousCalendarMonth);
             NextCalendarMonthCommand = new RelayCommand(GoToNextCalendarMonth);
@@ -187,6 +197,17 @@ namespace CruzNeryClinic.ViewModels
         public ObservableCollection<AppointmentServiceOption> ServiceOptions { get; }
 
         public ObservableCollection<AppointmentDentistOption> DentistOptions { get; }
+
+        // Services chosen for the appointment being created (combined into one
+        // appointment when saved).
+        public ObservableCollection<AppointmentServiceOption> SelectedServices { get; }
+
+        // Teeth photos staged in the add overlays before the appointment is saved.
+        public ObservableCollection<AppointmentImageItem> TeethImages { get; }
+
+        // Teeth photos already stored for the appointment shown in the View
+        // (Appointment Details) overlay.
+        public ObservableCollection<AppointmentImageItem> AppointmentDetailsImages { get; }
 
         #endregion
 
@@ -594,6 +615,14 @@ namespace CruzNeryClinic.ViewModels
         public ICommand SaveWalkInCommand { get; }
 
         public ICommand SaveScheduledCommand { get; }
+
+        public ICommand AddServiceCommand { get; }
+
+        public ICommand RemoveServiceCommand { get; }
+
+        public ICommand RemoveTeethImageCommand { get; }
+
+        public ICommand RemoveAppointmentDetailsImageCommand { get; }
 
         public ICommand CancelWalkInCommand { get; }
 
@@ -1057,6 +1086,73 @@ namespace CruzNeryClinic.ViewModels
 
         #region Save Appointment Methods
 
+        private void AddSelectedServiceToList()
+        {
+            if (SelectedService == null)
+                return;
+
+            if (SelectedServices.Any(s => s.ServiceId == SelectedService.ServiceId))
+            {
+                SelectedService = null;
+                return;
+            }
+
+            SelectedServices.Add(SelectedService);
+            SelectedService = null;
+        }
+
+        private void RemoveServiceFromList(AppointmentServiceOption? service)
+        {
+            if (service == null)
+                return;
+
+            SelectedServices.Remove(service);
+        }
+
+        // Called from the overlay code-behind after the user picks an image file.
+        public void AddTeethImage(string sourcePath)
+        {
+            if (string.IsNullOrWhiteSpace(sourcePath))
+                return;
+
+            if (TeethImages.Any(i => string.Equals(i.FilePath, sourcePath, StringComparison.OrdinalIgnoreCase)))
+                return;
+
+            TeethImages.Add(new AppointmentImageItem { FilePath = sourcePath });
+        }
+
+        private void RemoveTeethImage(AppointmentImageItem? image)
+        {
+            if (image == null)
+                return;
+
+            TeethImages.Remove(image);
+        }
+
+        // Joins the selected services into a single display string.
+        private string BuildCombinedServiceName()
+        {
+            return string.Join(", ", SelectedServices.Select(service => service.ServiceName));
+        }
+
+        // Copies each staged teeth photo to storage and links it to the appointment.
+        private void SaveTeethImages(int appointmentId)
+        {
+            foreach (AppointmentImageItem image in TeethImages)
+            {
+                try
+                {
+                    string storedPath = AppointmentImageService.SaveImage(image.FilePath);
+                    appointmentRepository.AddAppointmentImage(appointmentId, storedPath);
+                }
+                catch
+                {
+                    // Skip an image that can no longer be read rather than failing
+                    // the whole appointment save.
+                }
+            }
+        }
+
         private void SaveWalkInAppointment()
         {
             try
@@ -1080,8 +1176,8 @@ namespace CruzNeryClinic.ViewModels
                     PatientId = SelectedPatient!.PatientId,
                     AppointmentType = "Walk-In",
                     Category = SelectedPatient.Category,
-                    ServiceId = SelectedService!.ServiceId,
-                    ServiceName = SelectedService.ServiceName,
+                    ServiceId = SelectedServices.First().ServiceId,
+                    ServiceName = BuildCombinedServiceName(),
                     DentistUserId = SelectedDentist!.DentistUserId,
                     DentistName = SelectedDentist.DentistName,
                     AppointmentDate = appointmentDate,
@@ -1093,7 +1189,8 @@ namespace CruzNeryClinic.ViewModels
                     Notes = FormNotes.Trim()
                 };
 
-                appointmentRepository.AddAppointment(appointment);
+                int newAppointmentId = appointmentRepository.AddAppointment(appointment);
+                SaveTeethImages(newAppointmentId);
 
                 IsWalkInOverlayOpen = false;
 
@@ -1135,8 +1232,8 @@ namespace CruzNeryClinic.ViewModels
                     PatientId = SelectedPatient!.PatientId,
                     AppointmentType = "Scheduled",
                     Category = SelectedPatient.Category,
-                    ServiceId = SelectedService!.ServiceId,
-                    ServiceName = SelectedService.ServiceName,
+                    ServiceId = SelectedServices.First().ServiceId,
+                    ServiceName = BuildCombinedServiceName(),
                     DentistUserId = SelectedDentist!.DentistUserId,
                     DentistName = SelectedDentist.DentistName,
                     AppointmentDate = appointmentDate,
@@ -1148,7 +1245,8 @@ namespace CruzNeryClinic.ViewModels
                     Notes = FormNotes.Trim()
                 };
 
-                appointmentRepository.AddAppointment(appointment);
+                int newAppointmentId = appointmentRepository.AddAppointment(appointment);
+                SaveTeethImages(newAppointmentId);
 
                 IsScheduledOverlayOpen = false;
 
@@ -1436,6 +1534,8 @@ namespace CruzNeryClinic.ViewModels
 
                 SelectedAppointmentDetails = latestAppointment;
 
+                LoadAppointmentDetailsImages(latestAppointment.AppointmentId);
+
                 AppointmentPatientMedicalAlert alert =
                     appointmentRepository.GetPatientMedicalAlert(latestAppointment.PatientId);
 
@@ -1464,6 +1564,53 @@ namespace CruzNeryClinic.ViewModels
             SelectedAppointmentDetails = null;
             AppointmentDetailsMedicalAlertText = string.Empty;
             AppointmentDetailsHasMedicalAlert = false;
+            AppointmentDetailsImages.Clear();
+        }
+
+        private void LoadAppointmentDetailsImages(int appointmentId)
+        {
+            AppointmentDetailsImages.Clear();
+
+            foreach (AppointmentImageItem image in appointmentRepository.GetAppointmentImages(appointmentId))
+                AppointmentDetailsImages.Add(image);
+        }
+
+        // Called from the view code-behind after the user picks image file(s) in
+        // the Appointment Details overlay. Stores each photo and links it to the
+        // current appointment immediately.
+        public void AddAppointmentDetailsImage(string sourcePath)
+        {
+            if (SelectedAppointmentDetails == null || string.IsNullOrWhiteSpace(sourcePath))
+                return;
+
+            try
+            {
+                string storedPath = AppointmentImageService.SaveImage(sourcePath);
+                appointmentRepository.AddAppointmentImage(SelectedAppointmentDetails.AppointmentId, storedPath);
+                LoadAppointmentDetailsImages(SelectedAppointmentDetails.AppointmentId);
+            }
+            catch (Exception ex)
+            {
+                ShowError($"Failed to upload teeth image: {ex.Message}");
+            }
+        }
+
+        private void RemoveAppointmentDetailsImage(AppointmentImageItem? image)
+        {
+            if (image == null || SelectedAppointmentDetails == null)
+                return;
+
+            MessageBoxResult confirm = MessageBox.Show(
+                "Remove this teeth image? This cannot be undone.",
+                "Remove Image",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (confirm != MessageBoxResult.Yes)
+                return;
+
+            appointmentRepository.DeleteAppointmentImage(image.AppointmentImageId);
+            LoadAppointmentDetailsImages(SelectedAppointmentDetails.AppointmentId);
         }
 
         #endregion
@@ -1731,9 +1878,9 @@ namespace CruzNeryClinic.ViewModels
                 return false;
             }
 
-            if (SelectedService == null)
+            if (SelectedServices.Count == 0)
             {
-                ShowFormError("Please select a service or treatment.");
+                ShowFormError("Please add at least one service or treatment.");
                 return false;
             }
 
@@ -1878,6 +2025,8 @@ namespace CruzNeryClinic.ViewModels
             ClearMedicalAlert();
 
             SelectedService = null;
+            SelectedServices.Clear();
+            TeethImages.Clear();
             SelectedDentist = DentistOptions.FirstOrDefault();
 
             FormAppointmentDate = DateTime.Today;

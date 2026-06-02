@@ -295,29 +295,77 @@
                     </StackPanel>
 
                     <StackPanel Grid.Row="4" Grid.Column="0">
-                        <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Service / Treatment *" />
-                        <ComboBox
-                            Height="42"
-                            ItemsSource="{Binding ServiceOptions}"
-                            SelectedItem="{Binding SelectedService, Mode=TwoWay}"
-                            Style="{StaticResource ExactStyleComboBox}" 
-                            Tag="Select a service or treatment">
-                            
-                            <ComboBox.ToolTip>
-                                <ToolTip>
-                                    <TextBlock Text="Select the service or treatment for the appointment." />
-                                </ToolTip>
-                            </ComboBox.ToolTip>
+                        <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Services / Treatments *" />
 
-                            <ComboBox.ItemTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="8" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <ComboBox
+                                Grid.Column="0"
+                                Height="42"
+                                ItemsSource="{Binding ServiceOptions}"
+                                SelectedItem="{Binding SelectedService, Mode=TwoWay}"
+                                Style="{StaticResource ExactStyleComboBox}"
+                                Tag="Select a service or treatment">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding DisplayText}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+
+                            <Button
+                                Grid.Column="2"
+                                Width="64"
+                                Height="42"
+                                Background="#073C98"
+                                Command="{Binding AddServiceCommand}"
+                                Foreground="White"
+                                Style="{StaticResource SecondaryButtonStyle}">
+                                <TextBlock FontWeight="Bold" Text="Add" />
+                            </Button>
+                        </Grid>
+
+                        <ItemsControl Margin="0,8,0,0" ItemsSource="{Binding SelectedServices}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <StackPanel Margin="4">
-                                        <TextBlock 
-                                            Text="{Binding DisplayText}" />
-                                    </StackPanel>
+                                    <Border
+                                        Margin="0,0,6,6"
+                                        Padding="10,5"
+                                        Background="#EAF1FF"
+                                        CornerRadius="14">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock
+                                                VerticalAlignment="Center"
+                                                FontSize="12"
+                                                Foreground="#103A8E"
+                                                Text="{Binding ServiceName}" />
+                                            <Button
+                                                Width="16"
+                                                Height="16"
+                                                Margin="8,0,0,0"
+                                                Padding="0"
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                Cursor="Hand"
+                                                Command="{Binding DataContext.RemoveServiceCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                CommandParameter="{Binding}">
+                                                <fa:IconBlock FontSize="12" Foreground="#103A8E" Icon="Times" />
+                                            </Button>
+                                        </StackPanel>
+                                    </Border>
                                 </DataTemplate>
-                            </ComboBox.ItemTemplate>
-                        </ComboBox>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </StackPanel>
 
                     <StackPanel Grid.Row="4" Grid.Column="2">
@@ -346,6 +394,70 @@
                         </ComboBox> 
                     </StackPanel>
                 </Grid>
+
+                <StackPanel Margin="0,18,0,0">
+                    <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Teeth Images" />
+
+                    <Button
+                        Width="170"
+                        Height="40"
+                        HorizontalAlignment="Left"
+                        Background="#073C98"
+                        Click="UploadTeethImage_Click"
+                        Foreground="White"
+                        Style="{StaticResource SecondaryButtonStyle}">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:IconBlock Margin="0,0,8,0" Foreground="White" Icon="Upload" />
+                            <TextBlock FontWeight="Bold" Text="Upload Image" />
+                        </StackPanel>
+                    </Button>
+
+                    <ItemsControl Margin="0,12,0,0" ItemsSource="{Binding TeethImages}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border
+                                    Width="110"
+                                    Margin="0,0,10,10"
+                                    Background="#F4F6FB"
+                                    BorderBrush="#D8D8D8"
+                                    BorderThickness="1"
+                                    CornerRadius="10">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="90" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+
+                                        <Image
+                                            Grid.Row="0"
+                                            Margin="6"
+                                            Source="{Binding Thumbnail}"
+                                            Stretch="UniformToFill" />
+
+                                        <Button
+                                            Grid.Row="1"
+                                            Height="26"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            Cursor="Hand"
+                                            Command="{Binding DataContext.RemoveTeethImageCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                            CommandParameter="{Binding}">
+                                            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                                <fa:IconBlock Margin="0,0,5,0" FontSize="11" Foreground="#C62828" Icon="TrashAlt" />
+                                                <TextBlock FontSize="11" Foreground="#C62828" Text="Remove" />
+                                            </StackPanel>
+                                        </Button>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
 
                 <StackPanel Margin="0,14,0,0">
                     <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Notes / Remarks" />

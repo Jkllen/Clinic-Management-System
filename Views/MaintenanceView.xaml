@@ -12,6 +12,14 @@
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
 
+        <!-- Soft drop shadow for cards and panels (scoped to this view) -->
+        <DropShadowEffect x:Key="CardDropShadow"
+                          Color="#000000"
+                          BlurRadius="14"
+                          ShadowDepth="2"
+                          Direction="270"
+                          Opacity="0.16" />
+
         <!--  Small dashboard card style  -->
         <Style x:Key="MaintenanceStatCardStyle" TargetType="{x:Type Border}">
             <Setter Property="Background" Value="White" />
@@ -19,6 +27,7 @@
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="10" />
             <Setter Property="Padding" Value="28,18" />
+            <Setter Property="Effect" Value="{StaticResource CardDropShadow}" />
         </Style>
 
         <!--  Section card style  -->
@@ -28,6 +37,7 @@
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="10" />
             <Setter Property="Padding" Value="28,18" />
+            <Setter Property="Effect" Value="{StaticResource CardDropShadow}" />
         </Style>
 
         <!--  Small icon button style  -->
@@ -79,7 +89,7 @@
     </UserControl.Resources>
 
     <Grid Background="#FAF9F6">
-        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled">
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
 
             <ScrollViewer.Resources>
                 <Style BasedOn="{StaticResource BlueDataGridScrollBarStyle}" TargetType="{x:Type ScrollBar}" />
@@ -618,9 +628,9 @@
                     BACKUP HISTORY
                     =====================================================
                 -->
-                <Border 
-                    Height="260"
-                    Margin="0,18,0,0" 
+                <Border
+                    MinHeight="260"
+                    Margin="0,18,0,0"
                     Style="{StaticResource MaintenanceSectionCardStyle}">
 
                     <Grid>
@@ -639,7 +649,7 @@
 
                             <DataGrid
                                 Grid.Row="2"
-                                MaxHeight="215"
+                                MaxHeight="320"
                                 AutoGenerateColumns="False"
                                 CanUserAddRows="False"
                                 CanUserDeleteRows="False"
@@ -665,12 +675,14 @@
 
                                 <DataGrid.Columns>
                                     <DataGridTextColumn
-                                        Width="1.2*"
+                                        Width="1.1*"
+                                        MinWidth="120"
                                         Binding="{Binding CreatedAtDisplay}"
                                         Header="Date &amp; Time" />
 
                                     <DataGridTextColumn
                                         Width="0.6*"
+                                        MinWidth="60"
                                         Binding="{Binding BackupType}"
                                         Header="Type">
                                         <DataGridTextColumn.ElementStyle>
@@ -682,7 +694,8 @@
                                     </DataGridTextColumn>
 
                                     <DataGridTextColumn
-                                        Width="1.8*"
+                                        Width="1.4*"
+                                        MinWidth="140"
                                         Binding="{Binding FileLocation}"
                                         Header="File Location">
                                         <DataGridTextColumn.ElementStyle>
@@ -697,11 +710,13 @@
 
                                     <DataGridTextColumn
                                         Width="0.5*"
+                                        MinWidth="55"
                                         Binding="{Binding SizeDisplay}"
                                         Header="Size" />
 
                                     <DataGridTextColumn
                                         Width="0.6*"
+                                        MinWidth="65"
                                         Binding="{Binding Status}"
                                         Header="Status">
                                         <DataGridTextColumn.ElementStyle>
@@ -712,14 +727,14 @@
                                         </DataGridTextColumn.ElementStyle>
                                     </DataGridTextColumn>
 
-                                    <DataGridTemplateColumn Width="1.3*" Header="Actions">
+                                    <DataGridTemplateColumn Width="1.5*" MinWidth="210" Header="Actions">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
-                                                <StackPanel Orientation="Horizontal">
+                                                <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
                                                     <Button
-                                                        Width="92"
-                                                        Height="34"
-                                                        Margin="0,0,12,0"
+                                                        Width="84"
+                                                        Height="32"
+                                                        Margin="0,0,8,0"
                                                         Background="#223357"
                                                         Command="{Binding DataContext.RestoreBackupHistoryItemCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                         CommandParameter="{Binding}"
@@ -727,14 +742,14 @@
                                                         Style="{StaticResource SecondaryButtonStyle}">
 
                                                         <TextBlock
-                                                            FontSize="13"
+                                                            FontSize="12"
                                                             FontWeight="Bold"
                                                             Text="Restore" />
                                                     </Button>
 
                                                     <Button
-                                                        Width="120"
-                                                        Height="34"
+                                                        Width="116"
+                                                        Height="32"
                                                         Background="White"
                                                         BorderBrush="#999999"
                                                         BorderThickness="1"
@@ -742,7 +757,7 @@
                                                         CommandParameter="{Binding}"
                                                         Content="View Location"
                                                         Foreground="#111111"
-                                                        FontSize="13"
+                                                        FontSize="12"
                                                         FontWeight="SemiBold"
                                                         Style="{StaticResource OutlineActionButtonStyle}" />
                                                 </StackPanel>

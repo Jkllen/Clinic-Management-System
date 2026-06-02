@@ -23,6 +23,20 @@
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
             <converters:PesoCurrencyConverter x:Key="PesoCurrencyConverter" />
             <converters:CountToVisibilityConverter x:Key="CountToVisibilityConverter" />
+
+            <!-- Soft drop shadow for billing panels (scoped to this view) -->
+            <DropShadowEffect x:Key="CardDropShadow"
+                              Color="#000000"
+                              BlurRadius="14"
+                              ShadowDepth="2"
+                              Direction="270"
+                              Opacity="0.16" />
+
+            <Style x:Key="BillingPanelShadowStyle"
+                   TargetType="Border"
+                   BasedOn="{StaticResource BillingPanelStyle}">
+                <Setter Property="Effect" Value="{StaticResource CardDropShadow}" />
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -74,7 +88,7 @@
                 <Border
                     Grid.Column="0"
                     Padding="22,18"
-                    Style="{StaticResource BillingPanelStyle}">
+                    Style="{StaticResource BillingPanelShadowStyle}">
                     <Border.Effect>
                         <DropShadowEffect
                             BlurRadius="14"
@@ -107,7 +121,7 @@
                 <Border
                     Grid.Column="2"
                     Padding="22,18"
-                    Style="{StaticResource BillingPanelStyle}">
+                    Style="{StaticResource BillingPanelShadowStyle}">
                     <Border.Effect>
                         <DropShadowEffect
                             BlurRadius="14"
@@ -140,7 +154,7 @@
                 <Border
                     Grid.Column="4"
                     Padding="22,18"
-                    Style="{StaticResource BillingPanelStyle}">
+                    Style="{StaticResource BillingPanelShadowStyle}">
                     <Border.Effect>
                         <DropShadowEffect
                             BlurRadius="14"
@@ -173,7 +187,7 @@
                 <Border
                     Grid.Column="6"
                     Padding="22,18"
-                    Style="{StaticResource BillingPanelStyle}">
+                    Style="{StaticResource BillingPanelShadowStyle}">
                     <Border.Effect>
                         <DropShadowEffect
                             BlurRadius="14"
@@ -277,7 +291,7 @@
             <Border
                 Grid.Row="3"
                 Padding="20"
-                Style="{StaticResource BillingPanelStyle}">
+                Style="{StaticResource BillingPanelShadowStyle}">
 
                 <Grid>
                     <Grid.ColumnDefinitions>

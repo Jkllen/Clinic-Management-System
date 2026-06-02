@@ -18,6 +18,26 @@
             </ResourceDictionary.MergedDictionaries>
 
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+
+            <!-- Soft drop shadow for cards and panels (scoped to this view) -->
+            <DropShadowEffect x:Key="CardDropShadow"
+                              Color="#000000"
+                              BlurRadius="14"
+                              ShadowDepth="2"
+                              Direction="270"
+                              Opacity="0.16" />
+
+            <Style x:Key="DashboardCardStyle"
+                   TargetType="Border"
+                   BasedOn="{StaticResource DashboardCardStyle}">
+                <Setter Property="Effect" Value="{StaticResource CardDropShadow}" />
+            </Style>
+
+            <Style x:Key="LargePanelStyle"
+                   TargetType="Border"
+                   BasedOn="{StaticResource LargePanelStyle}">
+                <Setter Property="Effect" Value="{StaticResource CardDropShadow}" />
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
 

@@ -19,6 +19,26 @@
             </ResourceDictionary.MergedDictionaries>
 
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+
+            <!-- Soft drop shadow for cards and panels (scoped to this view) -->
+            <DropShadowEffect x:Key="CardDropShadow"
+                              Color="#000000"
+                              BlurRadius="14"
+                              ShadowDepth="2"
+                              Direction="270"
+                              Opacity="0.16" />
+
+            <Style x:Key="DashboardCardStyle"
+                   TargetType="Border"
+                   BasedOn="{StaticResource DashboardCardStyle}">
+                <Setter Property="Effect" Value="{StaticResource CardDropShadow}" />
+            </Style>
+
+            <Style x:Key="LargePanelStyle"
+                   TargetType="Border"
+                   BasedOn="{StaticResource LargePanelStyle}">
+                <Setter Property="Effect" Value="{StaticResource CardDropShadow}" />
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -313,50 +333,69 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Button
-                                        Margin="2"
+                                        Margin="1.5"
                                         Padding="0"
-                                        Background="Transparent"
-                                        BorderThickness="0"
+                                        HorizontalContentAlignment="Stretch"
+                                        VerticalContentAlignment="Stretch"
+                                        Background="{Binding DayBackground}"
+                                        BorderBrush="{Binding DayBorderBrush}"
                                         Command="{Binding DataContext.SelectCalendarDateCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                         CommandParameter="{Binding}"
                                         Cursor="Hand">
 
-                                        <Border
-                                            MinHeight="24"
-                                            Background="{Binding DayBackground}"
-                                            BorderBrush="{Binding DayBorderBrush}"
-                                            BorderThickness="1"
-                                            CornerRadius="6">
-
-                                            <Grid>
-                                                <TextBlock
-                                                    HorizontalAlignment="Center"
-                                                    VerticalAlignment="Center"
-                                                    FontSize="12"
-                                                    FontWeight="SemiBold"
-                                                    Foreground="{Binding DayForeground}"
-                                                    Text="{Binding DayNumber}" />
-
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
                                                 <Border
-                                                    Width="16"
-                                                    Height="16"
-                                                    Margin="0,-4,-4,0"
-                                                    HorizontalAlignment="Right"
-                                                    VerticalAlignment="Top"
-                                                    Background="#E31D1D"
-                                                    CornerRadius="8"
-                                                    Visibility="{Binding AppointmentCountVisibility}">
+                                                    x:Name="DayCell"
+                                                    Background="{TemplateBinding Background}"
+                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                    BorderThickness="1.4"
+                                                    CornerRadius="7">
 
-                                                    <TextBlock
-                                                        HorizontalAlignment="Center"
-                                                        VerticalAlignment="Center"
-                                                        FontSize="9"
-                                                        FontWeight="Bold"
-                                                        Foreground="White"
-                                                        Text="{Binding AppointmentCount}" />
+                                                    <Grid>
+                                                        <TextBlock
+                                                            HorizontalAlignment="Center"
+                                                            VerticalAlignment="Center"
+                                                            FontSize="12"
+                                                            FontWeight="SemiBold"
+                                                            Foreground="{Binding DayForeground}"
+                                                            Text="{Binding DayNumber}" />
+
+                                                        <Border
+                                                            Width="16"
+                                                            Height="16"
+                                                            Margin="0,3,3,0"
+                                                            HorizontalAlignment="Right"
+                                                            VerticalAlignment="Top"
+                                                            Background="#E31D1D"
+                                                            CornerRadius="8"
+                                                            Visibility="{Binding AppointmentCountVisibility}">
+
+                                                            <TextBlock
+                                                                HorizontalAlignment="Center"
+                                                                VerticalAlignment="Center"
+                                                                FontSize="9"
+                                                                FontWeight="Bold"
+                                                                Foreground="White"
+                                                                Text="{Binding AppointmentCount}" />
+                                                        </Border>
+                                                    </Grid>
                                                 </Border>
-                                            </Grid>
-                                        </Border>
+
+                                                <ControlTemplate.Triggers>
+                                                    <!-- Hover highlight only when the day is not already selected -->
+                                                    <MultiDataTrigger>
+                                                        <MultiDataTrigger.Conditions>
+                                                            <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource TemplatedParent}}" Value="True" />
+                                                            <Condition Binding="{Binding IsSelected}" Value="False" />
+                                                        </MultiDataTrigger.Conditions>
+                                                        <Setter TargetName="DayCell" Property="Background" Value="#EEF4FF" />
+                                                        <Setter TargetName="DayCell" Property="BorderBrush" Value="#9FC0F0" />
+                                                        <Setter TargetName="DayCell" Property="BorderThickness" Value="1.4" />
+                                                    </MultiDataTrigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
                                     </Button>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
@@ -367,14 +406,15 @@
 
             <Grid Grid.Row="2" Margin="0,12,0,0">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="230" />
-                    <ColumnDefinition Width="20" />
-                    <ColumnDefinition Width="250" />
+                    <!-- Search flexes; everything else sizes to content so the
+                         buttons stay on-screen regardless of window width. -->
+                    <ColumnDefinition Width="*" MinWidth="150" />
+                    <ColumnDefinition Width="12" />
+                    <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="10" />
-                    <ColumnDefinition Width="250" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="220" />
-                    <ColumnDefinition Width="185" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
                 <Grid
@@ -417,9 +457,9 @@
 
                 <ComboBox
                     Grid.Column="2"
+                    Width="160"
                     Height="42"
-                    Width="Auto"
-                    FontSize="16"
+                    FontSize="15"
                     ItemsSource="{Binding FilterOptions}"
                     SelectedItem="{Binding SelectedFilterOption, Mode=TwoWay}"
                     Style="{StaticResource ExactStyleComboBox}"
@@ -427,47 +467,54 @@
 
                 <ComboBox
                     Grid.Column="4"
+                    Width="160"
                     Height="42"
-                    Width="Auto"
-                    FontSize="16"
+                    FontSize="15"
                     ItemsSource="{Binding SortOptions}"
                     SelectedItem="{Binding SelectedSortOption, Mode=TwoWay}"
                     Style="{StaticResource ExactStyleComboBox}"
                     Tag="Sort By" />
 
-                <Button
+                <StackPanel
                     Grid.Column="6"
-                    Height="45"
-                    Background="#073C98"
-                    Command="{Binding OpenWalkInOverlayCommand}"
-                    Foreground="White"
-                    Style="{StaticResource SecondaryButtonStyle}">
+                    HorizontalAlignment="Right"
+                    Orientation="Horizontal">
 
-                    <StackPanel Orientation="Horizontal">
-                        <fa:IconBlock
-                            Margin="0,0,8,0"
-                            Foreground="White"
-                            Icon="Walking" />
-                        <TextBlock FontWeight="Bold" Text="Add Walk-in Visit" />
-                    </StackPanel>
-                </Button>
+                    <Button
+                        Width="185"
+                        Height="45"
+                        Margin="0,0,10,0"
+                        Background="#073C98"
+                        Command="{Binding OpenWalkInOverlayCommand}"
+                        Foreground="White"
+                        Style="{StaticResource SecondaryButtonStyle}">
 
-                <Button
-                    Grid.Column="8"
-                    Height="45"
-                    Background="#073C98"
-                    Command="{Binding OpenScheduledOverlayCommand}"
-                    Foreground="White"
-                    Style="{StaticResource SecondaryButtonStyle}">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:IconBlock
+                                Margin="0,0,8,0"
+                                Foreground="White"
+                                Icon="Walking" />
+                            <TextBlock FontWeight="Bold" Text="Add Walk-in Visit" />
+                        </StackPanel>
+                    </Button>
 
-                    <StackPanel Orientation="Horizontal">
-                        <fa:IconBlock
-                            Margin="0,0,8,0"
-                            Foreground="White"
-                            Icon="CalendarPlus" />
-                        <TextBlock FontWeight="Bold" Text="Add Schedule" />
-                    </StackPanel>
-                </Button>
+                    <Button
+                        Width="160"
+                        Height="45"
+                        Background="#073C98"
+                        Command="{Binding OpenScheduledOverlayCommand}"
+                        Foreground="White"
+                        Style="{StaticResource SecondaryButtonStyle}">
+
+                        <StackPanel Orientation="Horizontal">
+                            <fa:IconBlock
+                                Margin="0,0,8,0"
+                                Foreground="White"
+                                Icon="CalendarPlus" />
+                            <TextBlock FontWeight="Bold" Text="Add Schedule" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
             </Grid>
 
             <Grid Grid.Row="3" Margin="0,0,0,18">
@@ -861,8 +908,13 @@
                                     Height="42"
                                     ItemsSource="{Binding ServiceOptions}"
                                     SelectedItem="{Binding SelectedRescheduleService, Mode=TwoWay}"
-                                    DisplayMemberPath="DisplayText"
-                                    Style="{StaticResource ExactStyleComboBox}" />
+                                    Style="{StaticResource ExactStyleComboBox}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding DisplayText}" />
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
                             </StackPanel>
 
                             <StackPanel Grid.Row="2" Grid.Column="2">
@@ -871,8 +923,13 @@
                                     Height="42"
                                     ItemsSource="{Binding DentistOptions}"
                                     SelectedItem="{Binding SelectedRescheduleDentist, Mode=TwoWay}"
-                                    DisplayMemberPath="DisplayText"
-                                    Style="{StaticResource ExactStyleComboBox}" />
+                                    Style="{StaticResource ExactStyleComboBox}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding DisplayText}" />
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
                             </StackPanel>
                         </Grid>
 
@@ -1150,6 +1207,74 @@
                             VerticalScrollBarVisibility="Auto"
                             Style="{StaticResource AppointmentOverlayTextAreaStyle}"
                             Text="{Binding SelectedAppointmentDetails.NotesDisplay, Mode=OneWay}" />
+
+                        <!-- Teeth Images -->
+                        <TextBlock
+                            Margin="0,26,0,8"
+                            FontSize="18"
+                            FontWeight="Bold"
+                            Foreground="#223357"
+                            Text="Teeth Images" />
+
+                        <Button
+                            Width="170"
+                            Height="40"
+                            HorizontalAlignment="Left"
+                            Background="#073C98"
+                            Click="UploadAppointmentDetailsImage_Click"
+                            Foreground="White"
+                            Style="{StaticResource SecondaryButtonStyle}">
+                            <StackPanel Orientation="Horizontal">
+                                <fa:IconBlock Margin="0,0,8,0" Foreground="White" Icon="Upload" />
+                                <TextBlock FontWeight="Bold" Text="Upload Image" />
+                            </StackPanel>
+                        </Button>
+
+                        <ItemsControl Margin="0,12,0,0" ItemsSource="{Binding AppointmentDetailsImages}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border
+                                        Width="120"
+                                        Margin="0,0,10,10"
+                                        Background="#F4F6FB"
+                                        BorderBrush="#D8D8D8"
+                                        BorderThickness="1"
+                                        CornerRadius="10">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="100" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+
+                                            <Image
+                                                Grid.Row="0"
+                                                Margin="6"
+                                                Source="{Binding Thumbnail}"
+                                                Stretch="UniformToFill" />
+
+                                            <Button
+                                                Grid.Row="1"
+                                                Height="28"
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                Cursor="Hand"
+                                                Command="{Binding DataContext.RemoveAppointmentDetailsImageCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                CommandParameter="{Binding}">
+                                                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                                    <fa:IconBlock Margin="0,0,5,0" FontSize="11" Foreground="#C62828" Icon="TrashAlt" />
+                                                    <TextBlock FontSize="11" Foreground="#C62828" Text="Remove" />
+                                                </StackPanel>
+                                            </Button>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
 
                         <Button
                             Width="130"

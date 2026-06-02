@@ -53,6 +53,27 @@ namespace CruzNeryClinic.Repositories
             };
         }
 
+        // Counts patients created within the given inclusive date range
+        // (yyyy-MM-dd). Used by the dashboard's period-aware "New Patients" card.
+        public int GetNewPatientsCount(string fromDate, string toDate)
+        {
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+SELECT COUNT(*)
+FROM Patients
+WHERE IsActive = 1
+  AND date(CreatedAt) BETWEEN @FromDate AND @ToDate;";
+
+            command.Parameters.AddWithValue("@FromDate", fromDate);
+            command.Parameters.AddWithValue("@ToDate", toDate);
+
+            long count = (long)command.ExecuteScalar()!;
+            return (int)count;
+        }
+
         public List<DashboardLowStockItem> GetLowStockItems(int limit = 3)
         {
             List<DashboardLowStockItem> items = new();
@@ -232,6 +253,109 @@ LIMIT @Limit;";
             }
 
             return transactions;
+        }
+
+        // Combined patient + user lookup for the Dashboard global search box.
+        // Returns suggestions that, when clicked, navigate to the Patients or
+        // Manage Users module. Users are only included when the caller is
+        // allowed to view them.
+        public List<DashboardSearchResultItem> SearchPatientsAndUsers(string searchText, bool includeUsers, int limit = 8)
+        {
+            List<DashboardSearchResultItem> results = new();
+
+            if (string.IsNullOrWhiteSpace(searchText) || searchText.Trim().Length < 2)
+                return results;
+
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            string pattern = $"%{searchText.Trim()}%";
+
+            // Patients
+            using (SqliteCommand command = connection.CreateCommand())
+            {
+                command.CommandText = @"
+SELECT PatientCode, FirstName, MiddleName, LastName
+FROM Patients
+WHERE IsActive = 1
+  AND (
+        PatientCode LIKE @SearchText
+        OR FirstName LIKE @SearchText
+        OR MiddleName LIKE @SearchText
+        OR LastName LIKE @SearchText
+        OR (FirstName || ' ' || LastName) LIKE @SearchText
+        OR (FirstName || ' ' || MiddleName || ' ' || LastName) LIKE @SearchText
+  )
+ORDER BY LastName ASC, FirstName ASC
+LIMIT @Limit;";
+
+                command.Parameters.AddWithValue("@SearchText", pattern);
+                command.Parameters.AddWithValue("@Limit", limit);
+
+                using SqliteDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    string code = reader["PatientCode"]?.ToString() ?? string.Empty;
+                    string firstName = reader["FirstName"]?.ToString() ?? string.Empty;
+                    string middleName = reader["MiddleName"]?.ToString() ?? string.Empty;
+                    string lastName = reader["LastName"]?.ToString() ?? string.Empty;
+
+                    results.Add(new DashboardSearchResultItem
+                    {
+                        ResultType = "Patient",
+                        TargetModule = "Patients",
+                        SearchKey = code,
+                        DisplayText = $"{code} - {FormatPatientName(firstName, middleName, lastName)}",
+                        Subtitle = "Patient"
+                    });
+                }
+            }
+
+            if (!includeUsers)
+                return results;
+
+            // Users
+            using (SqliteCommand command = connection.CreateCommand())
+            {
+                command.CommandText = @"
+SELECT UserCode, FirstName, MiddleName, LastName, Role
+FROM Users
+WHERE IsActive = 1
+  AND (
+        UserCode LIKE @SearchText
+        OR FirstName LIKE @SearchText
+        OR MiddleName LIKE @SearchText
+        OR LastName LIKE @SearchText
+        OR Username LIKE @SearchText
+        OR Role LIKE @SearchText
+  )
+ORDER BY LastName ASC, FirstName ASC
+LIMIT @Limit;";
+
+                command.Parameters.AddWithValue("@SearchText", pattern);
+                command.Parameters.AddWithValue("@Limit", limit);
+
+                using SqliteDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    string code = reader["UserCode"]?.ToString() ?? string.Empty;
+                    string firstName = reader["FirstName"]?.ToString() ?? string.Empty;
+                    string middleName = reader["MiddleName"]?.ToString() ?? string.Empty;
+                    string lastName = reader["LastName"]?.ToString() ?? string.Empty;
+                    string role = reader["Role"]?.ToString() ?? string.Empty;
+
+                    results.Add(new DashboardSearchResultItem
+                    {
+                        ResultType = "User",
+                        TargetModule = "ManageUsers",
+                        SearchKey = code,
+                        DisplayText = $"{code} - {FormatPatientName(firstName, middleName, lastName)}",
+                        Subtitle = string.IsNullOrWhiteSpace(role) ? "User" : role
+                    });
+                }
+            }
+
+            return results;
         }
 
         // Formats patient name as: LastName, FirstName M.

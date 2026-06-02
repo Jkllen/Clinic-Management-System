@@ -16,6 +16,10 @@ namespace CruzNeryClinic.Models
 
         public string ServiceName { get; set; } = string.Empty;
 
+        // "Consultation" or "Fitting" when the appointment includes Dentures or
+        // Orthodontics; null otherwise.
+        public string? ServiceStage { get; set; }
+
         public int? DentistUserId { get; set; }
 
         public string DentistName { get; set; } = "Unassigned";

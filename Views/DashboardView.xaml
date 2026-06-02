@@ -43,114 +43,150 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
-        </Style>    
+        </Style>
+
+        <!-- Tab button for the lower table section (Patient Queue / Recent Billing) -->
+        <Style x:Key="DashboardTabButtonStyle" TargetType="Button">
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Padding" Value="18,0"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#7A7A7A"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Day cell in the Appointment List week-strip -->
+        <Style x:Key="DayCellButtonStyle" TargetType="Button">
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#444444"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="10"
+                                Margin="2"
+                                Padding="0,7">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              TextElement.Foreground="{TemplateBinding Foreground}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#EFF3F8"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                    <Setter Property="Background" Value="#16B5A0"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Status pill (e.g. Waiting) on appointment cards -->
+        <Style x:Key="StatusPillStyle" TargetType="Border">
+            <Setter Property="Background" Value="#EEF1F5"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="10,3"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <!-- ── Soft drop shadow applied to dashboard cards, tables and panels ── -->
+        <!-- These extend the shared styles and add the shadow only within the dashboard. -->
+        <DropShadowEffect x:Key="CardDropShadow"
+                          Color="#000000"
+                          BlurRadius="14"
+                          ShadowDepth="2"
+                          Direction="270"
+                          Opacity="0.16"/>
+
+        <Style x:Key="DashboardCardStyle"
+               TargetType="Border"
+               BasedOn="{StaticResource DashboardCardStyle}">
+            <Setter Property="Effect" Value="{StaticResource CardDropShadow}"/>
+        </Style>
+
+        <Style x:Key="DashboardTableContainerStyle"
+               TargetType="Border"
+               BasedOn="{StaticResource DashboardTableContainerStyle}">
+            <Setter Property="Effect" Value="{StaticResource CardDropShadow}"/>
+        </Style>
+
+        <Style x:Key="LargePanelStyle"
+               TargetType="Border"
+               BasedOn="{StaticResource LargePanelStyle}">
+            <Setter Property="Effect" Value="{StaticResource CardDropShadow}"/>
+        </Style>
     </UserControl.Resources>
+
     <Grid Background="{StaticResource ScreenBackgroundBrush}">
 
-        <!-- 
-            MinWidth and MinHeight preserve the dashboard layout.
-            If the window becomes smaller than this, scrollbars appear instead of crushing the UI.
-        -->
         <Grid Margin="26,28,18,14">
 
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="410"/>
+                <ColumnDefinition Width="360"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Left dashboard area -->
+            <!-- ════════════════════ LEFT DASHBOARD AREA ════════════════════ -->
             <Grid Grid.Column="0"
                     Margin="0,0,16,0">
 
                 <Grid.RowDefinitions>
                     <!-- Row 0: Header and search -->
                     <RowDefinition Height="78"/>
-
                     <!-- Row 1: Top dashboard cards -->
                     <RowDefinition Height="190"/>
-
-                    <!-- Row 2: Middle cards -->
+                    <!-- Row 2: Analytics charts (admin only) -->
                     <RowDefinition Height="Auto"/>
-
-                    <!-- Row 3: Queue and Recent Transaction Section -->
+                    <!-- Row 3: Tabbed Queue / Billing section -->
                     <RowDefinition Height="*"/>
-
                 </Grid.RowDefinitions>
-            <!-- #region Row 0 -->
-                <!-- Header and search -->
-                <Grid Grid.Row="0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="250"/>
-                    </Grid.ColumnDefinitions>
 
-                    <Grid Grid.Column="0"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Top">
+                <!-- #region Row 0 : Header -->
+                <Grid Grid.Row="0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Top">
 
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
 
-                        <TextBlock Grid.Row="0"
-                                    Text="Dashboard"
-                                    FontSize="30"
-                                    FontWeight="Bold"
-                                    Foreground="Black"/>
+                    <TextBlock Grid.Row="0"
+                                Text="Dashboard"
+                                FontSize="30"
+                                FontWeight="Bold"
+                                Foreground="Black"/>
 
-                        <TextBlock Grid.Row="1"
-                                    Text="Overview of clinic operations"
-                                    FontSize="20"
-                                    Foreground="#7A7A7A"
-                                    Margin="0,4,0,0"/>
-                    </Grid>
-
-                    <!-- Search box -->
-                    <Grid Grid.Column="1"
-                            Width="230"
-                            Height="52"
-                            HorizontalAlignment="Right">
-
-                        <TextBox Style="{StaticResource SearchTextBoxStyle}"
-                                    Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"/>
-
-                        <TextBlock Text="Search user or patient ID"
-                                    FontSize="14"
-                                    Foreground="#8A8A8A"
-                                    VerticalAlignment="Center"
-                                    Margin="54,0,0,0"
-                                    IsHitTestVisible="False">
-
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding SearchText}" Value="">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-
-                                        <DataTrigger Binding="{Binding SearchText}" Value="{x:Null}">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-
-                        <fa:IconBlock Icon="Search"
-                                        FontSize="18"
-                                        Foreground="#9A9A9A"
-                                        VerticalAlignment="Center"
-                                        HorizontalAlignment="Left"
-                                        Margin="18,0,0,0"/>
-                    </Grid>
+                    <TextBlock Grid.Row="1"
+                                Text="Overview of clinic operations"
+                                FontSize="20"
+                                Foreground="#7A7A7A"
+                                Margin="0,4,0,0"/>
                 </Grid>
                 <!-- #endregion Row 0 -->
 
-            <!-- #region Row 1 -->
-                <!-- Top dashboard cards -->
+                <!-- #region Row 1 : Top dashboard cards -->
                 <Grid Grid.Row="1">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -165,9 +201,7 @@
 
                         <Grid>
                             <Grid.RowDefinitions>
-                                <!-- Total Patients within Card -->
                                 <RowDefinition Height="*"/>
-                                <!-- New Patients within Card -->
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
 
@@ -251,7 +285,7 @@
                                     </Grid.RowDefinitions>
 
                                     <TextBlock Grid.Row="0"
-                                                Text="New Patients This Month"
+                                                Text="{Binding NewPatientsLabel}"
                                                 FontSize="15"
                                                 TextWrapping="Wrap"
                                                 TextTrimming="CharacterEllipsis"/>
@@ -280,9 +314,7 @@
                             <!-- Low stock header -->
                             <Grid Grid.Row="0">
                                 <Grid.ColumnDefinitions>
-                                    <!-- Box Icon Column -->
                                     <ColumnDefinition Width="72"/>
-                                    <!-- Title Column -->
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
 
@@ -492,437 +524,623 @@
                         </Grid>
                     </Border>
                 </Grid>
-            <!-- #endregion Row 1 -->
-                
-            <!-- #region Row 2 -->
-                <!-- Middle cards -->
+                <!-- #endregion Row 1 -->
+
+                <!-- #region Row 2 : Analytics charts (admin only) -->
                 <Grid Grid.Row="2"
-                        Margin="0,10,0,0"
+                        Height="205"
+                        Margin="0,12,0,0"
                         Visibility="{Binding CanViewAdminDashboardAnalytics, Converter={StaticResource BoolToVisibilityConverter}}">
 
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- Recent activity card -->
+                    <!-- Patient visits trend chart -->
                     <Border Grid.Column="0"
                             Style="{StaticResource DashboardCardStyle}"
-                            Margin="0,0,10,0">
-
+                            Margin="0,0,8,0">
                         <Grid>
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="60"/>
+                                <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
-                                <RowDefinition Height="24"/>
                             </Grid.RowDefinitions>
 
-                            <Grid Grid.Row="0">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="62"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-
-                                <Border Grid.Column="0"
-                                        Width="50"
-                                        Height="50"
-                                        CornerRadius="12"
-                                        Background="#D23B3B"
-                                        HorizontalAlignment="Left"
-                                        VerticalAlignment="Center">
-
-                                    <fa:IconBlock Icon="Bullseye"
-                                                Foreground="White"
-                                                FontSize="30"
-                                                HorizontalAlignment="Center"
-                                                VerticalAlignment="Center"/>
-                                </Border>
-
-                                <TextBlock Grid.Column="1"
-                                        Text="Recent Activity Log"
-                                        FontSize="17"
-                                        TextWrapping="Wrap"
-                                        VerticalAlignment="Center"
-                                        Margin="4,0,0,0"/>
+                            <Grid Grid.Row="0" Margin="0,0,0,4">
+                                <TextBlock Text="Patient Visits Trend"
+                                            FontSize="17"
+                                            FontWeight="SemiBold"
+                                            HorizontalAlignment="Left"/>
+                                <Button Content="View All"
+                                        Command="{Binding ViewReportsCommand}"
+                                        Style="{StaticResource ViewAllButtonStyle}"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Center"/>
                             </Grid>
 
-                            <!-- Scroll only inside the activity list -->
-                            <ScrollViewer Grid.Row="1"
-                                        VerticalScrollBarVisibility="Visible"
-                                        HorizontalScrollBarVisibility="Disabled"
-                                        CanContentScroll="False">
-                                
-                                <ScrollViewer.Resources>
-                                    <Style TargetType="{x:Type ScrollBar}"
-                                        BasedOn="{StaticResource DashboardBlueScrollBarStyle}"/>
-                                </ScrollViewer.Resources>
-
-                                <ItemsControl ItemsSource="{Binding RecentActivities}">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding Description}"
-                                                    FontSize="12"
-                                                    TextWrapping="Wrap"
-                                                    Margin="10,0,0,3"/>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </ScrollViewer>
-
-                            <Button Grid.Row="2"
-                                    Content="View All"
-                                    Command="{Binding ViewReportsCommand}"
-                                    Style="{StaticResource ViewAllButtonStyle}"
-                                    HorizontalAlignment="Right"
-                                    VerticalAlignment="Bottom"/>
+                            <Canvas x:Name="DashPatientVisitCanvas"
+                                    Grid.Row="1"
+                                    ClipToBounds="True"
+                                    SizeChanged="DashPatientVisitCanvas_SizeChanged"/>
                         </Grid>
                     </Border>
 
-                    <!-- Patient visits trend card -->
+                    <!-- Revenue trend chart -->
                     <Border Grid.Column="1"
                             Style="{StaticResource DashboardCardStyle}"
-                            Margin="10,0,10,0">
-
+                            Margin="8,0,0,0">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
-                            <TextBlock Grid.Row="0"
-                                        Text="Patient Visits Trend"
-                                        FontSize="17"
-                                        TextWrapping="Wrap"
-                                        TextTrimming="CharacterEllipsis"/>
+                            <Grid Grid.Row="0" Margin="0,0,0,4">
+                                <TextBlock Text="Revenue Trend"
+                                            FontSize="17"
+                                            FontWeight="SemiBold"
+                                            HorizontalAlignment="Left"/>
+                                <Button Content="View All"
+                                        Command="{Binding ViewReportsCommand}"
+                                        Style="{StaticResource ViewAllButtonStyle}"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Center"/>
+                            </Grid>
 
-                            <fa:IconBlock Grid.Row="1"
-                                            Icon="ChartBar"
-                                            FontSize="46"
-                                            Foreground="#8C8C8C"
-                                            HorizontalAlignment="Center"
-                                            VerticalAlignment="Center"/>
-
-                            <TextBlock Grid.Row="2"
-                                        Text="Line/Bar Chart"
-                                        Foreground="#B5B5B5"
-                                        HorizontalAlignment="Center"
-                                        FontSize="12"/>
-
-                            <TextBlock Grid.Row="3"
-                                        Text="Monthly patient visualization"
-                                        Foreground="#B5B5B5"
-                                        HorizontalAlignment="Center"
-                                        FontSize="11"
-                                        TextWrapping="Wrap"
-                                        TextAlignment="Center"/>
-                        </Grid>
-                    </Border>
-
-                    <!-- Revenue summary card -->
-                    <Border Grid.Column="2"
-                            Style="{StaticResource DashboardCardStyle}"
-                            Margin="10,0,0,0">
-
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-
-                            <TextBlock Grid.Row="0"
-                                        Text="Revenue Summary"
-                                        FontSize="17"
-                                        TextWrapping="Wrap"
-                                        TextTrimming="CharacterEllipsis"/>
-
-                            <fa:IconBlock Grid.Row="1"
-                                            Icon="ChartLine"
-                                            FontSize="46"
-                                            Foreground="#8C8C8C"
-                                            HorizontalAlignment="Center"
-                                            VerticalAlignment="Center"/>
-
-                            <TextBlock Grid.Row="2"
-                                        Text="Area Chart"
-                                        Foreground="#B5B5B5"
-                                        HorizontalAlignment="Center"
-                                        FontSize="12"/>
-
-                            <TextBlock Grid.Row="3"
-                                        Text="Monthly revenue trends"
-                                        Foreground="#B5B5B5"
-                                        HorizontalAlignment="Center"
-                                        FontSize="11"
-                                        TextWrapping="Wrap"
-                                        TextAlignment="Center"/>
+                            <Canvas x:Name="DashRevenueCanvas"
+                                    Grid.Row="1"
+                                    ClipToBounds="True"
+                                    SizeChanged="DashRevenueCanvas_SizeChanged"/>
                         </Grid>
                     </Border>
                 </Grid>
-            <!-- #endregion Row 2 -->
-                
-                
-                <!-- Scrollable lower dashboard section -->
-                <ScrollViewer Grid.Row="3"
-                            VerticalAlignment="Stretch"
-                            VerticalContentAlignment="Stretch"
-                            VerticalScrollBarVisibility="Auto"
-                            HorizontalScrollBarVisibility="Disabled"
-                            CanContentScroll="False"
-                            Margin="0,12,0,0">
-                    <ScrollViewer.Resources>
-                        <Style TargetType="{x:Type ScrollBar}"
-                               BasedOn="{StaticResource DashboardBlueScrollBarStyle}"/>
-                    </ScrollViewer.Resources>
+                <!-- #endregion Row 2 -->
 
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <!-- Queue title -->
-                            <RowDefinition Height="60"/>
-
-                            <!-- Queue table -->
-                            <RowDefinition Height="100"/>
-
-                            <!-- Recent transactions title -->
-                            <RowDefinition Height="60"/>
-
-                            <!-- Recent transactions table -->
-                            <RowDefinition Height="100"/>
-                        </Grid.RowDefinitions>
-
-                        <!-- Queue title -->
-                        <TextBlock Grid.Row="0"
-                                Text="Queue"
-                                FontSize="26"
-                                FontWeight="Bold"
-                                VerticalAlignment="Center"/>
-
-                        <!-- Queue table container -->
-                        <Border Grid.Row="1"
-                                Style="{StaticResource DashboardTableContainerStyle}">
-
-                            <DataGrid ItemsSource="{Binding TodayQueue}"
-                                    Style="{StaticResource DashboardDataGridStyle}"
-                                    ColumnHeaderStyle="{StaticResource DashboardDataGridColumnHeaderStyle}"
-                                    CellStyle="{StaticResource DashboardDataGridCellStyle}"
-                                    HorizontalScrollBarVisibility="Auto"
-                                    VerticalScrollBarVisibility="Auto"
-                                    ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                                    ScrollViewer.VerticalScrollBarVisibility="Auto">
-
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="No."
-                                                        Binding="{Binding QueueNumber}"
-                                                        Width="0.5*"
-                                                        MinWidth="50"/>
-
-                                    <DataGridTextColumn Header="Time"
-                                                        Binding="{Binding Time}"
-                                                        Width="0.8*"
-                                                        MinWidth="75"/>
-
-                                    <DataGridTextColumn Header="Patient ID"
-                                                        Binding="{Binding PatientCode}"
-                                                        Width="1*"
-                                                        MinWidth="90"/>
-
-                                    <DataGridTextColumn Header="Patient Name"
-                                                        Binding="{Binding PatientName}"
-                                                        Width="1.7*"
-                                                        MinWidth="140"/>
-
-                                    <DataGridTextColumn Header="Type"
-                                                        Binding="{Binding AppointmentType}"
-                                                        Width="1"
-                                                        MinWidth="90"/>
-
-                                    <DataGridTextColumn Header="Treatment"
-                                                        Binding="{Binding Treatment}"
-                                                        Width="1.4*"
-                                                        MinWidth="120"/>
-
-                                    <DataGridTextColumn Header="Status"
-                                                        Binding="{Binding Status}"
-                                                        Width="1*"
-                                                        MinWidth="90"/>
-                                </DataGrid.Columns>
-                            </DataGrid>
-                        </Border>
-
-                        <!-- Recent transactions title -->
-                        <TextBlock Grid.Row="2"
-                                Text="Recent Patient Transactions"
-                                FontSize="26"
-                                FontWeight="Bold"
-                                VerticalAlignment="Center"/>
-
-                        <!-- Recent transactions table container -->
-                        <Border Grid.Row="3"
-                                Style="{StaticResource DashboardTableContainerStyle}">
-
-                            <DataGrid ItemsSource="{Binding RecentTransactions}"
-                                    Style="{StaticResource DashboardDataGridStyle}"
-                                    ColumnHeaderStyle="{StaticResource DashboardDataGridColumnHeaderStyle}"
-                                    CellStyle="{StaticResource DashboardDataGridCellStyle}"
-                                    HorizontalAlignment="Stretch"
-                                    VerticalAlignment="Stretch"
-                                    HorizontalScrollBarVisibility="Auto"
-                                    VerticalScrollBarVisibility="Auto"
-                                    ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                                    ScrollViewer.VerticalScrollBarVisibility="Auto">
-
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Time"
-                                                        Binding="{Binding Time}"
-                                                        Width="0.8*"
-                                                        MinWidth="75"/>
-
-                                    <DataGridTextColumn Header="Patient ID"
-                                                        Binding="{Binding PatientCode}"
-                                                        Width="1"
-                                                        MinWidth="90"/>
-
-                                    <DataGridTextColumn Header="Patient Name"
-                                                        Binding="{Binding PatientName}"
-                                                        Width="1.6"
-                                                        MinWidth="140"/>
-
-                                    <DataGridTextColumn Header="Service"
-                                                        Binding="{Binding Service}"
-                                                        Width="1.3"
-                                                        MinWidth="120"/>
-
-                                    <DataGridTextColumn Header="Amount"
-                                                        Binding="{Binding Amount, StringFormat=₱ {0:N2}}"
-                                                        Width="1"
-                                                        MinWidth="100"/>
-
-                                    <DataGridTextColumn Header="Payment Status"
-                                                        Binding="{Binding PaymentStatus}"
-                                                        Width="1.3"
-                                                        MinWidth="130"/>
-                                </DataGrid.Columns>
-                            </DataGrid>
-                        </Border>
-                    </Grid>
-                </ScrollViewer>
-            </Grid>
-
-            <!-- Right appointments panel -->
-            <Grid Grid.Column="1">
-
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="390"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-
-                <!-- Real appointment calendar -->
-                <Grid Grid.Row="0">
-
+                <!-- #region Row 3 : Tabbed Queue / Billing section -->
+                <Grid Grid.Row="3"
+                        Margin="0,14,0,0">
                     <Grid.RowDefinitions>
+                        <!-- Tab bar -->
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
+                        <!-- Active table -->
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <TextBlock Grid.Row="0"
-                                Text="Appointments"
-                                FontSize="30"
-                                FontWeight="Bold"
-                                HorizontalAlignment="Center"/>
+                    <!-- Tab bar -->
+                    <Border Grid.Row="0"
+                            Background="#F1F2F5"
+                            CornerRadius="10"
+                            Padding="4"
+                            HorizontalAlignment="Left"
+                            Margin="0,0,0,12">
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="Patient Queue"
+                                    Command="{Binding ShowQueueTabCommand}">
+                                <Button.Style>
+                                    <Style BasedOn="{StaticResource DashboardTabButtonStyle}" TargetType="Button">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsQueueTabSelected}" Value="True">
+                                                <Setter Property="Background" Value="#223357"/>
+                                                <Setter Property="Foreground" Value="White"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                            <Button Content="Recent Billing Transactions"
+                                    Command="{Binding ShowTransactionsTabCommand}">
+                                <Button.Style>
+                                    <Style BasedOn="{StaticResource DashboardTabButtonStyle}" TargetType="Button">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsQueueTabSelected}" Value="False">
+                                                <Setter Property="Background" Value="#223357"/>
+                                                <Setter Property="Foreground" Value="White"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </StackPanel>
+                    </Border>
 
-                    <TextBlock Grid.Row="1"
-                                Text="{Binding CurrentMonth}"
-                                FontSize="26"
-                                FontWeight="Bold"
-                                Foreground="#12A8EF"
-                                HorizontalAlignment="Center"
-                                Margin="0,12,0,6"/>
+                    <!-- Patient Queue table -->
+                    <Border Grid.Row="1"
+                            Style="{StaticResource DashboardTableContainerStyle}"
+                            Visibility="{Binding IsQueueTabSelected, Converter={StaticResource BoolToVisibilityConverter}}">
 
-                    <Viewbox Grid.Row="2"
-                                Stretch="Uniform"
-                                StretchDirection="Both"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Top"
-                                Width="600"
-                                Height="580">
+                        <DataGrid ItemsSource="{Binding TodayQueue}"
+                                Style="{StaticResource DashboardDataGridStyle}"
+                                ColumnHeaderStyle="{StaticResource DashboardDataGridColumnHeaderStyle}"
+                                CellStyle="{StaticResource DashboardDataGridCellStyle}"
+                                HorizontalScrollBarVisibility="Auto"
+                                VerticalScrollBarVisibility="Auto">
 
-                        <Calendar SelectedDate="{Binding SelectedCalendarDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                    DisplayDate="{Binding SelectedCalendarDate, Mode=TwoWay}"
-                                    FirstDayOfWeek="Sunday"
-                                    Width="340"
-                                    Height="245"/>
-                    </Viewbox>
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="No."
+                                                    Binding="{Binding QueueNumber}"
+                                                    Width="0.5*"
+                                                    MinWidth="50"/>
+                                <DataGridTextColumn Header="Time"
+                                                    Binding="{Binding Time}"
+                                                    Width="0.8*"
+                                                    MinWidth="75"/>
+                                <DataGridTextColumn Header="Patient ID"
+                                                    Binding="{Binding PatientCode}"
+                                                    Width="1*"
+                                                    MinWidth="90"/>
+                                <DataGridTextColumn Header="Patient Name"
+                                                    Binding="{Binding PatientName}"
+                                                    Width="1.7*"
+                                                    MinWidth="140"/>
+                                <DataGridTextColumn Header="Type"
+                                                    Binding="{Binding AppointmentType}"
+                                                    Width="1*"
+                                                    MinWidth="90"/>
+                                <DataGridTextColumn Header="Treatment"
+                                                    Binding="{Binding Treatment}"
+                                                    Width="1.4*"
+                                                    MinWidth="120"/>
+                                <DataGridTextColumn Header="Status"
+                                                    Binding="{Binding Status}"
+                                                    Width="1*"
+                                                    MinWidth="90"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+
+                    <!-- Recent Billing Transactions table -->
+                    <Border Grid.Row="1">
+                        <Border.Style>
+                            <Style BasedOn="{StaticResource DashboardTableContainerStyle}" TargetType="Border">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsQueueTabSelected}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+
+                        <DataGrid ItemsSource="{Binding RecentTransactions}"
+                                Style="{StaticResource DashboardDataGridStyle}"
+                                ColumnHeaderStyle="{StaticResource DashboardDataGridColumnHeaderStyle}"
+                                CellStyle="{StaticResource DashboardDataGridCellStyle}"
+                                HorizontalScrollBarVisibility="Auto"
+                                VerticalScrollBarVisibility="Auto">
+
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Time"
+                                                    Binding="{Binding Time}"
+                                                    Width="0.8*"
+                                                    MinWidth="75"/>
+                                <DataGridTextColumn Header="Patient ID"
+                                                    Binding="{Binding PatientCode}"
+                                                    Width="1*"
+                                                    MinWidth="90"/>
+                                <DataGridTextColumn Header="Patient Name"
+                                                    Binding="{Binding PatientName}"
+                                                    Width="1.6*"
+                                                    MinWidth="140"/>
+                                <DataGridTextColumn Header="Service"
+                                                    Binding="{Binding Service}"
+                                                    Width="1.3*"
+                                                    MinWidth="120"/>
+                                <DataGridTextColumn Header="Amount"
+                                                    Binding="{Binding Amount, StringFormat=₱ {0:N2}}"
+                                                    Width="1*"
+                                                    MinWidth="100"/>
+                                <DataGridTextColumn Header="Payment Status"
+                                                    Binding="{Binding PaymentStatus}"
+                                                    Width="1.3*"
+                                                    MinWidth="130"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+                </Grid>
+                <!-- #endregion Row 3 -->
+            </Grid>
+
+            <!-- ════════════════════ RIGHT PANEL ════════════════════ -->
+            <Grid Grid.Column="1">
+
+                <Grid.RowDefinitions>
+                    <!-- Search box -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Recent Activity Log (admin only; collapses for staff) -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Appointment List -->
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Search box + period selector -->
+                <Grid Grid.Row="0"
+                        Height="52"
+                        Margin="0,0,0,14">
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="104"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Search box with suggestion popup -->
+                    <Grid Grid.Column="0">
+                        <TextBox x:Name="DashboardSearchBox"
+                                    Style="{StaticResource SearchTextBoxStyle}"
+                                    Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"/>
+
+                        <TextBlock Text="Search user or patient ID"
+                                    FontSize="14"
+                                    Foreground="#8A8A8A"
+                                    VerticalAlignment="Center"
+                                    Margin="54,0,0,0"
+                                    IsHitTestVisible="False">
+
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SearchText}" Value="">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+
+                                        <DataTrigger Binding="{Binding SearchText}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+                        <fa:IconBlock Icon="Search"
+                                        FontSize="18"
+                                        Foreground="#9A9A9A"
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Left"
+                                        Margin="18,0,0,0"/>
+
+                        <!-- Patient / user suggestions -->
+                        <Popup Width="{Binding ActualWidth, ElementName=DashboardSearchBox}"
+                                AllowsTransparency="True"
+                                IsOpen="{Binding IsSearchPopupOpen, Mode=TwoWay}"
+                                Placement="Bottom"
+                                PlacementTarget="{Binding ElementName=DashboardSearchBox}"
+                                StaysOpen="False">
+
+                            <Border MaxHeight="280"
+                                    Background="White"
+                                    BorderBrush="#D8D8D8"
+                                    BorderThickness="1"
+                                    CornerRadius="10">
+
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="16"
+                                                        Opacity="0.18"
+                                                        ShadowDepth="3"/>
+                                </Border.Effect>
+
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <ScrollViewer.Resources>
+                                        <Style TargetType="{x:Type ScrollBar}"
+                                                BasedOn="{StaticResource DashboardBlueScrollBarStyle}"/>
+                                    </ScrollViewer.Resources>
+
+                                    <ItemsControl ItemsSource="{Binding SearchResults}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Button Command="{Binding DataContext.SelectSearchResultCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                        CommandParameter="{Binding}"
+                                                        HorizontalContentAlignment="Stretch"
+                                                        Cursor="Hand"
+                                                        Background="Transparent"
+                                                        BorderThickness="0">
+                                                    <Button.Template>
+                                                        <ControlTemplate TargetType="Button">
+                                                            <Border x:Name="Bd"
+                                                                    Background="{TemplateBinding Background}"
+                                                                    Padding="12,8">
+                                                                <ContentPresenter HorizontalAlignment="Stretch"
+                                                                                    VerticalAlignment="Center"/>
+                                                            </Border>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter TargetName="Bd" Property="Background" Value="#EEF6FF"/>
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </Button.Template>
+
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <StackPanel Grid.Column="0">
+                                                            <TextBlock Text="{Binding DisplayText}"
+                                                                        FontSize="13"
+                                                                        FontWeight="SemiBold"
+                                                                        Foreground="#111111"
+                                                                        TextTrimming="CharacterEllipsis"/>
+                                                            <TextBlock Text="{Binding Subtitle}"
+                                                                        FontSize="11"
+                                                                        Foreground="#777777"
+                                                                        Margin="0,2,0,0"/>
+                                                        </StackPanel>
+
+                                                        <Border Grid.Column="1"
+                                                                VerticalAlignment="Center"
+                                                                Background="#EEF1F5"
+                                                                CornerRadius="8"
+                                                                Padding="8,2">
+                                                            <TextBlock Text="{Binding ResultType}"
+                                                                        FontSize="10"
+                                                                        Foreground="#555555"/>
+                                                        </Border>
+                                                    </Grid>
+                                                </Button>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </Border>
+                        </Popup>
+                    </Grid>
+
+                    <!-- Month / Year period selector -->
+                    <ComboBox Grid.Column="2"
+                                VerticalAlignment="Center"
+                                Height="44"
+                                ItemsSource="{Binding PeriodOptions}"
+                                SelectedItem="{Binding SelectedPeriod, Mode=TwoWay}"
+                                Style="{StaticResource ExactStyleComboBox}"
+                                ToolTip="Period for dashboard analytics"/>
                 </Grid>
 
-                <!-- Today's appointment panel -->
+                <!-- Recent Activity Log -->
                 <Border Grid.Row="1"
-                        Style="{StaticResource LargePanelStyle}"
-                        Padding="22">
-
+                        Style="{StaticResource DashboardCardStyle}"
+                        Height="215"
+                        Margin="0,0,0,14"
+                        Visibility="{Binding CanViewAdminDashboardAnalytics, Converter={StaticResource BoolToVisibilityConverter}}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="24"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Header -->
+                        <StackPanel Grid.Row="0"
+                                    Orientation="Horizontal"
+                                    Margin="0,0,0,8">
+                            <Border Width="40"
+                                    Height="40"
+                                    CornerRadius="10"
+                                    Background="#D23B3B"
+                                    VerticalAlignment="Center">
+                                <fa:IconBlock Icon="Bullseye"
+                                            Foreground="White"
+                                            FontSize="22"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock Text="Recent Activity Log"
+                                        FontSize="17"
+                                        FontWeight="Bold"
+                                        VerticalAlignment="Center"
+                                        Margin="10,0,0,0"/>
+                        </StackPanel>
+
+                        <DataGrid Grid.Row="1"
+                                ItemsSource="{Binding RecentActivityLog}"
+                                Style="{StaticResource DashboardDataGridStyle}"
+                                ColumnHeaderStyle="{StaticResource DashboardDataGridColumnHeaderStyle}"
+                                CellStyle="{StaticResource DashboardDataGridCellStyle}"
+                                FontSize="11"
+                                HorizontalScrollBarVisibility="Auto"
+                                VerticalScrollBarVisibility="Auto">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Timestamp"
+                                                    Binding="{Binding Timestamp}"
+                                                    Width="1.4*"
+                                                    MinWidth="120"/>
+                                <DataGridTextColumn Header="Name"
+                                                    Binding="{Binding Name}"
+                                                    Width="1*"
+                                                    MinWidth="70"/>
+                                <DataGridTextColumn Header="Action"
+                                                    Binding="{Binding Action}"
+                                                    Width="0.9*"
+                                                    MinWidth="60"/>
+                                <DataGridTextColumn Header="Module"
+                                                    Binding="{Binding Module}"
+                                                    Width="1*"
+                                                    MinWidth="70"/>
+                                <DataGridTextColumn Header="Details"
+                                                    Binding="{Binding Details}"
+                                                    Width="1.6*"
+                                                    MinWidth="120"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                        <Button Grid.Row="2"
+                                Content="View All"
+                                Command="{Binding ViewReportsCommand}"
+                                Style="{StaticResource ViewAllButtonStyle}"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Bottom"/>
+                    </Grid>
+                </Border>
+
+                <!-- Appointment List -->
+                <Border Grid.Row="2"
+                        Style="{StaticResource LargePanelStyle}"
+                        Padding="20,18">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <!-- Title -->
                             <RowDefinition Height="Auto"/>
+                            <!-- Date / time labels -->
                             <RowDefinition Height="Auto"/>
+                            <!-- Month navigation -->
+                            <RowDefinition Height="Auto"/>
+                            <!-- Day strip -->
+                            <RowDefinition Height="Auto"/>
+                            <!-- Appointment cards -->
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
 
                         <TextBlock Grid.Row="0"
-                                    Text="TODAY’S APPOINTMENT"
+                                    Text="Appointment List"
                                     FontSize="24"
-                                    FontWeight="SemiBold"
-                                    HorizontalAlignment="Center"/>
+                                    FontWeight="Bold"/>
 
-                        <Border Grid.Row="1"
-                                Height="1"
-                                Background="Black"
-                                Margin="14,12,14,22"/>
+                        <Grid Grid.Row="1"
+                                Margin="0,6,0,0">
+                            <TextBlock Text="{Binding SelectedDateText}"
+                                        FontSize="13"
+                                        Foreground="#9A9A9A"
+                                        HorizontalAlignment="Left"/>
+                            <TextBlock Text="{Binding CurrentTimeText}"
+                                        FontSize="13"
+                                        Foreground="#9A9A9A"
+                                        HorizontalAlignment="Right"/>
+                        </Grid>
 
-                        <TextBlock Grid.Row="2"
-                                    Text="{Binding SelectedAppointmentHeader}"
-                                    FontSize="20"
-                                    FontWeight="Bold"
-                                    Margin="0,0,0,18"/>
+                        <!-- Month navigation -->
+                        <Border Grid.Row="2"
+                                Background="#F1F2F5"
+                                CornerRadius="10"
+                                Margin="0,12,0,10"
+                                Padding="6,4">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
 
-                        <DataGrid Grid.Row="3"
-                                    ItemsSource="{Binding SelectedDateAppointments}"
-                                    Style="{StaticResource DashboardDataGridStyle}"
-                                    ColumnHeaderStyle="{StaticResource DashboardDataGridColumnHeaderStyle}"
-                                    CellStyle="{StaticResource DashboardDataGridCellStyle}"
-                                    HorizontalAlignment="Stretch"
-                                    VerticalAlignment="Stretch"
-                                    HorizontalScrollBarVisibility="Auto"
+                                <Button Grid.Column="0"
+                                        Command="{Binding PreviousWeekCommand}"
+                                        Style="{StaticResource ViewAllButtonStyle}"
+                                        Cursor="Hand"
+                                        Padding="8,0">
+                                    <fa:IconBlock Icon="ChevronLeft" FontSize="14" Foreground="#555555"/>
+                                </Button>
+
+                                <TextBlock Grid.Column="1"
+                                            Text="{Binding CurrentMonth}"
+                                            FontSize="17"
+                                            FontWeight="Bold"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"/>
+
+                                <Button Grid.Column="2"
+                                        Command="{Binding NextWeekCommand}"
+                                        Style="{StaticResource ViewAllButtonStyle}"
+                                        Cursor="Hand"
+                                        Padding="8,0">
+                                    <fa:IconBlock Icon="ChevronRight" FontSize="14" Foreground="#555555"/>
+                                </Button>
+                            </Grid>
+                        </Border>
+
+                        <!-- Day strip -->
+                        <ItemsControl Grid.Row="3"
+                                        ItemsSource="{Binding WeekDays}"
+                                        Margin="0,0,0,6">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Rows="1"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Style="{StaticResource DayCellButtonStyle}"
+                                            Command="{Binding DataContext.SelectDayCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                            CommandParameter="{Binding}">
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding DayNumber}"
+                                                        FontSize="16"
+                                                        FontWeight="Bold"
+                                                        HorizontalAlignment="Center"/>
+                                            <TextBlock Text="{Binding DayName}"
+                                                        FontSize="11"
+                                                        HorizontalAlignment="Center"
+                                                        Margin="0,2,0,0"/>
+                                        </StackPanel>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <!-- Appointment cards -->
+                        <ScrollViewer Grid.Row="4"
                                     VerticalScrollBarVisibility="Auto"
-                                    ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                                    ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                    HorizontalScrollBarVisibility="Disabled"
+                                    Margin="0,6,0,0">
+                            <ScrollViewer.Resources>
+                                <Style TargetType="{x:Type ScrollBar}"
+                                    BasedOn="{StaticResource DashboardBlueScrollBarStyle}"/>
+                            </ScrollViewer.Resources>
 
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="TIME"
-                                                    Binding="{Binding Time}"
-                                                    Width="0.8*"
-                                                    MinWidth="70"/>
+                            <ItemsControl ItemsSource="{Binding SelectedDateAppointments}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="White"
+                                                BorderBrush="#E4E7EC"
+                                                BorderThickness="1"
+                                                CornerRadius="12"
+                                                Padding="12,10"
+                                                Margin="0,0,0,10">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
 
-                                <DataGridTextColumn Header="P-ID"
-                                                    Binding="{Binding PatientCode}"
-                                                    Width="0.8*"
-                                                    MinWidth="70"/>
+                                                <Border Grid.Column="0"
+                                                        Width="40"
+                                                        Height="40"
+                                                        CornerRadius="20"
+                                                        Background="#16B5A0"
+                                                        VerticalAlignment="Center">
+                                                    <fa:IconBlock Icon="User"
+                                                                Foreground="White"
+                                                                FontSize="18"
+                                                                HorizontalAlignment="Center"
+                                                                VerticalAlignment="Center"/>
+                                                </Border>
 
-                                <DataGridTextColumn Header="PATIENT NAME"
-                                                    Binding="{Binding PatientName}"
-                                                    Width="1.8"
-                                                    MinWidth="130"/>
+                                                <StackPanel Grid.Column="1"
+                                                            VerticalAlignment="Center"
+                                                            Margin="12,0,0,0">
+                                                    <TextBlock Text="{Binding PatientName}"
+                                                                FontSize="14"
+                                                                FontWeight="SemiBold"
+                                                                TextTrimming="CharacterEllipsis"/>
+                                                    <TextBlock Text="{Binding Time}"
+                                                                FontSize="12"
+                                                                Foreground="#9A9A9A"
+                                                                Margin="0,2,0,0"/>
+                                                </StackPanel>
 
-                                <DataGridTextColumn Header="TREATMENT"
-                                                    Binding="{Binding Treatment}"
-                                                    Width="1.3*"
-                                                    MinWidth="110"/>
-                            </DataGrid.Columns>
-                        </DataGrid>
+                                                <Border Grid.Column="2"
+                                                        Style="{StaticResource StatusPillStyle}">
+                                                    <TextBlock Text="{Binding Status}"
+                                                                FontSize="11"
+                                                                Foreground="#555555"/>
+                                                </Border>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
                     </Grid>
                 </Border>
             </Grid>

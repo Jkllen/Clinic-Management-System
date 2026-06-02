@@ -12,6 +12,21 @@
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
 
+        <!-- Soft drop shadow for cards and panels (scoped to this view) -->
+        <DropShadowEffect x:Key="CardDropShadow"
+                          Color="#000000"
+                          BlurRadius="14"
+                          ShadowDepth="2"
+                          Direction="270"
+                          Opacity="0.16" />
+
+        <!-- Adds the shadow to the shared table container, scoped to this view -->
+        <Style x:Key="DashboardTableContainerStyle"
+               TargetType="Border"
+               BasedOn="{StaticResource DashboardTableContainerStyle}">
+            <Setter Property="Effect" Value="{StaticResource CardDropShadow}" />
+        </Style>
+
         <!-- ── Tab button (unselected state) ── -->
         <Style x:Key="ReportTabButtonStyle" TargetType="Button">
             <Setter Property="Height" Value="92" />
@@ -80,6 +95,7 @@
             <Setter Property="BorderBrush" Value="#E8E8E8" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Padding" Value="16,12" />
+            <Setter Property="Effect" Value="{StaticResource CardDropShadow}" />
         </Style>
 
         <!-- Table section header -->

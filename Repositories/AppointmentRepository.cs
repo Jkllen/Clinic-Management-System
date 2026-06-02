@@ -430,6 +430,7 @@ INSERT INTO Appointments (
     Category,
     ServiceId,
     ServiceName,
+    ServiceStage,
     DentistUserId,
     DentistName,
     AppointmentDate,
@@ -448,6 +449,7 @@ VALUES (
     @Category,
     @ServiceId,
     @ServiceName,
+    @ServiceStage,
     @DentistUserId,
     @DentistName,
     @AppointmentDate,
@@ -479,6 +481,7 @@ SELECT last_insert_rowid();";
             command.Parameters.AddWithValue("@Notes", appointment.Notes.Trim());
             command.Parameters.AddWithValue("@CreatedByUserId", appointment.CreatedByUserId.HasValue ? appointment.CreatedByUserId.Value : DBNull.Value);
             command.Parameters.AddWithValue("@CreatedAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            command.Parameters.AddWithValue("@ServiceStage", string.IsNullOrWhiteSpace(appointment.ServiceStage) ? DBNull.Value : appointment.ServiceStage);
 
             int newAppointmentId = Convert.ToInt32(command.ExecuteScalar());
 
@@ -488,6 +491,83 @@ SELECT last_insert_rowid();";
                 $"Created {appointment.AppointmentType} appointment for service '{appointment.ServiceName}' with {appointment.DentistName} on {appointment.AppointmentDate:yyyy-MM-dd} {appointment.AppointmentTime:hh\\:mm}");
 
             return newAppointmentId;
+        }
+
+        // Records the path of a stored teeth photo against an appointment.
+        public void AddAppointmentImage(int appointmentId, string filePath)
+        {
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+INSERT INTO AppointmentImages (AppointmentId, FilePath, CreatedAt)
+VALUES (@AppointmentId, @FilePath, @CreatedAt);";
+
+            command.Parameters.AddWithValue("@AppointmentId", appointmentId);
+            command.Parameters.AddWithValue("@FilePath", filePath);
+            command.Parameters.AddWithValue("@CreatedAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+
+            command.ExecuteNonQuery();
+        }
+
+        // Returns all stored teeth photos for an appointment, newest first.
+        public List<AppointmentImageItem> GetAppointmentImages(int appointmentId)
+        {
+            List<AppointmentImageItem> images = new();
+
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+SELECT AppointmentImageId, FilePath
+FROM AppointmentImages
+WHERE AppointmentId = @AppointmentId
+ORDER BY AppointmentImageId DESC;";
+
+            command.Parameters.AddWithValue("@AppointmentId", appointmentId);
+
+            using SqliteDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                images.Add(new AppointmentImageItem
+                {
+                    AppointmentImageId = Convert.ToInt32(reader["AppointmentImageId"]),
+                    FilePath = reader["FilePath"]?.ToString() ?? string.Empty
+                });
+            }
+
+            return images;
+        }
+
+        // Removes a stored teeth photo (DB row and the file on disk).
+        public void DeleteAppointmentImage(int appointmentImageId)
+        {
+            string? filePath = null;
+
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using (SqliteCommand selectCommand = connection.CreateCommand())
+            {
+                selectCommand.CommandText = "SELECT FilePath FROM AppointmentImages WHERE AppointmentImageId = @Id;";
+                selectCommand.Parameters.AddWithValue("@Id", appointmentImageId);
+                filePath = selectCommand.ExecuteScalar()?.ToString();
+            }
+
+            using (SqliteCommand deleteCommand = connection.CreateCommand())
+            {
+                deleteCommand.CommandText = "DELETE FROM AppointmentImages WHERE AppointmentImageId = @Id;";
+                deleteCommand.Parameters.AddWithValue("@Id", appointmentImageId);
+                deleteCommand.ExecuteNonQuery();
+            }
+
+            if (!string.IsNullOrWhiteSpace(filePath) && System.IO.File.Exists(filePath))
+            {
+                try { System.IO.File.Delete(filePath); }
+                catch { /* Leave the orphaned file rather than failing the delete. */ }
+            }
         }
 
         #endregion

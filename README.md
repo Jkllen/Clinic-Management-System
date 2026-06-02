@@ -167,3 +167,13 @@ CruzNeryClinic
    └─ UserManagementView.xaml.cs
 
 ```
+
+
+
+Things Need To Do:
+Dashboard - filter beside the search also make the search functional.
+Manage User Add user security question - fix layout alignment.
+Manage User Update form - fix layout.
+Patient Management - add view in actions
+Appointment - overhaul of treatment service (uploading of teeths, trials etc.)
+Billing - make it 15% discount. 
