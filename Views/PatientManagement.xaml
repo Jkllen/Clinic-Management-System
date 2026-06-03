@@ -225,7 +225,7 @@
                                 VerticalAlignment="Center"
                                 FontSize="32"
                                 Foreground="White"
-                                Icon="HandHoldingUsd" />
+                                Icon="Wheelchair" />
                         </Border>
 
                         <StackPanel
@@ -276,7 +276,7 @@
                                 VerticalAlignment="Center"
                                 FontSize="32"
                                 Foreground="White"
-                                Icon="HandHoldingUsd" />
+                                Icon="PesoSign" />
                         </Border>
 
                         <StackPanel

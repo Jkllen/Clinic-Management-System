@@ -637,7 +637,7 @@
         <SolidColorBrush x:Key="SuccessGreenBrush" Color="#50C878"/>
         <SolidColorBrush x:Key="DangerRedBrush" Color="#E53935"/>
         <SolidColorBrush x:Key="CardBorderBrush" Color="#D8D8D8"/>
-        <SolidColorBrush x:Key="ScreenBackgroundBrush" Color="#FFFDF8"/>
+        <SolidColorBrush x:Key="ScreenBackgroundBrush" Color="#F4F6F6"/>
         <!-- #endregion -->
         
         <!-- Shared White Dashboard/module Card Style -->

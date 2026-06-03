@@ -7,7 +7,7 @@
         MinWidth="900"
         MinHeight="600"
         WindowStartupLocation="CenterScreen"
-        Background="White"
+        Background="#F4F6F6"
         FontFamily="{StaticResource AppFont}">
 
     <!--
