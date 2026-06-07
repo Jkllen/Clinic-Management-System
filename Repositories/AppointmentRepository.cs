@@ -32,6 +32,9 @@ SELECT
     a.Category,
     a.ServiceId,
     a.ServiceName,
+    a.ServiceStage,
+    a.FollowUpDate,
+    a.TreatmentDetails,
     a.DentistUserId,
     a.DentistName,
     a.AppointmentDate,
@@ -431,6 +434,8 @@ INSERT INTO Appointments (
     ServiceId,
     ServiceName,
     ServiceStage,
+    FollowUpDate,
+    TreatmentDetails,
     DentistUserId,
     DentistName,
     AppointmentDate,
@@ -450,6 +455,8 @@ VALUES (
     @ServiceId,
     @ServiceName,
     @ServiceStage,
+    @FollowUpDate,
+    @TreatmentDetails,
     @DentistUserId,
     @DentistName,
     @AppointmentDate,
@@ -472,6 +479,9 @@ SELECT last_insert_rowid();";
             command.Parameters.AddWithValue("@ServiceName", appointment.ServiceName);
             command.Parameters.AddWithValue("@DentistUserId", appointment.DentistUserId.HasValue ? appointment.DentistUserId.Value : DBNull.Value);
             command.Parameters.AddWithValue("@DentistName", appointment.DentistName);
+            command.Parameters.AddWithValue("@ServiceStage", string.IsNullOrWhiteSpace(appointment.ServiceStage) ? DBNull.Value : appointment.ServiceStage.Trim());
+            command.Parameters.AddWithValue("@FollowUpDate", appointment.FollowUpDate.HasValue ? appointment.FollowUpDate.Value.ToString("yyyy-MM-dd") : DBNull.Value);
+            command.Parameters.AddWithValue("@TreatmentDetails", appointment.TreatmentDetails.Trim());
             command.Parameters.AddWithValue("@AppointmentDate", appointment.AppointmentDate.ToString("yyyy-MM-dd"));
             command.Parameters.AddWithValue("@AppointmentTime", appointment.AppointmentTime.ToString(@"hh\:mm"));
             command.Parameters.AddWithValue("@ArrivalTime", appointment.ArrivalTime.HasValue ? appointment.ArrivalTime.Value.ToString(@"hh\:mm") : DBNull.Value);
@@ -481,7 +491,6 @@ SELECT last_insert_rowid();";
             command.Parameters.AddWithValue("@Notes", appointment.Notes.Trim());
             command.Parameters.AddWithValue("@CreatedByUserId", appointment.CreatedByUserId.HasValue ? appointment.CreatedByUserId.Value : DBNull.Value);
             command.Parameters.AddWithValue("@CreatedAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-            command.Parameters.AddWithValue("@ServiceStage", string.IsNullOrWhiteSpace(appointment.ServiceStage) ? DBNull.Value : appointment.ServiceStage);
 
             int newAppointmentId = Convert.ToInt32(command.ExecuteScalar());
 
@@ -592,6 +601,9 @@ ORDER BY AppointmentImageId DESC;";
             a.Category,
             a.ServiceId,
             a.ServiceName,
+            a.ServiceStage,
+            a.FollowUpDate,
+            a.TreatmentDetails,
             a.DentistUserId,
             a.DentistName,
             a.AppointmentDate,
@@ -725,6 +737,9 @@ ORDER BY AppointmentImageId DESC;";
             TreatmentDate,
             TreatmentTime,
             TreatmentNotes,
+            ServiceStage,
+            FollowUpDate,
+            TreatmentDetails,
             CreatedAt
         )
         SELECT
@@ -737,6 +752,9 @@ ORDER BY AppointmentImageId DESC;";
             AppointmentDate,
             AppointmentTime,
             @TreatmentNotes,
+            ServiceStage,
+            FollowUpDate,
+            TreatmentDetails,
             @CreatedAt
         FROM Appointments
         WHERE AppointmentId = @AppointmentId;";
@@ -957,6 +975,9 @@ WHERE AppointmentId = @AppointmentId;";
                 Category = reader["Category"]?.ToString() ?? "Regular",
                 ServiceId = SafeGetNullableInt(reader, "ServiceId"),
                 ServiceName = reader["ServiceName"]?.ToString() ?? string.Empty,
+                ServiceStage = SafeGetString(reader, "ServiceStage"),
+                FollowUpDate = ParseNullableDateTime(reader["FollowUpDate"]?.ToString()),
+                TreatmentDetails = reader["TreatmentDetails"]?.ToString() ?? string.Empty,
                 DentistUserId = SafeGetNullableInt(reader, "DentistUserId"),
                 DentistName = reader["DentistName"]?.ToString() ?? "Unassigned",
                 AppointmentDate = ParseDate(reader["AppointmentDate"]?.ToString()),

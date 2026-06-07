@@ -20,7 +20,13 @@ namespace CruzNeryClinic.Repositories
 
             return new DashboardSummary
             {
-                TotalPatients = Count(connection, "SELECT COUNT(*) FROM Patients WHERE IsActive = 1;"),
+                TotalPatients = Count(
+                    connection,
+                    @"
+                    SELECT COUNT(*)
+                    FROM Patients
+                    WHERE IsActive = 1
+                    AND date(CreatedAt) = date('now', 'localtime');"),
 
                 NewPatientsThisMonth = Count(
                     connection,

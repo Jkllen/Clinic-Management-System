@@ -99,7 +99,7 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
-                <!-- Total Patients -->
+                <!-- Total Patients Today -->
                 <Border
                     Grid.Column="0"
                     Padding="18"
@@ -138,7 +138,7 @@
 
                             <TextBlock 
                                 FontSize="17" 
-                                Text="Total Patients"
+                                Text="Total New Patients Today"
                                 TextWrapping="Wrap"
                                 TextTrimming="CharacterEllipsis"
                                 MaxWidth="150"/>
@@ -674,11 +674,47 @@
             <Border
                 Width="760"
                 MaxHeight="620"
-                Padding="34,34,18,34"
+                Padding="34,28,18,34"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 Background="White"
                 CornerRadius="26">
+
+                <DockPanel LastChildFill="True">
+                    <Grid DockPanel.Dock="Top" Margin="0,0,14,24">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock
+                                FontSize="26"
+                                FontWeight="Bold"
+                                Foreground="#111111"
+                                Text="Patient History" />
+
+                            <TextBlock
+                                Margin="0,4,0,0"
+                                FontSize="16"
+                                Foreground="#777777"
+                                Text="{Binding HistoryPatientName}" />
+                        </StackPanel>
+
+                        <Button
+                            Grid.Column="1"
+                            Width="38"
+                            Height="38"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Command="{Binding ClosePatientHistoryCommand}"
+                            Cursor="Hand">
+                            <fa:IconBlock
+                                FontSize="18"
+                                Foreground="#555555"
+                                Icon="Times" />
+                        </Button>
+                    </Grid>
 
                 <ScrollViewer
                     VerticalScrollBarVisibility="Auto"
@@ -691,18 +727,6 @@
                     </ScrollViewer.Resources>
 
                     <StackPanel Margin="0,0,14,0">
-                        <TextBlock
-                            FontSize="26"
-                            FontWeight="Bold"
-                            Foreground="#111111"
-                            Text="Patient History" />
-
-                        <TextBlock
-                            Margin="0,4,0,24"
-                            FontSize="16"
-                            Foreground="#777777"
-                            Text="{Binding HistoryPatientName}" />
-
                         <!-- Medical Background -->
                         <TextBlock
                             FontSize="18"
@@ -758,7 +782,7 @@
                         </TextBlock>
 
                         <ItemsControl
-                            Margin="0,8,0,28"
+                            Margin="0,8,0,12"
                             ItemsSource="{Binding HistoryTreatmentRecords}">
 
                             <ItemsControl.Style>
@@ -822,11 +846,214 @@
                                                 Foreground="#333333"
                                                 Text="{Binding TreatmentNotesDisplay}"
                                                 TextWrapping="Wrap" />
+
+                                            <Grid Margin="0,10,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="12" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <StackPanel Grid.Column="0">
+                                                    <TextBlock
+                                                        FontSize="12"
+                                                        FontWeight="SemiBold"
+                                                        Foreground="#555555"
+                                                        Text="Treatment Step" />
+                                                    <TextBlock
+                                                        Margin="0,2,0,0"
+                                                        FontSize="13"
+                                                        Foreground="#333333"
+                                                        Text="{Binding ServiceStageDisplay}" />
+                                                </StackPanel>
+
+                                                <StackPanel Grid.Column="2">
+                                                    <TextBlock
+                                                        FontSize="12"
+                                                        FontWeight="SemiBold"
+                                                        Foreground="#555555"
+                                                        Text="Return Date / Next Step" />
+                                                    <TextBlock
+                                                        Margin="0,2,0,0"
+                                                        FontSize="13"
+                                                        Foreground="#333333"
+                                                        Text="{Binding FollowUpDateDisplay}" />
+                                                </StackPanel>
+                                            </Grid>
+
+                                            <TextBlock
+                                                Margin="0,10,0,0"
+                                                FontSize="13"
+                                                Foreground="#333333"
+                                                Text="{Binding TreatmentDetailsDisplay}"
+                                                TextWrapping="Wrap" />
+
+                                            <ItemsControl
+                                                Margin="0,10,0,0"
+                                                ItemsSource="{Binding ToothChart}">
+
+                                                <ItemsControl.Style>
+                                                    <Style TargetType="ItemsControl">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding HasSelectedTeeth}" Value="True">
+                                                                <Setter Property="Visibility" Value="Visible" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </ItemsControl.Style>
+
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <UniformGrid Columns="16" Rows="2" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border
+                                                            Width="32"
+                                                            Height="40"
+                                                            Margin="2"
+                                                            CornerRadius="6"
+                                                            >
+
+                                                            <Border.Style>
+                                                                <Style TargetType="Border">
+                                                                    <Setter Property="Background" Value="#F8FBFF" />
+                                                                    <Setter Property="BorderBrush" Value="#D7E3E4" />
+                                                                    <Setter Property="BorderThickness" Value="1" />
+                                                                    <Setter Property="Opacity" Value="0.42" />
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                                            <Setter Property="Background" Value="#CFF4EF" />
+                                                                            <Setter Property="BorderBrush" Value="#073C98" />
+                                                                            <Setter Property="BorderThickness" Value="2" />
+                                                                            <Setter Property="Opacity" Value="1" />
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Border.Style>
+
+                                                            <Grid>
+                                                                <fa:IconBlock
+                                                                    HorizontalAlignment="Center"
+                                                                    VerticalAlignment="Center"
+                                                                    FontSize="27"
+                                                                    Foreground="#2E7E82"
+                                                                    Icon="Tooth" />
+                                                                <TextBlock
+                                                                    HorizontalAlignment="Center"
+                                                                    VerticalAlignment="Top"
+                                                                    Margin="0,4,0,0"
+                                                                    FontSize="11"
+                                                                    FontWeight="Bold"
+                                                                    Foreground="White"
+                                                                    Text="{Binding DisplayText}" />
+                                                            </Grid>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+
+                                            <ItemsControl
+                                                Margin="0,10,0,0"
+                                                ItemsSource="{Binding TeethImages}">
+
+                                                <ItemsControl.Style>
+                                                    <Style TargetType="ItemsControl">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding HasTeethImages}" Value="True">
+                                                                <Setter Property="Visibility" Value="Visible" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </ItemsControl.Style>
+
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <WrapPanel />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border
+                                                            Width="96"
+                                                            Height="82"
+                                                            Margin="0,0,8,8"
+                                                            Background="#F4F6FB"
+                                                            BorderBrush="#D8D8D8"
+                                                            BorderThickness="1"
+                                                            CornerRadius="8">
+                                                            <Image
+                                                                Margin="5"
+                                                                Source="{Binding Thumbnail}"
+                                                                Stretch="UniformToFill" />
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
                                         </StackPanel>
                                     </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
+
+                        <Grid Margin="0,0,0,28">
+                            <Grid.Style>
+                                <Style TargetType="Grid">
+                                    <Setter Property="Visibility" Value="Visible" />
+
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasTreatmentRecords}" Value="False">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Grid.Style>
+
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock
+                                Grid.Column="0"
+                                VerticalAlignment="Center"
+                                FontSize="13"
+                                Foreground="#555555"
+                                Text="{Binding HistoryTreatmentPageDisplay}" />
+
+                            <StackPanel
+                                Grid.Column="1"
+                                Orientation="Horizontal">
+
+                                <Button
+                                    Width="92"
+                                    Height="36"
+                                    Margin="0,0,8,0"
+                                    Background="#777777"
+                                    Command="{Binding PreviousHistoryTreatmentPageCommand}"
+                                    Content="Previous"
+                                    Foreground="White"
+                                    IsEnabled="{Binding CanGoToPreviousHistoryTreatmentPage}"
+                                    Style="{StaticResource SecondaryButtonStyle}" />
+
+                                <Button
+                                    Width="72"
+                                    Height="36"
+                                    Background="#073C98"
+                                    Command="{Binding NextHistoryTreatmentPageCommand}"
+                                    Content="Next"
+                                    Foreground="White"
+                                    IsEnabled="{Binding CanGoToNextHistoryTreatmentPage}"
+                                    Style="{StaticResource SecondaryButtonStyle}" />
+                            </StackPanel>
+                        </Grid>
 
                         <Button
                             Width="120"
@@ -839,6 +1066,7 @@
                             Style="{StaticResource SecondaryButtonStyle}" />
                     </StackPanel>
                 </ScrollViewer>
+                </DockPanel>
             </Border>
         </Grid>
     </Grid>

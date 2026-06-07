@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.Input;
 using CruzNeryClinic.Models;
 using CruzNeryClinic.Repositories;
 using CruzNeryClinic.Services;
+using CruzNeryClinic.Views.Charts;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -179,6 +180,49 @@ namespace CruzNeryClinic.ViewModels
         public ObservableCollection<ActivityLogReportItem> ActivityLogItems { get; } = new();
         public List<PieChartSlice> ActivityByType { get; private set; } = new();
         public List<ChartDataPoint> ActivityByModule { get; private set; } = new();
+
+        // Plain-language interpretation shown under each chart.
+        private string _patientVisitInsight = "";
+        public string PatientVisitInsight
+        {
+            get => _patientVisitInsight;
+            private set => SetProperty(ref _patientVisitInsight, value);
+        }
+
+        private string _revenueInsight = "";
+        public string RevenueInsight
+        {
+            get => _revenueInsight;
+            private set => SetProperty(ref _revenueInsight, value);
+        }
+
+        private string _dailyTransactionsInsight = "";
+        public string DailyTransactionsInsight
+        {
+            get => _dailyTransactionsInsight;
+            private set => SetProperty(ref _dailyTransactionsInsight, value);
+        }
+
+        private string _inventoryInsight = "";
+        public string InventoryInsight
+        {
+            get => _inventoryInsight;
+            private set => SetProperty(ref _inventoryInsight, value);
+        }
+
+        private string _activityByTypeInsight = "";
+        public string ActivityByTypeInsight
+        {
+            get => _activityByTypeInsight;
+            private set => SetProperty(ref _activityByTypeInsight, value);
+        }
+
+        private string _activityByModuleInsight = "";
+        public string ActivityByModuleInsight
+        {
+            get => _activityByModuleInsight;
+            private set => SetProperty(ref _activityByModuleInsight, value);
+        }
 
         // ── Commands ───────────────────────────────────────────────────────────
 
@@ -710,6 +754,7 @@ namespace CruzNeryClinic.ViewModels
                 foreach (var item in _repository.GetPatientVisits(from, to))
                     PatientVisitsItems.Add(item);
                 PatientVisitTrend = _repository.GetPatientVisitTrend(from, to);
+                PatientVisitInsight = ChartInsight.SummarizeDual(PatientVisitTrend, "scheduled", "walk-in");
             }
             else if (IsTransactionReportsSelected)
             {
@@ -718,6 +763,8 @@ namespace CruzNeryClinic.ViewModels
                     TransactionItems.Add(item);
                 RevenueTrend = _repository.GetRevenueTrend(from, to);
                 DailyTransactionCounts = _repository.GetDailyTransactionCounts(from, to);
+                RevenueInsight = ChartInsight.Summarize(RevenueTrend, "days", "₱");
+                DailyTransactionsInsight = ChartInsight.Summarize(DailyTransactionCounts, "days");
             }
             else if (IsInventoryReportsSelected)
             {
@@ -725,6 +772,7 @@ namespace CruzNeryClinic.ViewModels
                 foreach (var item in _repository.GetInventoryItems())
                     InventoryItems.Add(item);
                 InventoryChartData = _repository.GetInventoryChartData();
+                InventoryInsight = ChartInsight.Summarize(InventoryChartData, "items");
             }
             else if (IsUserActivityLogSelected)
             {
@@ -733,6 +781,8 @@ namespace CruzNeryClinic.ViewModels
                     ActivityLogItems.Add(item);
                 ActivityByType = _repository.GetActivityByType(from, to);
                 ActivityByModule = _repository.GetActivityByModule(from, to);
+                ActivityByTypeInsight = ChartInsight.SummarizePie(ActivityByType);
+                ActivityByModuleInsight = ChartInsight.Summarize(ActivityByModule, "modules");
             }
 
             ChartDataRefreshed?.Invoke();

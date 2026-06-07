@@ -26,7 +26,7 @@
             <Setter Property="BorderBrush" Value="#D8D8D8" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="10" />
-            <Setter Property="Padding" Value="28,18" />
+            <Setter Property="Padding" Value="20,12" />
             <Setter Property="Effect" Value="{StaticResource CardDropShadow}" />
         </Style>
 
@@ -152,8 +152,8 @@
                                     Text="Last Backup" />
 
                                 <TextBlock
-                                    Margin="0,14,0,0"
-                                    FontSize="36"
+                                    Margin="0,8,0,0"
+                                    FontSize="26"
                                     Foreground="#111111"
                                     Text="{Binding LastBackupTime}" />
 
@@ -189,8 +189,8 @@
                                     Text="Total Backups" />
 
                                 <TextBlock
-                                    Margin="0,14,0,0"
-                                    FontSize="38"
+                                    Margin="0,8,0,0"
+                                    FontSize="26"
                                     Foreground="#111111"
                                     Text="{Binding TotalBackupsDisplay}" />
 
@@ -226,14 +226,14 @@
                                     Text="Backup Location" />
 
                                 <TextBlock
-                                    Margin="0,15,0,0"
-                                    FontSize="18"
+                                    Margin="0,8,0,0"
+                                    FontSize="16"
                                     Foreground="#111111"
                                     Text="{Binding BackupLocationDisplay}"
                                     TextTrimming="CharacterEllipsis" />
 
                                 <TextBlock
-                                    Margin="0,20,0,0"
+                                    Margin="0,8,0,0"
                                     FontSize="12"
                                     Foreground="#999999"
                                     Text="Local path" />
@@ -428,22 +428,24 @@
                             </Grid.RowDefinitions>
 
                             <Grid Grid.Row="0">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="10" />
-                                    <ColumnDefinition Width="270" />
-                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="10" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
 
                                 <TextBlock
-                                    Grid.Column="0"
+                                    Grid.Row="0"
                                     FontSize="18"
                                     FontWeight="SemiBold"
                                     Foreground="#111111"
-                                    Text="Manual Backup &amp; Restore" />
+                                    Text="Manual Backup &amp; Restore"
+                                    TextWrapping="Wrap" />
 
                                 <Border
-                                    Grid.Column="2"
+                                    Grid.Row="2"
                                     Padding="12,8"
+                                    HorizontalAlignment="Stretch"
                                     Background="#FFF3F3"
                                     BorderBrush="#FFB0B0"
                                     BorderThickness="1"
@@ -475,7 +477,7 @@
                                         Fill="White" />
 
                                     <Border
-                                        Padding="20"
+                                        Padding="16"
                                         Background="Transparent"
                                         BorderThickness="0">
 
@@ -489,7 +491,7 @@
                                             <Grid Grid.Row="0">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="Auto" />
-                                                    <ColumnDefinition Width="14" />
+                                                    <ColumnDefinition Width="10" />
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
 
@@ -505,7 +507,8 @@
                                                         FontSize="15"
                                                         FontWeight="Bold"
                                                         Foreground="#111111"
-                                                        Text="Create Manual Backup" />
+                                                        Text="Create Manual Backup"
+                                                        TextWrapping="Wrap" />
 
                                                     <TextBlock
                                                         Margin="0,5,0,0"
@@ -543,7 +546,7 @@
                                         StrokeDashArray="6 5"
                                         StrokeThickness="1" />
 
-                                    <Border Padding="20" Background="Transparent">
+                                    <Border Padding="16" Background="Transparent">
 
                                         <Grid>
                                             <Grid.RowDefinitions>
@@ -557,7 +560,7 @@
                                             <Grid Grid.Row="0">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="Auto" />
-                                                    <ColumnDefinition Width="14" />
+                                                    <ColumnDefinition Width="10" />
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
 
@@ -573,7 +576,8 @@
                                                         FontSize="15"
                                                         FontWeight="Bold"
                                                         Foreground="#111111"
-                                                        Text="Restore from Backup" />
+                                                        Text="Restore from Backup"
+                                                        TextWrapping="Wrap" />
 
                                                     <TextBlock
                                                         Margin="0,5,0,0"
@@ -630,7 +634,7 @@
                 -->
                 <Border
                     Grid.Row="3"
-                    MinHeight="260"
+                    MinHeight="150"
                     Margin="0,18,0,0"
                     Style="{StaticResource MaintenanceSectionCardStyle}">
 
@@ -638,15 +642,56 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="15" />
-                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
-                        <TextBlock
-                            Grid.Row="0"
-                            FontSize="18"
-                            FontWeight="SemiBold"
-                            Foreground="#111111"
-                            Text="Backup History" />
+                        <!--  Header: title + View All  -->
+                        <Grid Grid.Row="0">
+                            <TextBlock
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                FontSize="18"
+                                FontWeight="SemiBold"
+                                Foreground="#111111"
+                                Text="Backup History" />
+                            <Button
+                                Height="36"
+                                Padding="16,0"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                Background="Transparent"
+                                BorderBrush="#223357"
+                                BorderThickness="1.5"
+                                Command="{Binding OpenBackupHistoryCommand}"
+                                Cursor="Hand">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border
+                                            x:Name="ButtonBorder"
+                                            Background="{TemplateBinding Background}"
+                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                            Padding="{TemplateBinding Padding}"
+                                            CornerRadius="8">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="ButtonBorder" Property="Background" Value="#EEF2F8" />
+                                            </Trigger>
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.7" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                                <TextBlock
+                                    FontSize="13"
+                                    FontWeight="SemiBold"
+                                    Foreground="#223357"
+                                    Text="View all" />
+                            </Button>
+                        </Grid>
 
                             <DataGrid
                                 Grid.Row="2"
@@ -661,7 +706,7 @@
                                 Background="White"
                                 BorderThickness="0"
                                 IsReadOnly="True"
-                                ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                ScrollViewer.VerticalScrollBarVisibility="Disabled"
                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                                 Style="{StaticResource DashboardDataGridStyle}"
                                 CellStyle="{StaticResource DashboardDataGridCellStyle}"
@@ -765,9 +810,8 @@
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
                                 </DataGrid.Columns>
-                            </DataGrid>                    
-                    
-                    
+                            </DataGrid>
+
                     </Grid>
                 </Border>
         </Grid>
@@ -825,6 +869,177 @@
                             Text="OK" />
                     </Button>
                 </StackPanel>
+            </Border>
+        </Grid>
+
+        <!--
+            =====================================================
+            BACKUP HISTORY "VIEW ALL" OVERLAY
+            =====================================================
+        -->
+        <Grid Panel.ZIndex="44" Visibility="{Binding IsBackupHistoryOpen, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Border Background="#88000000" />
+            <Border
+                Width="950"
+                MaxHeight="800"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Background="White"
+                BorderBrush="#DADADA"
+                BorderThickness="1"
+                CornerRadius="14">
+
+                <Grid Margin="34,24,34,24">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="68" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="64" />
+                    </Grid.RowDefinitions>
+
+                    <!--  Header  -->
+                    <Grid Grid.Row="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="1" />
+                        </Grid.RowDefinitions>
+                        <StackPanel Grid.Row="0" VerticalAlignment="Center">
+                            <TextBlock FontSize="22" FontWeight="Bold" Foreground="Black" Text="Backup History" />
+                            <TextBlock FontSize="13" Foreground="#7A7A7A" Text="Complete log of all backups" />
+                        </StackPanel>
+                        <Button
+                            Grid.Row="0"
+                            Width="42"
+                            Height="42"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Command="{Binding CloseBackupHistoryCommand}"
+                            Style="{StaticResource MaintenanceIconButtonStyle}">
+                            <fa:IconBlock FontSize="22" Foreground="#444444" Icon="Times" />
+                        </Button>
+                        <Border Grid.Row="1" Background="#E0E0E0" />
+                    </Grid>
+
+                    <!--  Backup history DataGrid  -->
+                    <Border Grid.Row="1" Margin="0,16,0,0" Padding="0,0,0,4" Style="{StaticResource LargePanelStyle}">
+                        <DataGrid
+                            AutoGenerateColumns="False"
+                            CanUserAddRows="False"
+                            CanUserDeleteRows="False"
+                            CanUserResizeRows="False"
+                            HeadersVisibility="Column"
+                            GridLinesVisibility="None"
+                            IsReadOnly="True"
+                            ItemsSource="{Binding BackupHistoryPageItems}"
+                            MinRowHeight="40"
+                            RowHeight="48"
+                            Background="White"
+                            BorderThickness="0"
+                            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                            ScrollViewer.VerticalScrollBarVisibility="Auto"
+                            CellStyle="{StaticResource DashboardDataGridCellStyle}"
+                            ColumnHeaderStyle="{StaticResource DashboardDataGridColumnHeaderStyle}"
+                            Style="{StaticResource DashboardDataGridStyle}">
+                            <DataGrid.Resources>
+                                <Style BasedOn="{StaticResource BlueDataGridScrollBarStyle}" TargetType="{x:Type ScrollBar}" />
+                            </DataGrid.Resources>
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Width="1.1*" MinWidth="120" Binding="{Binding CreatedAtDisplay}" Header="Date &amp; Time" />
+                                <DataGridTextColumn Width="0.6*" MinWidth="60" Binding="{Binding BackupType}" Header="Type">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="{x:Type TextBlock}">
+                                            <Setter Property="Foreground" Value="#0066FF" />
+                                            <Setter Property="VerticalAlignment" Value="Center" />
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+                                <DataGridTextColumn Width="1.4*" MinWidth="140" Binding="{Binding FileLocation}" Header="File Location">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="{x:Type TextBlock}">
+                                            <Setter Property="Foreground" Value="#666666" />
+                                            <Setter Property="TextWrapping" Value="NoWrap" />
+                                            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                                            <Setter Property="VerticalAlignment" Value="Center" />
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+                                <DataGridTextColumn Width="0.5*" MinWidth="55" Binding="{Binding SizeDisplay}" Header="Size" />
+                                <DataGridTextColumn Width="0.6*" MinWidth="65" Binding="{Binding Status}" Header="Status">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="{x:Type TextBlock}">
+                                            <Setter Property="Foreground" Value="#00A423" />
+                                            <Setter Property="VerticalAlignment" Value="Center" />
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+                                <DataGridTemplateColumn Width="1.5*" MinWidth="210" Header="Actions">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
+                                                <Button
+                                                    Width="84"
+                                                    Height="32"
+                                                    Margin="0,0,8,0"
+                                                    Background="#223357"
+                                                    Command="{Binding DataContext.RestoreBackupHistoryItemCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                    CommandParameter="{Binding}"
+                                                    Foreground="White"
+                                                    Style="{StaticResource SecondaryButtonStyle}">
+                                                    <TextBlock FontSize="12" FontWeight="Bold" Text="Restore" />
+                                                </Button>
+                                                <Button
+                                                    Width="116"
+                                                    Height="32"
+                                                    Background="White"
+                                                    BorderBrush="#999999"
+                                                    BorderThickness="1"
+                                                    Command="{Binding DataContext.OpenBackupLocationCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                    CommandParameter="{Binding}"
+                                                    Content="View Location"
+                                                    Foreground="#111111"
+                                                    FontSize="12"
+                                                    FontWeight="SemiBold"
+                                                    Style="{StaticResource OutlineActionButtonStyle}" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+
+                    <!--  Close button  -->
+                    <StackPanel Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Button Width="130" Height="44" Command="{Binding CloseBackupHistoryCommand}" Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="CloseBorder" Background="#223357" CornerRadius="22">
+                                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="15" FontWeight="Bold" Foreground="White" Text="Close" />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="CloseBorder" Property="Opacity" Value="0.85" /></Trigger>
+                                        <Trigger Property="IsPressed" Value="True"><Setter TargetName="CloseBorder" Property="Opacity" Value="0.7" /></Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </StackPanel>
+
+                    <!--  Pagination  -->
+                    <StackPanel
+                        Grid.Row="2"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Visibility="{Binding BackupHasMultiplePages, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <Button Width="40" Height="40" Command="{Binding BackupPrevPageCommand}" Cursor="Hand" Style="{StaticResource MaintenanceIconButtonStyle}">
+                            <fa:IconBlock FontSize="16" Foreground="#444444" Icon="ChevronLeft" />
+                        </Button>
+                        <TextBlock Margin="14,0" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold" Foreground="#444444" Text="{Binding BackupPageInfo}" />
+                        <Button Width="40" Height="40" Command="{Binding BackupNextPageCommand}" Cursor="Hand" Style="{StaticResource MaintenanceIconButtonStyle}">
+                            <fa:IconBlock FontSize="16" Foreground="#444444" Icon="ChevronRight" />
+                        </Button>
+                    </StackPanel>
+                </Grid>
             </Border>
         </Grid>
     </Grid>

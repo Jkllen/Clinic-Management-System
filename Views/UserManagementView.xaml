@@ -471,20 +471,37 @@
                                     Header="Status" />
 
                                 <DataGridTemplateColumn
-                                    Width="1.6*"
-                                    MinWidth="210"
+                                    Width="Auto"
+                                    MinWidth="160"
                                     Header="Actions">
 
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <Grid HorizontalAlignment="Left" VerticalAlignment="Center">
 
-                                                <!--  Active user actions: Update + Archive  -->
+                                                <!--  Active user actions: View + Update + Archive  -->
                                                 <StackPanel
-                                                    HorizontalAlignment="Center"
+                                                    HorizontalAlignment="Left"
                                                     VerticalAlignment="Center"
                                                     Orientation="Horizontal"
                                                     Visibility="{Binding IsActive, Converter={StaticResource BoolToVisibilityConverter}}">
+
+                                                    <Button
+                                                        Width="65"
+                                                        Height="32"
+                                                        Margin="0,0,8,0"
+                                                        Background="#073C98"
+                                                        Command="{Binding DataContext.ViewUserDetailsCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                        CommandParameter="{Binding}"
+                                                        Style="{StaticResource SmallActionButtonStyle}">
+
+                                                        <TextBlock
+                                                            VerticalAlignment="Center"
+                                                            FontSize="11"
+                                                            FontWeight="Bold"
+                                                            Foreground="White"
+                                                            Text="View" />
+                                                    </Button>
 
                                                     <!--  Update button  -->
                                                     <Button
@@ -540,32 +557,55 @@
                                                     </Button>
                                                 </StackPanel>
 
-                                                <!--  Archived user action: Restore only  -->
-                                                <Button
-                                                    Width="79"
-                                                    Height="32"
-                                                    Background="#E98A1A"
-                                                    Command="{Binding DataContext.RestoreUserCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                    CommandParameter="{Binding}"
-                                                    Style="{StaticResource SmallActionButtonStyle}"
+                                                <!--  Archived user actions: View + Restore  -->
+                                                <StackPanel
+                                                    HorizontalAlignment="Left"
+                                                    VerticalAlignment="Center"
+                                                    Orientation="Horizontal"
                                                     Visibility="{Binding IsArchived, Converter={StaticResource BoolToVisibilityConverter}}">
 
-                                                    <StackPanel Orientation="Horizontal">
-                                                        <fa:IconBlock
-                                                            Margin="0,0,8,0"
-                                                            VerticalAlignment="Center"
-                                                            FontSize="15"
-                                                            Foreground="White"
-                                                            Icon="RedoAlt" />
+                                                    <Button
+                                                        Width="65"
+                                                        Height="32"
+                                                        Margin="0,0,8,0"
+                                                        Background="#073C98"
+                                                        Command="{Binding DataContext.ViewUserDetailsCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                        CommandParameter="{Binding}"
+                                                        Style="{StaticResource SmallActionButtonStyle}">
 
                                                         <TextBlock
                                                             VerticalAlignment="Center"
-                                                            FontSize="12"
+                                                            FontSize="11"
                                                             FontWeight="Bold"
                                                             Foreground="White"
-                                                            Text="Restore" />
-                                                    </StackPanel>
-                                                </Button>
+                                                            Text="View" />
+                                                    </Button>
+
+                                                    <Button
+                                                        Width="79"
+                                                        Height="32"
+                                                        Background="#E98A1A"
+                                                        Command="{Binding DataContext.RestoreUserCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                        CommandParameter="{Binding}"
+                                                        Style="{StaticResource SmallActionButtonStyle}">
+
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <fa:IconBlock
+                                                                Margin="0,0,8,0"
+                                                                VerticalAlignment="Center"
+                                                                FontSize="15"
+                                                                Foreground="White"
+                                                                Icon="RedoAlt" />
+
+                                                            <TextBlock
+                                                                VerticalAlignment="Center"
+                                                                FontSize="12"
+                                                                FontWeight="Bold"
+                                                                Foreground="White"
+                                                                Text="Restore" />
+                                                        </StackPanel>
+                                                    </Button>
+                                                </StackPanel>
                                             </Grid>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
@@ -587,5 +627,10 @@
         <userManagement:UpdateUserOverlayView
             Visibility="{Binding IsUpdateUserOverlayOpen, Converter={StaticResource BoolToVisibilityConverter}}"
             Panel.ZIndex="60"/>
+
+        <!-- View User Overlay Component -->
+        <userManagement:UserDetailsOverlayView
+            Visibility="{Binding IsUserDetailsOverlayOpen, Converter={StaticResource BoolToVisibilityConverter}}"
+            Panel.ZIndex="70" />
     </Grid>
 </UserControl>

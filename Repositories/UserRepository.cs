@@ -194,16 +194,22 @@ WHERE UserId = @UserId;";
             string answer2,
             string answer3)
         {
-            bool answer1Correct =
-                PasswordService.HashSecurityAnswer(answer1, user.SecurityAnswerSalt1) == user.SecurityAnswerHash1;
-
-            bool answer2Correct =
-                PasswordService.HashSecurityAnswer(answer2, user.SecurityAnswerSalt2) == user.SecurityAnswerHash2;
-
-            bool answer3Correct =
-                PasswordService.HashSecurityAnswer(answer3, user.SecurityAnswerSalt3) == user.SecurityAnswerHash3;
+            bool answer1Correct = IsSecurityAnswerCorrect(answer1, user.SecurityAnswerSalt1, user.SecurityAnswerHash1);
+            bool answer2Correct = IsSecurityAnswerCorrect(answer2, user.SecurityAnswerSalt2, user.SecurityAnswerHash2);
+            bool answer3Correct = IsSecurityAnswerCorrect(answer3, user.SecurityAnswerSalt3, user.SecurityAnswerHash3);
 
             return answer1Correct && answer2Correct && answer3Correct;
+        }
+
+        private bool IsSecurityAnswerCorrect(string answer, string storedSalt, string storedHash)
+        {
+            string normalizedHash = PasswordService.HashSecurityAnswer(answer, storedSalt);
+
+            if (normalizedHash == storedHash)
+                return true;
+
+            string legacyHash = PasswordService.HashLegacySecurityAnswer(answer, storedSalt);
+            return legacyHash == storedHash;
         }
 
         // Resets the password of a user after they pass the security questions.
@@ -442,6 +448,7 @@ ORDER BY u.CreatedAt DESC;";
             SecurityAnswerSalt3,
 
             IsActive,
+            CreatedByUserId,
             CreatedAt
         )
         VALUES (
@@ -468,6 +475,7 @@ ORDER BY u.CreatedAt DESC;";
             @SecurityAnswerSalt3,
 
             1,
+            @CreatedByUserId,
             @CreatedAt
         );";
 
@@ -493,6 +501,7 @@ ORDER BY u.CreatedAt DESC;";
                 command.Parameters.AddWithValue("@SecurityAnswerHash3", answerHash3);
                 command.Parameters.AddWithValue("@SecurityAnswerSalt3", answerSalt3);
 
+                command.Parameters.AddWithValue("@CreatedByUserId", createdByUserId);
                 command.Parameters.AddWithValue("@CreatedAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
 
                 command.ExecuteNonQuery();
@@ -646,11 +655,36 @@ WHERE UserId = @UserId;";
             }
         }
 
+        public bool VerifyUserPassword(int userId, string password)
+        {
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+SELECT PasswordHash, PasswordSalt
+FROM Users
+WHERE UserId = @UserId
+  AND IsActive = 1
+LIMIT 1;";
+
+            command.Parameters.AddWithValue("@UserId", userId);
+
+            using SqliteDataReader reader = command.ExecuteReader();
+
+            if (!reader.Read())
+                return false;
+
+            string passwordHash = reader["PasswordHash"]?.ToString() ?? string.Empty;
+            string passwordSalt = reader["PasswordSalt"]?.ToString() ?? string.Empty;
+
+            return PasswordService.VerifyPassword(password, passwordSalt, passwordHash);
+        }
+
         // Changes a user password from the User Management Update User overlay.
-        // The old password must match before the new password is saved.
+        // Admin authorization is verified by the ViewModel before calling this.
         public void ChangeUserPasswordFromManagement(
             int userId,
-            string oldPassword,
             string newPassword,
             int updatedByUserId,
             string updatedByUserCode,
@@ -663,39 +697,6 @@ WHERE UserId = @UserId;";
 
             try
             {
-                string currentPasswordHash;
-                string currentPasswordSalt;
-
-                using (SqliteCommand getPasswordCommand = connection.CreateCommand())
-                {
-                    getPasswordCommand.Transaction = transaction;
-
-                    getPasswordCommand.CommandText = @"
-SELECT PasswordHash, PasswordSalt
-FROM Users
-WHERE UserId = @UserId
-LIMIT 1;";
-
-                    getPasswordCommand.Parameters.AddWithValue("@UserId", userId);
-
-                    using SqliteDataReader reader = getPasswordCommand.ExecuteReader();
-
-                    if (!reader.Read())
-                    {
-                        throw new Exception("User account was not found.");
-                    }
-
-                    currentPasswordHash = reader["PasswordHash"]?.ToString() ?? string.Empty;
-                    currentPasswordSalt = reader["PasswordSalt"]?.ToString() ?? string.Empty;
-                }
-
-                string oldPasswordHash = PasswordService.HashPassword(oldPassword, currentPasswordSalt);
-
-                if (oldPasswordHash != currentPasswordHash)
-                {
-                    throw new Exception("Old password is incorrect.");
-                }
-
                 string newPasswordSalt = PasswordService.GenerateSalt();
                 string newPasswordHash = PasswordService.HashPassword(newPassword, newPasswordSalt);
 
@@ -1208,6 +1209,8 @@ VALUES (
 
                 IsActive = Convert.ToInt32(reader["IsActive"]) == 1,
 
+                CreatedByUserId = SafeGetNullableInt(reader, "CreatedByUserId"),
+
                 CreatedAt = DateTime.Parse(reader["CreatedAt"].ToString()!),
 
                 UpdatedAt = string.IsNullOrWhiteSpace(reader["UpdatedAt"].ToString())
@@ -1218,6 +1221,16 @@ VALUES (
                     ? null
                     : DateTime.Parse(reader["LastLoginAt"].ToString()!)
             };
+        }
+
+        private int? SafeGetNullableInt(SqliteDataReader reader, string columnName)
+        {
+            int ordinal = reader.GetOrdinal(columnName);
+
+            if (reader.IsDBNull(ordinal))
+                return null;
+
+            return Convert.ToInt32(reader[columnName]);
         }
 
         #endregion

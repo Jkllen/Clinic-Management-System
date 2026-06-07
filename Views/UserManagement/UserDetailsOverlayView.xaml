@@ -1,0 +1,179 @@
+<UserControl
+    x:Class="CruzNeryClinic.Views.UserManagement.UserDetailsOverlayView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="UserManagementStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid>
+        <Border Background="#99000000" />
+
+        <Border
+            Width="720"
+            MaxHeight="680"
+            Padding="30,26,30,30"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Background="White"
+            BorderBrush="#D8D8D8"
+            BorderThickness="1"
+            CornerRadius="14">
+
+            <DockPanel LastChildFill="True">
+                <Grid DockPanel.Dock="Top" Margin="0,0,0,22">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <TextBlock
+                            FontSize="26"
+                            FontWeight="Bold"
+                            Foreground="#111111"
+                            Text="User Details" />
+
+                        <TextBlock
+                            Margin="0,4,0,0"
+                            FontSize="14"
+                            Foreground="#777777"
+                            Text="{Binding SelectedUserDetails.UserCode, Mode=OneWay}" />
+                    </StackPanel>
+
+                    <Button
+                        Grid.Column="1"
+                        Width="36"
+                        Height="36"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Command="{Binding CloseUserDetailsCommand}"
+                        Cursor="Hand">
+                        <fa:IconBlock
+                            FontSize="18"
+                            Foreground="#555555"
+                            Icon="Times" />
+                    </Button>
+                </Grid>
+
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ScrollViewer.Resources>
+                        <Style BasedOn="{StaticResource BlueDataGridScrollBarStyle}" TargetType="{x:Type ScrollBar}" />
+                    </ScrollViewer.Resources>
+
+                    <StackPanel>
+                        <TextBlock
+                            Margin="0,0,0,12"
+                            FontSize="18"
+                            FontWeight="Bold"
+                            Foreground="#223357"
+                            Text="Account Information" />
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="16" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="14" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="14" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <StackPanel Grid.Row="0" Grid.Column="0">
+                                <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="#555555" Text="User ID" />
+                                <TextBox Margin="0,6,0,0" IsReadOnly="True" Style="{StaticResource ModernTextBoxStyle}" Text="{Binding SelectedUserDetails.UserCode, Mode=OneWay}" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="0" Grid.Column="2">
+                                <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="#555555" Text="Username" />
+                                <TextBox Margin="0,6,0,0" IsReadOnly="True" Style="{StaticResource ModernTextBoxStyle}" Text="{Binding SelectedUserDetails.Username, Mode=OneWay}" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="2" Grid.Column="0">
+                                <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="#555555" Text="Full Name" />
+                                <TextBox Margin="0,6,0,0" IsReadOnly="True" Style="{StaticResource ModernTextBoxStyle}" Text="{Binding SelectedUserDetails.FullName, Mode=OneWay}" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="2" Grid.Column="2">
+                                <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="#555555" Text="Contact Number" />
+                                <TextBox Margin="0,6,0,0" IsReadOnly="True" Style="{StaticResource ModernTextBoxStyle}" Text="{Binding SelectedUserDetails.ContactNumber, Mode=OneWay}" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="4" Grid.Column="0">
+                                <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="#555555" Text="Role" />
+                                <TextBox Margin="0,6,0,0" IsReadOnly="True" Style="{StaticResource ModernTextBoxStyle}" Text="{Binding SelectedUserDetails.Role, Mode=OneWay}" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="4" Grid.Column="2">
+                                <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="#555555" Text="Status" />
+                                <TextBox Margin="0,6,0,0" IsReadOnly="True" Style="{StaticResource ModernTextBoxStyle}" Text="{Binding SelectedUserDetails.AccountStatus, Mode=OneWay}" />
+                            </StackPanel>
+                        </Grid>
+
+                        <TextBlock
+                            Margin="0,26,0,12"
+                            FontSize="18"
+                            FontWeight="Bold"
+                            Foreground="#223357"
+                            Text="Audit Details" />
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="16" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="14" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <StackPanel Grid.Row="0" Grid.Column="0">
+                                <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="#555555" Text="Created By" />
+                                <TextBox Margin="0,6,0,0" IsReadOnly="True" Style="{StaticResource ModernTextBoxStyle}" Text="{Binding SelectedUserDetails.CreatedByDisplay, Mode=OneWay}" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="0" Grid.Column="2">
+                                <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="#555555" Text="Date Created" />
+                                <TextBox Margin="0,6,0,0" IsReadOnly="True" Style="{StaticResource ModernTextBoxStyle}" Text="{Binding SelectedUserDetails.CreatedAtDisplay, Mode=OneWay}" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="2" Grid.Column="0">
+                                <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="#555555" Text="Last Updated" />
+                                <TextBox Margin="0,6,0,0" IsReadOnly="True" Style="{StaticResource ModernTextBoxStyle}" Text="{Binding SelectedUserDetails.UpdatedAtDisplay, Mode=OneWay}" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="2" Grid.Column="2">
+                                <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="#555555" Text="Last Login" />
+                                <TextBox Margin="0,6,0,0" IsReadOnly="True" Style="{StaticResource ModernTextBoxStyle}" Text="{Binding SelectedUserDetails.LastLoginAtDisplay, Mode=OneWay}" />
+                            </StackPanel>
+                        </Grid>
+
+                        <Button
+                            Width="110"
+                            Height="38"
+                            Margin="0,28,0,0"
+                            HorizontalAlignment="Right"
+                            Background="#223357"
+                            Command="{Binding CloseUserDetailsCommand}"
+                            Content="Close"
+                            Style="{StaticResource SmallActionButtonStyle}" />
+                    </StackPanel>
+                </ScrollViewer>
+            </DockPanel>
+        </Border>
+    </Grid>
+</UserControl>

@@ -20,13 +20,27 @@ namespace CruzNeryClinic.Data
 
             SeedDefaultAdminAccounts(connection);
             SeedDefaultServices(connection);
+            EnsureUpdatedClinicServices(connection);
+            EnsureUserSchema(connection);
             EnsureBillingInvoiceSchema(connection);
             EnsureAppointmentSchema(connection);
         }
 
+        private static void EnsureUserSchema(SqliteConnection connection)
+        {
+            if (!ColumnExists(connection, "Users", "CreatedByUserId"))
+            {
+                using SqliteCommand command = connection.CreateCommand();
+                command.CommandText = @"
+        ALTER TABLE Users
+        ADD COLUMN CreatedByUserId INTEGER;";
+                command.ExecuteNonQuery();
+            }
+        }
+
         // Adds the appointment columns/tables introduced after the initial schema:
-        // a ServiceStage column (Consultation / Fitting for Dentures & Orthodontics)
-        // and the AppointmentImages table that stores uploaded teeth photo paths.
+        // treatment detail columns and the AppointmentImages table that stores
+        // uploaded teeth photo paths.
         private static void EnsureAppointmentSchema(SqliteConnection connection)
         {
             if (!ColumnExists(connection, "Appointments", "ServiceStage"))
@@ -35,6 +49,51 @@ namespace CruzNeryClinic.Data
                 command.CommandText = @"
         ALTER TABLE Appointments
         ADD COLUMN ServiceStage TEXT;";
+                command.ExecuteNonQuery();
+            }
+
+            if (!ColumnExists(connection, "Appointments", "FollowUpDate"))
+            {
+                using SqliteCommand command = connection.CreateCommand();
+                command.CommandText = @"
+        ALTER TABLE Appointments
+        ADD COLUMN FollowUpDate TEXT;";
+                command.ExecuteNonQuery();
+            }
+
+            if (!ColumnExists(connection, "Appointments", "TreatmentDetails"))
+            {
+                using SqliteCommand command = connection.CreateCommand();
+                command.CommandText = @"
+        ALTER TABLE Appointments
+        ADD COLUMN TreatmentDetails TEXT;";
+                command.ExecuteNonQuery();
+            }
+
+            if (!ColumnExists(connection, "TreatmentRecords", "ServiceStage"))
+            {
+                using SqliteCommand command = connection.CreateCommand();
+                command.CommandText = @"
+        ALTER TABLE TreatmentRecords
+        ADD COLUMN ServiceStage TEXT;";
+                command.ExecuteNonQuery();
+            }
+
+            if (!ColumnExists(connection, "TreatmentRecords", "FollowUpDate"))
+            {
+                using SqliteCommand command = connection.CreateCommand();
+                command.CommandText = @"
+        ALTER TABLE TreatmentRecords
+        ADD COLUMN FollowUpDate TEXT;";
+                command.ExecuteNonQuery();
+            }
+
+            if (!ColumnExists(connection, "TreatmentRecords", "TreatmentDetails"))
+            {
+                using SqliteCommand command = connection.CreateCommand();
+                command.CommandText = @"
+        ALTER TABLE TreatmentRecords
+        ADD COLUMN TreatmentDetails TEXT;";
                 command.ExecuteNonQuery();
             }
 
@@ -141,13 +200,15 @@ CREATE TABLE IF NOT EXISTS Users (
     -- 1 = active, 0 = archived/deactivated.
     IsActive INTEGER NOT NULL DEFAULT 1,
 
+    CreatedByUserId INTEGER,
     CreatedAt TEXT NOT NULL,
     UpdatedAt TEXT,
     LastLoginAt TEXT,
 
     FOREIGN KEY (SecurityQuestionId1) REFERENCES SecurityQuestions(SecurityQuestionId),
     FOREIGN KEY (SecurityQuestionId2) REFERENCES SecurityQuestions(SecurityQuestionId),
-    FOREIGN KEY (SecurityQuestionId3) REFERENCES SecurityQuestions(SecurityQuestionId)
+    FOREIGN KEY (SecurityQuestionId3) REFERENCES SecurityQuestions(SecurityQuestionId),
+    FOREIGN KEY (CreatedByUserId) REFERENCES Users(UserId)
 );
 
 CREATE TABLE IF NOT EXISTS SecurityQuestions (
@@ -211,7 +272,7 @@ CREATE TABLE IF NOT EXISTS PatientHistories (
 CREATE TABLE IF NOT EXISTS Services (
     ServiceId INTEGER PRIMARY KEY AUTOINCREMENT,
 
-    -- Examples: Prophylaxis, Restoration/Pasta, Extraction, Orthodontics, TMJ, Dentures.
+    -- Examples: Prophylaxis, Restoration/Pasta, Extraction, Orthodontics, Dental Crown, Fixed Bridge, Dentures.
     ServiceName TEXT NOT NULL UNIQUE,
 
     DefaultPrice REAL NOT NULL DEFAULT 0,
@@ -235,6 +296,10 @@ CREATE TABLE IF NOT EXISTS Appointments (
 
     ServiceId INTEGER,
     ServiceName TEXT NOT NULL,
+
+    ServiceStage TEXT,
+    FollowUpDate TEXT,
+    TreatmentDetails TEXT,
 
     -- Dentist can be assigned or unassigned.
     DentistUserId INTEGER,
@@ -294,6 +359,9 @@ CREATE TABLE IF NOT EXISTS TreatmentRecords (
     TreatmentTime TEXT,
 
     TreatmentNotes TEXT,
+    ServiceStage TEXT,
+    FollowUpDate TEXT,
+    TreatmentDetails TEXT,
 
     CreatedAt TEXT NOT NULL,
     UpdatedAt TEXT,
@@ -830,9 +898,25 @@ CREATE INDEX IF NOT EXISTS idx_activity_created ON ActivityLogs(CreatedAt);
             SeedService(connection, "Restoration / Pasta", 0);
             SeedService(connection, "Extraction", 0);
             SeedService(connection, "Orthodontics", 0);
-            SeedService(connection, "TMJ", 0);
+            SeedService(connection, "Dental Crown", 0);
+            SeedService(connection, "Fixed Bridge", 0);
             SeedService(connection, "Dentures", 0);
             SeedService(connection, "Consultation", 0);
+        }
+
+        private static void EnsureUpdatedClinicServices(SqliteConnection connection)
+        {
+            SeedService(connection, "Dental Crown", 0);
+            SeedService(connection, "Fixed Bridge", 0);
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+UPDATE Services
+SET IsActive = 0,
+    UpdatedAt = @UpdatedAt
+WHERE ServiceName = 'TMJ';";
+            command.Parameters.AddWithValue("@UpdatedAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            command.ExecuteNonQuery();
         }
 
         private static void SeedService(SqliteConnection connection, string serviceName, double defaultPrice)

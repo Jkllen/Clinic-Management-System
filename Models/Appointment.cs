@@ -16,9 +16,13 @@ namespace CruzNeryClinic.Models
 
         public string ServiceName { get; set; } = string.Empty;
 
-        // "Consultation" or "Fitting" when the appointment includes Dentures or
-        // Orthodontics; null otherwise.
+        // Service-specific step such as denture trial, denture delivery,
+        // orthodontic initial sizing, or orthodontic installation.
         public string? ServiceStage { get; set; }
+
+        public DateTime? FollowUpDate { get; set; }
+
+        public string TreatmentDetails { get; set; } = string.Empty;
 
         public int? DentistUserId { get; set; }
 

@@ -14,41 +14,56 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Border
-        Width="920"
-        MaxHeight="780"
-        Padding="34"
-        Background="White"
-        CornerRadius="26">
+    <Grid>
+        <Border
+            Width="920"
+            MaxHeight="780"
+            Padding="34,28,18,34"
+            Background="White"
+            CornerRadius="26">
+
+        <DockPanel LastChildFill="True">
+            <Grid DockPanel.Dock="Top" Margin="0,0,16,22">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                    <TextBlock
+                        FontSize="28"
+                        FontWeight="Bold"
+                        Foreground="#111111"
+                        Text="{Binding PatientFormTitle}" />
+
+                    <TextBlock
+                        Margin="0,4,0,0"
+                        FontSize="15"
+                        Foreground="#777777"
+                        Text="Enter the patient personal information, history, and initial visit details." />
+                </StackPanel>
+
+                <Button
+                    Grid.Column="1"
+                    Width="36"
+                    Height="36"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Command="{Binding CancelAddPatientCommand}"
+                    Cursor="Hand">
+                    <fa:IconBlock
+                        FontSize="18"
+                        Foreground="#555555"
+                        Icon="Times" />
+                </Button>
+            </Grid>
 
         <ScrollViewer VerticalScrollBarVisibility="Auto">
             <ScrollViewer.Resources>
                 <Style BasedOn="{StaticResource BlueDataGridScrollBarStyle}"
                     TargetType="{x:Type ScrollBar}" />
             </ScrollViewer.Resources>
-            <StackPanel>
-
-                <TextBlock
-                    FontSize="28"
-                    FontWeight="Bold"
-                    Foreground="#111111"
-                    Text="{Binding PatientFormTitle}" />
-
-                <TextBlock
-                    Margin="0,4,0,22"
-                    FontSize="15"
-                    Foreground="#777777"
-                    Text="Enter the patient personal information, history, and initial visit details." />
-
-                <TextBlock
-                    Margin="0,0,0,14"
-                    FontSize="14"
-                    FontWeight="SemiBold"
-                    Foreground="#C62828"
-                    Text="{Binding PatientFormErrorMessage}"
-                    TextWrapping="Wrap"
-                    Visibility="{Binding HasPatientFormError, Converter={StaticResource BoolToVisibilityConverter}}" />
-
+            <StackPanel Margin="0,0,16,0">
                 <TextBlock
                     Margin="0,0,0,12"
                     FontSize="18"
@@ -111,6 +126,7 @@
                             Text="Contact Number *" />
 
                         <TextBox
+                            MaxLength="11"
                             Style="{StaticResource PatientOverlayTextBoxStyle}"
                             Tag="Enter your contact number"
                             Text="{Binding FormPhoneNumber, UpdateSourceTrigger=PropertyChanged}" />
@@ -314,5 +330,48 @@
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>
-    </Border>
+        </DockPanel>
+        </Border>
+
+        <Grid
+            Width="920"
+            MaxHeight="780"
+            Background="#66000000"
+            Visibility="{Binding IsAddPatientPromptOpen, Converter={StaticResource BoolToVisibilityConverter}}">
+
+            <Border
+                Width="420"
+                Padding="24"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Background="White"
+                CornerRadius="12">
+
+                <StackPanel>
+                    <TextBlock
+                        FontSize="20"
+                        FontWeight="Bold"
+                        Foreground="#111111"
+                        Text="Patient Form" />
+
+                    <TextBlock
+                        Margin="0,12,0,22"
+                        FontSize="14"
+                        Foreground="#444444"
+                        Text="{Binding AddPatientPromptMessage}"
+                        TextWrapping="Wrap" />
+
+                    <Button
+                        Width="110"
+                        Height="40"
+                        HorizontalAlignment="Right"
+                        Background="#073C98"
+                        Command="{Binding CloseAddPatientPromptCommand}"
+                        Content="OK"
+                        Foreground="White"
+                        Style="{StaticResource SecondaryButtonStyle}" />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
 </UserControl>

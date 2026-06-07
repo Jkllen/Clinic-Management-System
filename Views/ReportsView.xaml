@@ -664,6 +664,7 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <TextBlock
                             Grid.Row="0"
@@ -676,6 +677,9 @@
                             Grid.Row="1"
                             ClipToBounds="True"
                             SizeChanged="PatientVisitCanvas_SizeChanged" />
+                        <TextBlock Grid.Row="2" Margin="0,6,0,0" FontSize="11"
+                                   Foreground="#6B7280" TextWrapping="Wrap"
+                                   Text="{Binding PatientVisitInsight}" />
                     </Grid>
                 </Border>
 
@@ -694,6 +698,7 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <TextBlock
                                 Grid.Row="0"
@@ -706,6 +711,9 @@
                                 Grid.Row="1"
                                 ClipToBounds="True"
                                 SizeChanged="RevenueTrendCanvas_SizeChanged" />
+                            <TextBlock Grid.Row="2" Margin="0,6,0,0" FontSize="11"
+                                       Foreground="#6B7280" TextWrapping="Wrap"
+                                       Text="{Binding RevenueInsight}" />
                         </Grid>
                     </Border>
 
@@ -714,6 +722,7 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <TextBlock
                                 Grid.Row="0"
@@ -726,6 +735,9 @@
                                 Grid.Row="1"
                                 ClipToBounds="True"
                                 SizeChanged="DailyTransactionsCanvas_SizeChanged" />
+                            <TextBlock Grid.Row="2" Margin="0,6,0,0" FontSize="11"
+                                       Foreground="#6B7280" TextWrapping="Wrap"
+                                       Text="{Binding DailyTransactionsInsight}" />
                         </Grid>
                     </Border>
                 </Grid>
@@ -739,6 +751,7 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <TextBlock
                             Grid.Row="0"
@@ -751,6 +764,9 @@
                             Grid.Row="1"
                             ClipToBounds="True"
                             SizeChanged="InventoryBarCanvas_SizeChanged" />
+                        <TextBlock Grid.Row="2" Margin="0,6,0,0" FontSize="11"
+                                   Foreground="#6B7280" TextWrapping="Wrap"
+                                   Text="{Binding InventoryInsight}" />
                     </Grid>
                 </Border>
 
@@ -769,6 +785,7 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <TextBlock
                                 Grid.Row="0"
@@ -781,6 +798,9 @@
                                 Grid.Row="1"
                                 ClipToBounds="True"
                                 SizeChanged="ActivityPieCanvas_SizeChanged" />
+                            <TextBlock Grid.Row="2" Margin="0,6,0,0" FontSize="11"
+                                       Foreground="#6B7280" TextWrapping="Wrap"
+                                       Text="{Binding ActivityByTypeInsight}" />
                         </Grid>
                     </Border>
 
@@ -789,6 +809,7 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <TextBlock
                                 Grid.Row="0"
@@ -801,6 +822,9 @@
                                 Grid.Row="1"
                                 ClipToBounds="True"
                                 SizeChanged="ActivityModuleCanvas_SizeChanged" />
+                            <TextBlock Grid.Row="2" Margin="0,6,0,0" FontSize="11"
+                                       Foreground="#6B7280" TextWrapping="Wrap"
+                                       Text="{Binding ActivityByModuleInsight}" />
                         </Grid>
                     </Border>
                 </Grid>

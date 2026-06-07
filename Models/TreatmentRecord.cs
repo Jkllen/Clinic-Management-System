@@ -24,6 +24,12 @@ namespace CruzNeryClinic.Models
 
         public string TreatmentNotes { get; set; } = string.Empty;
 
+        public string? ServiceStage { get; set; }
+
+        public DateTime? FollowUpDate { get; set; }
+
+        public string TreatmentDetails { get; set; } = string.Empty;
+
         public DateTime CreatedAt { get; set; }
 
         public DateTime? UpdatedAt { get; set; }

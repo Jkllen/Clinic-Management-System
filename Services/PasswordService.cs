@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -33,12 +34,26 @@ namespace CruzNeryClinic.Services
 
         public static string NormalizeSecurityAnswer(string answer)
         {
-            return answer.Trim().ToLowerInvariant();
+            return new string((answer ?? string.Empty)
+                .Where(character => !char.IsWhiteSpace(character))
+                .ToArray())
+                .ToLowerInvariant();
+        }
+
+        public static string NormalizeLegacySecurityAnswer(string answer)
+        {
+            return (answer ?? string.Empty).Trim().ToLowerInvariant();
         }
 
         public static string HashSecurityAnswer(string answer, string salt)
         {
             string normalizedAnswer = NormalizeSecurityAnswer(answer);
+            return HashPassword(normalizedAnswer, salt);
+        }
+
+        public static string HashLegacySecurityAnswer(string answer, string salt)
+        {
+            string normalizedAnswer = NormalizeLegacySecurityAnswer(answer);
             return HashPassword(normalizedAnswer, salt);
         }
     }

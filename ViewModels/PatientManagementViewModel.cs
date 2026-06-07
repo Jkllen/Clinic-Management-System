@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
 
@@ -16,6 +17,7 @@ namespace CruzNeryClinic.ViewModels
 
         private readonly PatientRepository patientRepository;
         private readonly List<PatientListItem> allPatientItems = new();
+        private readonly List<TreatmentRecordListItem> allHistoryTreatmentRecords = new();
 
         private int totalPatients;
         private int newPatientsThisMonth;
@@ -63,6 +65,10 @@ namespace CruzNeryClinic.ViewModels
 
         private string patientFormErrorMessage = string.Empty;
         private bool hasPatientFormError;
+        private string addPatientPromptMessage = string.Empty;
+        private bool isAddPatientPromptOpen;
+        private string updatePatientPromptMessage = string.Empty;
+        private bool isUpdatePatientPromptOpen;
 
         private string historyPatientName = string.Empty;
         private string historyMedicalBackground = string.Empty;
@@ -73,6 +79,9 @@ namespace CruzNeryClinic.ViewModels
         private bool isOtherServiceSelected;
 
         private bool hasTreatmentRecords;
+        private int historyTreatmentCurrentPage = 1;
+        private int historyTreatmentTotalPages = 1;
+        private const int HistoryTreatmentPageSize = 3;
 
         #endregion
 
@@ -125,6 +134,10 @@ namespace CruzNeryClinic.ViewModels
 
             ViewPatientHistoryCommand = new RelayCommand<PatientListItem>(OpenPatientHistoryOverlay);
             ClosePatientHistoryCommand = new RelayCommand(ClosePatientHistoryOverlay);
+            CloseAddPatientPromptCommand = new RelayCommand(CloseAddPatientPrompt);
+            CloseUpdatePatientPromptCommand = new RelayCommand(CloseUpdatePatientPrompt);
+            PreviousHistoryTreatmentPageCommand = new RelayCommand(GoToPreviousHistoryTreatmentPage);
+            NextHistoryTreatmentPageCommand = new RelayCommand(GoToNextHistoryTreatmentPage);
 
             LoadPatients();
         }
@@ -282,7 +295,7 @@ namespace CruzNeryClinic.ViewModels
         public string FormPhoneNumber
         {
             get => formPhoneNumber;
-            set => SetProperty(ref formPhoneNumber, value);
+            set => SetProperty(ref formPhoneNumber, NormalizePatientContactNumber(value));
         }
 
         public DateTime? FormDateOfBirth
@@ -443,6 +456,30 @@ namespace CruzNeryClinic.ViewModels
             set => SetProperty(ref hasPatientFormError, value);
         }
 
+        public string AddPatientPromptMessage
+        {
+            get => addPatientPromptMessage;
+            set => SetProperty(ref addPatientPromptMessage, value);
+        }
+
+        public bool IsAddPatientPromptOpen
+        {
+            get => isAddPatientPromptOpen;
+            set => SetProperty(ref isAddPatientPromptOpen, value);
+        }
+
+        public string UpdatePatientPromptMessage
+        {
+            get => updatePatientPromptMessage;
+            set => SetProperty(ref updatePatientPromptMessage, value);
+        }
+
+        public bool IsUpdatePatientPromptOpen
+        {
+            get => isUpdatePatientPromptOpen;
+            set => SetProperty(ref isUpdatePatientPromptOpen, value);
+        }
+
         #endregion
 
         #region Patient History Properties
@@ -477,6 +514,45 @@ namespace CruzNeryClinic.ViewModels
             set => SetProperty(ref hasTreatmentRecords, value);
         }
 
+        public int HistoryTreatmentCurrentPage
+        {
+            get => historyTreatmentCurrentPage;
+            set
+            {
+                if (SetProperty(ref historyTreatmentCurrentPage, value))
+                {
+                    OnPropertyChanged(nameof(HistoryTreatmentPageDisplay));
+                    OnPropertyChanged(nameof(CanGoToPreviousHistoryTreatmentPage));
+                    OnPropertyChanged(nameof(CanGoToNextHistoryTreatmentPage));
+                }
+            }
+        }
+
+        public int HistoryTreatmentTotalPages
+        {
+            get => historyTreatmentTotalPages;
+            set
+            {
+                if (SetProperty(ref historyTreatmentTotalPages, value))
+                {
+                    OnPropertyChanged(nameof(HistoryTreatmentPageDisplay));
+                    OnPropertyChanged(nameof(CanGoToPreviousHistoryTreatmentPage));
+                    OnPropertyChanged(nameof(CanGoToNextHistoryTreatmentPage));
+                }
+            }
+        }
+
+        public string HistoryTreatmentPageDisplay =>
+            HasTreatmentRecords
+                ? $"Page {HistoryTreatmentCurrentPage} of {HistoryTreatmentTotalPages}"
+                : "Page 0 of 0";
+
+        public bool CanGoToPreviousHistoryTreatmentPage =>
+            HasTreatmentRecords && HistoryTreatmentCurrentPage > 1;
+
+        public bool CanGoToNextHistoryTreatmentPage =>
+            HasTreatmentRecords && HistoryTreatmentCurrentPage < HistoryTreatmentTotalPages;
+
         #endregion
 
         #region Commands
@@ -498,6 +574,14 @@ namespace CruzNeryClinic.ViewModels
         public ICommand ViewPatientHistoryCommand { get; }
 
         public ICommand ClosePatientHistoryCommand { get; }
+
+        public ICommand CloseAddPatientPromptCommand { get; }
+
+        public ICommand CloseUpdatePatientPromptCommand { get; }
+
+        public ICommand PreviousHistoryTreatmentPageCommand { get; }
+
+        public ICommand NextHistoryTreatmentPageCommand { get; }
 
         #endregion
 
@@ -552,7 +636,9 @@ namespace CruzNeryClinic.ViewModels
 
         private void RefreshSummaryCards()
         {
-            TotalPatients = allPatientItems.Count(patient => patient.IsActive);
+            TotalPatients = allPatientItems.Count(patient =>
+                patient.IsActive &&
+                patient.CreatedAt.Date == DateTime.Today);
             NewPatientsThisMonth = patientRepository.GetNewPatientsThisMonthCount();
             PwdSeniorPatients = allPatientItems.Count(patient => patient.IsActive && (patient.IsPwd || patient.IsSenior));
             PatientsWithBalance = allPatientItems.Count(patient => patient.IsActive && patient.HasBalance);
@@ -619,6 +705,17 @@ namespace CruzNeryClinic.ViewModels
         public void OpenAddPatientOverlayFromNavigation()
         {
             OpenAddPatientOverlay();
+        }
+
+        public void OpenPatientHistoryFromSearchKey(string searchKey)
+        {
+            SearchText = searchKey;
+
+            PatientListItem? patient = Patients.FirstOrDefault(item =>
+                item.PatientCode.Equals(searchKey, StringComparison.OrdinalIgnoreCase));
+
+            if (patient != null)
+                OpenPatientHistoryOverlay(patient);
         }
 
         private void SaveNewPatient()
@@ -858,18 +955,66 @@ namespace CruzNeryClinic.ViewModels
         private void LoadTreatmentRecordsForHistory(int patientId)
         {
             HistoryTreatmentRecords.Clear();
+            allHistoryTreatmentRecords.Clear();
 
             List<TreatmentRecordListItem> treatmentRecords =
                 patientRepository.GetTreatmentRecordsByPatientId(patientId);
 
             foreach (TreatmentRecordListItem treatmentRecord in treatmentRecords)
-                HistoryTreatmentRecords.Add(treatmentRecord);
+                allHistoryTreatmentRecords.Add(treatmentRecord);
 
-            HasTreatmentRecords = HistoryTreatmentRecords.Count > 0;
+            HasTreatmentRecords = allHistoryTreatmentRecords.Count > 0;
+            HistoryTreatmentTotalPages = HasTreatmentRecords
+                ? (int)Math.Ceiling(allHistoryTreatmentRecords.Count / (double)HistoryTreatmentPageSize)
+                : 1;
+            HistoryTreatmentCurrentPage = 1;
+
+            RefreshHistoryTreatmentPage();
 
             HistoryTreatmentHistory = HasTreatmentRecords
-                ? "Completed treatment records are listed below."
+                ? $"Completed treatment records are listed below. Showing {HistoryTreatmentPageDisplay.ToLower()}."
                 : "No completed treatment records found.";
+        }
+
+        private void RefreshHistoryTreatmentPage()
+        {
+            HistoryTreatmentRecords.Clear();
+
+            if (!HasTreatmentRecords)
+            {
+                OnPropertyChanged(nameof(HistoryTreatmentPageDisplay));
+                OnPropertyChanged(nameof(CanGoToPreviousHistoryTreatmentPage));
+                OnPropertyChanged(nameof(CanGoToNextHistoryTreatmentPage));
+                return;
+            }
+
+            int skip = (HistoryTreatmentCurrentPage - 1) * HistoryTreatmentPageSize;
+
+            foreach (TreatmentRecordListItem treatmentRecord in allHistoryTreatmentRecords.Skip(skip).Take(HistoryTreatmentPageSize))
+                HistoryTreatmentRecords.Add(treatmentRecord);
+
+            HistoryTreatmentHistory = $"Completed treatment records are listed below. Showing {HistoryTreatmentPageDisplay.ToLower()}.";
+            OnPropertyChanged(nameof(HistoryTreatmentPageDisplay));
+            OnPropertyChanged(nameof(CanGoToPreviousHistoryTreatmentPage));
+            OnPropertyChanged(nameof(CanGoToNextHistoryTreatmentPage));
+        }
+
+        private void GoToPreviousHistoryTreatmentPage()
+        {
+            if (!CanGoToPreviousHistoryTreatmentPage)
+                return;
+
+            HistoryTreatmentCurrentPage--;
+            RefreshHistoryTreatmentPage();
+        }
+
+        private void GoToNextHistoryTreatmentPage()
+        {
+            if (!CanGoToNextHistoryTreatmentPage)
+                return;
+
+            HistoryTreatmentCurrentPage++;
+            RefreshHistoryTreatmentPage();
         }
 
         private string BuildMedicalBackgroundSummary(Patient patient)
@@ -931,7 +1076,10 @@ namespace CruzNeryClinic.ViewModels
             HistoryTreatmentHistory = string.Empty;
 
             HistoryTreatmentRecords.Clear();
+            allHistoryTreatmentRecords.Clear();
             HasTreatmentRecords = false;
+            HistoryTreatmentCurrentPage = 1;
+            HistoryTreatmentTotalPages = 1;
         }
 
         #endregion
@@ -955,6 +1103,12 @@ namespace CruzNeryClinic.ViewModels
             if (string.IsNullOrWhiteSpace(FormPhoneNumber))
             {
                 ShowPatientFormError("Contact number is required.");
+                return false;
+            }
+
+            if (!IsValidPatientContactNumber(FormPhoneNumber))
+            {
+                ShowPatientFormError("Contact number must be an 11-digit mobile number starting with 09.");
                 return false;
             }
 
@@ -1166,6 +1320,24 @@ namespace CruzNeryClinic.ViewModels
 
         private void ShowPatientFormError(string message)
         {
+            if (IsAddPatientOverlayOpen)
+            {
+                PatientFormErrorMessage = string.Empty;
+                HasPatientFormError = false;
+                AddPatientPromptMessage = message;
+                IsAddPatientPromptOpen = true;
+                return;
+            }
+
+            if (IsUpdatePatientOverlayOpen)
+            {
+                PatientFormErrorMessage = string.Empty;
+                HasPatientFormError = false;
+                UpdatePatientPromptMessage = message;
+                IsUpdatePatientPromptOpen = true;
+                return;
+            }
+
             PatientFormErrorMessage = message;
             HasPatientFormError = true;
         }
@@ -1174,6 +1346,36 @@ namespace CruzNeryClinic.ViewModels
         {
             PatientFormErrorMessage = string.Empty;
             HasPatientFormError = false;
+            AddPatientPromptMessage = string.Empty;
+            IsAddPatientPromptOpen = false;
+            UpdatePatientPromptMessage = string.Empty;
+            IsUpdatePatientPromptOpen = false;
+        }
+
+        private void CloseAddPatientPrompt()
+        {
+            AddPatientPromptMessage = string.Empty;
+            IsAddPatientPromptOpen = false;
+        }
+
+        private void CloseUpdatePatientPrompt()
+        {
+            UpdatePatientPromptMessage = string.Empty;
+            IsUpdatePatientPromptOpen = false;
+        }
+
+        private static string NormalizePatientContactNumber(string? contactNumber)
+        {
+            if (string.IsNullOrWhiteSpace(contactNumber))
+                return string.Empty;
+
+            string digitsOnly = Regex.Replace(contactNumber, @"\D", string.Empty);
+            return digitsOnly.Length > 11 ? digitsOnly[..11] : digitsOnly;
+        }
+
+        private static bool IsValidPatientContactNumber(string contactNumber)
+        {
+            return Regex.IsMatch(contactNumber.Trim(), @"^09\d{9}$");
         }
 
         #endregion
