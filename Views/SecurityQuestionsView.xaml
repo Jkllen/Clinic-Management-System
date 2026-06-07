@@ -131,7 +131,7 @@
 
                             <!-- Logo positioned top-left -->
                             <Image Grid.Column="0"
-                                Source="/Assets/Images/logo.png"
+                                Source="/Assets/Images/cruz-nery-logo.png"
                                 Width="150"
                                 Height="150"
                                 HorizontalAlignment="Left"
