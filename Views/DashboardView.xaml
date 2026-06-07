@@ -942,6 +942,9 @@
                                 FontSize="11"
                                 HorizontalScrollBarVisibility="Auto"
                                 VerticalScrollBarVisibility="Auto">
+                                <DataGrid.Resources>
+                                    <Style TargetType="{x:Type ScrollBar}" BasedOn="{StaticResource BlueDataGridScrollBarStyle}"/>
+                                </DataGrid.Resources>
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Timestamp"
                                                     Binding="{Binding Timestamp}"
