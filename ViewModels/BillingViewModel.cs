@@ -1011,7 +1011,8 @@ namespace CruzNeryClinic.ViewModels
                 "Restoration / Pasta",
                 "Extraction",
                 "Orthodontics",
-                "TMJ",
+                "Dental Crown",
+                "Fixed Bridge",
                 "Dentures",
                 "Other"
             };

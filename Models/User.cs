@@ -55,6 +55,8 @@ namespace CruzNeryClinic.Models
         // 1 in database means active, 0 means archived/deactivated.
         public bool IsActive { get; set; }
 
+        public int? CreatedByUserId { get; set; }
+
         public DateTime CreatedAt { get; set; }
 
         public DateTime? UpdatedAt { get; set; }

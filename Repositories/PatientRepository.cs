@@ -384,7 +384,10 @@ LIMIT 1;";
             DentistName,
             TreatmentDate,
             TreatmentTime,
-            TreatmentNotes
+            TreatmentNotes,
+            ServiceStage,
+            FollowUpDate,
+            TreatmentDetails
         FROM TreatmentRecords
         WHERE PatientId = @PatientId
         ORDER BY TreatmentDate DESC, TreatmentTime DESC, TreatmentRecordId DESC;";
@@ -395,7 +398,7 @@ LIMIT 1;";
 
             while (reader.Read())
             {
-                treatmentRecords.Add(new TreatmentRecordListItem
+                TreatmentRecordListItem treatmentRecord = new()
                 {
                     TreatmentRecordId = Convert.ToInt32(reader["TreatmentRecordId"]),
                     PatientId = Convert.ToInt32(reader["PatientId"]),
@@ -404,11 +407,45 @@ LIMIT 1;";
                     DentistName = reader["DentistName"]?.ToString() ?? "Unassigned",
                     TreatmentDate = ParseDate(reader["TreatmentDate"]?.ToString()),
                     TreatmentTime = ParseNullableTime(reader["TreatmentTime"]?.ToString()),
-                    TreatmentNotes = DecryptTreatmentNotes(reader["TreatmentNotes"]?.ToString())
-                });
+                    TreatmentNotes = DecryptTreatmentNotes(reader["TreatmentNotes"]?.ToString()),
+                    ServiceStage = SafeGetString(reader, "ServiceStage"),
+                    FollowUpDate = ParseNullableDate(reader["FollowUpDate"]?.ToString()),
+                    TreatmentDetails = reader["TreatmentDetails"]?.ToString() ?? string.Empty
+                };
+
+                treatmentRecords.Add(treatmentRecord);
             }
 
+            foreach (TreatmentRecordListItem treatmentRecord in treatmentRecords)
+                LoadTreatmentRecordImages(connection, treatmentRecord);
+
             return treatmentRecords;
+        }
+
+        private void LoadTreatmentRecordImages(SqliteConnection connection, TreatmentRecordListItem treatmentRecord)
+        {
+            if (!treatmentRecord.AppointmentId.HasValue)
+                return;
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+SELECT AppointmentImageId, FilePath
+FROM AppointmentImages
+WHERE AppointmentId = @AppointmentId
+ORDER BY AppointmentImageId DESC;";
+
+            command.Parameters.AddWithValue("@AppointmentId", treatmentRecord.AppointmentId.Value);
+
+            using SqliteDataReader reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                treatmentRecord.TeethImages.Add(new AppointmentImageItem
+                {
+                    AppointmentImageId = Convert.ToInt32(reader["AppointmentImageId"]),
+                    FilePath = reader["FilePath"]?.ToString() ?? string.Empty
+                });
+            }
         }
 
         #endregion

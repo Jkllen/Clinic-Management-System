@@ -202,8 +202,8 @@ namespace CruzNeryClinic.ViewModels
         {
             Microsoft.Win32.OpenFileDialog dialog = new()
             {
-                Title = "Select Cruz-Nery backup file",
-                Filter = "Cruz-Nery Backup Files (*.cnbak)|*.cnbak|All Files (*.*)|*.*",
+                Title = "Select Dental Clinic Management System backup file",
+                Filter = "Dental Clinic Management System Backup Files (*.cnbak)|*.cnbak|All Files (*.*)|*.*",
                 CheckFileExists = true,
                 Multiselect = false
             };

@@ -52,6 +52,12 @@ namespace CruzNeryClinic.Views.UserManagement
             {
                 ClearUpdatePasswordBoxes();
             }
+
+            if (e.PropertyName == nameof(UserManagementViewModel.IsAdminPasswordPromptVisible) &&
+                !currentViewModel.IsAdminPasswordPromptVisible)
+            {
+                ClearUpdateAdminPasswordBox();
+            }
         }
 
         private void UpdateOldPasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
@@ -84,6 +90,17 @@ namespace CruzNeryClinic.Views.UserManagement
             if (DataContext is UserManagementViewModel viewModel)
             {
                 viewModel.UpdateConfirmNewPassword = UpdateConfirmNewPasswordBox.Password;
+            }
+        }
+
+        private void UpdateAdminPasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
+        {
+            if (isPasswordSyncing)
+                return;
+
+            if (DataContext is UserManagementViewModel viewModel)
+            {
+                viewModel.UpdateAdminPassword = UpdateAdminPasswordBox.Password;
             }
         }
 
@@ -120,6 +137,17 @@ namespace CruzNeryClinic.Views.UserManagement
             }
         }
 
+        private void UpdateAdminPasswordTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (isPasswordSyncing)
+                return;
+
+            if (sender is TextBox textBox)
+            {
+                SyncPasswordBox(UpdateAdminPasswordBox, textBox.Text);
+            }
+        }
+
         private void SyncPasswordBox(PasswordBox passwordBox, string value)
         {
             isPasswordSyncing = true;
@@ -146,6 +174,21 @@ namespace CruzNeryClinic.Views.UserManagement
                 UpdateOldPasswordBox.Password = string.Empty;
                 UpdateNewPasswordBox.Password = string.Empty;
                 UpdateConfirmNewPasswordBox.Password = string.Empty;
+                UpdateAdminPasswordBox.Password = string.Empty;
+            }
+            finally
+            {
+                isPasswordSyncing = false;
+            }
+        }
+
+        private void ClearUpdateAdminPasswordBox()
+        {
+            isPasswordSyncing = true;
+
+            try
+            {
+                UpdateAdminPasswordBox.Password = string.Empty;
             }
             finally
             {

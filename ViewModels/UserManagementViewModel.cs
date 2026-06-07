@@ -79,6 +79,8 @@ namespace CruzNeryClinic.ViewModels
 
         // Update User overlay state.
         private bool isUpdateUserOverlayOpen;
+        private bool isUserDetailsOverlayOpen;
+        private UserListItem? selectedUserDetails;
         private int updateUserCurrentTab = 1;
         private bool isUpdateSuccessPromptVisible;
 
@@ -95,10 +97,13 @@ namespace CruzNeryClinic.ViewModels
         private string updateOldPassword = string.Empty;
         private string updateNewPassword = string.Empty;
         private string updateConfirmNewPassword = string.Empty;
+        private string updateAdminPassword = string.Empty;
 
         private bool isUpdateOldPasswordVisible;
         private bool isUpdateNewPasswordVisible;
         private bool isUpdateConfirmNewPasswordVisible;
+        private bool isUpdateAdminPasswordVisible;
+        private bool isAdminPasswordPromptVisible;
 
         // Update security question fields.
         private SecurityQuestion? updateSelectedSecurityQuestion1;
@@ -160,6 +165,7 @@ namespace CruzNeryClinic.ViewModels
 
             LoadUsersCommand = new RelayCommand(LoadUsers);
             AddNewUserCommand = new RelayCommand(OpenAddUserOverlay);
+            ViewUserDetailsCommand = new RelayCommand<UserListItem>(OpenUserDetailsOverlay);
             UpdateUserCommand = new RelayCommand<UserListItem>(OpenUpdateUser);
             ArchiveUserCommand = new RelayCommand<UserListItem>(ArchiveUser);
             RestoreUserCommand = new RelayCommand<UserListItem>(RestoreUser);
@@ -188,6 +194,7 @@ namespace CruzNeryClinic.ViewModels
             });
 
             CloseUpdateUserOverlayCommand = new RelayCommand(CloseUpdateUserOverlay);
+            CloseUserDetailsCommand = new RelayCommand(CloseUserDetailsOverlay);
 
             ShowUpdateAccountInfoTabCommand = new RelayCommand(() => UpdateUserCurrentTab = 1);
             ShowUpdatePasswordTabCommand = new RelayCommand(() => UpdateUserCurrentTab = 2);
@@ -196,6 +203,8 @@ namespace CruzNeryClinic.ViewModels
             SaveUpdateAccountInfoCommand = new RelayCommand(SaveUpdateAccountInfo);
             SaveUpdatePasswordCommand = new RelayCommand(SaveUpdatePassword);
             SaveUpdateSecurityCommand = new RelayCommand(SaveUpdateSecurity);
+            ConfirmUpdatePasswordWithAdminCommand = new RelayCommand(ConfirmUpdatePasswordWithAdmin);
+            CancelAdminPasswordPromptCommand = new RelayCommand(CancelAdminPasswordPrompt);
 
             CloseUpdateSuccessPromptCommand = new RelayCommand(() =>
             {
@@ -215,6 +224,11 @@ namespace CruzNeryClinic.ViewModels
             ToggleUpdateConfirmNewPasswordVisibilityCommand = new RelayCommand(() =>
             {
                 IsUpdateConfirmNewPasswordVisible = !IsUpdateConfirmNewPasswordVisible;
+            });
+
+            ToggleUpdateAdminPasswordVisibilityCommand = new RelayCommand(() =>
+            {
+                IsUpdateAdminPasswordVisible = !IsUpdateAdminPasswordVisible;
             });
 
             LoadUsers();
@@ -333,6 +347,18 @@ namespace CruzNeryClinic.ViewModels
         {
             get => isUpdateUserOverlayOpen;
             set => SetProperty(ref isUpdateUserOverlayOpen, value);
+        }
+
+        public bool IsUserDetailsOverlayOpen
+        {
+            get => isUserDetailsOverlayOpen;
+            set => SetProperty(ref isUserDetailsOverlayOpen, value);
+        }
+
+        public UserListItem? SelectedUserDetails
+        {
+            get => selectedUserDetails;
+            set => SetProperty(ref selectedUserDetails, value);
         }
 
         public int UpdateUserCurrentTab
@@ -465,6 +491,24 @@ namespace CruzNeryClinic.ViewModels
         public bool IsUpdateOldPasswordEmpty => string.IsNullOrEmpty(UpdateOldPassword);
         public bool IsUpdateNewPasswordEmpty => string.IsNullOrEmpty(UpdateNewPassword);
         public bool IsUpdateConfirmNewPasswordEmpty => string.IsNullOrEmpty(UpdateConfirmNewPassword);
+        public bool IsUpdateAdminPasswordEmpty => string.IsNullOrEmpty(UpdateAdminPassword);
+
+        public string UpdateAdminPassword
+        {
+            get => updateAdminPassword;
+            set
+            {
+                SetProperty(ref updateAdminPassword, value);
+                ClearUpdateUserError();
+                OnPropertyChanged(nameof(IsUpdateAdminPasswordEmpty));
+            }
+        }
+
+        public bool IsAdminPasswordPromptVisible
+        {
+            get => isAdminPasswordPromptVisible;
+            set => SetProperty(ref isAdminPasswordPromptVisible, value);
+        }
 
         public bool IsUpdateOldPasswordVisible
         {
@@ -511,9 +555,23 @@ namespace CruzNeryClinic.ViewModels
 
         public bool IsUpdateConfirmNewPasswordHidden => !IsUpdateConfirmNewPasswordVisible;
 
+        public bool IsUpdateAdminPasswordVisible
+        {
+            get => isUpdateAdminPasswordVisible;
+            set
+            {
+                SetProperty(ref isUpdateAdminPasswordVisible, value);
+                OnPropertyChanged(nameof(IsUpdateAdminPasswordHidden));
+                OnPropertyChanged(nameof(UpdateAdminPasswordEyeIcon));
+            }
+        }
+
+        public bool IsUpdateAdminPasswordHidden => !IsUpdateAdminPasswordVisible;
+
         public string UpdateOldPasswordEyeIcon => IsUpdateOldPasswordVisible ? "Eye" : "EyeSlash";
         public string UpdateNewPasswordEyeIcon => IsUpdateNewPasswordVisible ? "Eye" : "EyeSlash";
         public string UpdateConfirmNewPasswordEyeIcon => IsUpdateConfirmNewPasswordVisible ? "Eye" : "EyeSlash";
+        public string UpdateAdminPasswordEyeIcon => IsUpdateAdminPasswordVisible ? "Eye" : "EyeSlash";
 
         // Compatibility aliases for the Update Password XAML.
         // These exist because some XAML bindings use the shorter "ConfirmPassword" name.
@@ -944,6 +1002,8 @@ namespace CruzNeryClinic.ViewModels
 
         public ICommand AddNewUserCommand { get; }
 
+        public ICommand ViewUserDetailsCommand { get; }
+
         public ICommand UpdateUserCommand { get; }
 
         public ICommand ArchiveUserCommand { get; }
@@ -966,6 +1026,8 @@ namespace CruzNeryClinic.ViewModels
 
         public ICommand CloseUpdateUserOverlayCommand { get; }
 
+        public ICommand CloseUserDetailsCommand { get; }
+
         public ICommand ShowUpdateAccountInfoTabCommand { get; }
 
         public ICommand ShowUpdatePasswordTabCommand { get; }
@@ -978,12 +1040,17 @@ namespace CruzNeryClinic.ViewModels
 
         public ICommand SaveUpdateSecurityCommand { get; }
 
+        public ICommand ConfirmUpdatePasswordWithAdminCommand { get; }
+
+        public ICommand CancelAdminPasswordPromptCommand { get; }
+
         public ICommand CloseUpdateSuccessPromptCommand { get; }
 
         public ICommand ToggleUpdateOldPasswordVisibilityCommand { get; }
 
         public ICommand ToggleUpdateNewPasswordVisibilityCommand { get; }
         public ICommand ToggleUpdateConfirmNewPasswordVisibilityCommand { get; }
+        public ICommand ToggleUpdateAdminPasswordVisibilityCommand { get; }
         // Compatibility alias for XAML that uses the shorter command name.
         public ICommand ToggleUpdateConfirmPasswordVisibilityCommand =>
             ToggleUpdateConfirmNewPasswordVisibilityCommand;
@@ -1003,11 +1070,14 @@ namespace CruzNeryClinic.ViewModels
                 AdministratorCount = userRepository.CountAdmins();
                 StaffCount = userRepository.CountStaff();
 
+                List<User> loadedUsers = userRepository.GetAllUsers(includeArchived: true);
+                Dictionary<int, string> creatorNames = loadedUsers.ToDictionary(user => user.UserId, user => $"{user.UserCode} - {user.FullName}");
+
                 allUserItems.Clear();
 
-                foreach (User user in userRepository.GetAllUsers(includeArchived: true))
+                foreach (User user in loadedUsers)
                 {
-                    allUserItems.Add(ConvertToUserListItem(user));
+                    allUserItems.Add(ConvertToUserListItem(user, creatorNames));
                 }
 
                 RefreshUsersView();
@@ -1095,9 +1165,13 @@ namespace CruzNeryClinic.ViewModels
                     ? userRepository.GetAllUsers(includeArchived: false)
                     : userRepository.SearchUsers(SearchText);
 
+                Dictionary<int, string> creatorNames = userRepository
+                    .GetAllUsers(includeArchived: true)
+                    .ToDictionary(user => user.UserId, user => $"{user.UserCode} - {user.FullName}");
+
                 foreach (User user in results)
                 {
-                    Users.Add(ConvertToUserListItem(user));
+                    Users.Add(ConvertToUserListItem(user, creatorNames));
                 }
             }
             catch (Exception ex)
@@ -1121,6 +1195,36 @@ namespace CruzNeryClinic.ViewModels
             {
                 ShowError($"Failed to load security questions: {ex.Message}");
             }
+        }
+
+        #endregion
+
+        #region View User Details
+
+        private void OpenUserDetailsOverlay(UserListItem? user)
+        {
+            if (user == null)
+                return;
+
+            SelectedUserDetails = user;
+            IsUserDetailsOverlayOpen = true;
+        }
+
+        public void OpenUserDetailsFromSearchKey(string searchKey)
+        {
+            SearchText = searchKey;
+
+            UserListItem? user = Users.FirstOrDefault(item =>
+                item.UserCode.Equals(searchKey, StringComparison.OrdinalIgnoreCase));
+
+            if (user != null)
+                OpenUserDetailsOverlay(user);
+        }
+
+        private void CloseUserDetailsOverlay()
+        {
+            IsUserDetailsOverlayOpen = false;
+            SelectedUserDetails = null;
         }
 
         #endregion
@@ -1352,12 +1456,6 @@ namespace CruzNeryClinic.ViewModels
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(UpdateOldPassword))
-            {
-                ShowUpdateUserError("Old password is required.");
-                return;
-            }
-
             if (!IsStrongPassword(UpdateNewPassword))
             {
                 ShowUpdateUserError("Password must contain at least 12 characters, uppercase, lowercase, number, and special character.");
@@ -1376,19 +1474,61 @@ namespace CruzNeryClinic.ViewModels
                 return;
             }
 
+            if (SessionService.CurrentUser.Role != "Admin")
+            {
+                ShowUpdateUserError("Only an admin can authorize password changes.");
+                return;
+            }
+
             bool confirmed = ConfirmUpdateAction(
                 "Confirm Password Change",
-                $"Are you sure you want to change {userBeingUpdated.FirstName} {userBeingUpdated.LastName}'s password?"
+                $"Are you sure you want to change {userBeingUpdated.FirstName} {userBeingUpdated.LastName}'s password? You will be asked for the admin password next."
             );
 
             if (!confirmed)
                 return;
 
+            UpdateAdminPassword = string.Empty;
+            IsUpdateAdminPasswordVisible = false;
+            IsAdminPasswordPromptVisible = true;
+        }
+
+        private void ConfirmUpdatePasswordWithAdmin()
+        {
+            if (userBeingUpdated == null)
+            {
+                ShowUpdateUserError("No user was selected.");
+                IsAdminPasswordPromptVisible = false;
+                return;
+            }
+
+            if (SessionService.CurrentUser == null)
+            {
+                ShowUpdateUserError("No logged-in user was found.");
+                IsAdminPasswordPromptVisible = false;
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(UpdateAdminPassword))
+            {
+                ShowUpdateUserError("Admin password is required.");
+                return;
+            }
+
             try
             {
+                bool adminPasswordCorrect = userRepository.VerifyUserPassword(
+                    SessionService.CurrentUser.UserId,
+                    UpdateAdminPassword);
+
+                if (!adminPasswordCorrect)
+                {
+                    ShowUpdateUserError("Admin password is incorrect.");
+                    return;
+                }
+
                 userRepository.ChangeUserPasswordFromManagement(
                     userBeingUpdated.UserId,
-                    UpdateOldPassword,
                     UpdateNewPassword,
                     SessionService.CurrentUser.UserId,
                     SessionService.CurrentUser.UserCode,
@@ -1400,11 +1540,19 @@ namespace CruzNeryClinic.ViewModels
                 IsUpdateSuccessPromptVisible = true;
 
                 ResetUpdatePasswordFields();
+                IsAdminPasswordPromptVisible = false;
             }
             catch (Exception ex)
             {
                 ShowUpdateUserError($"Failed to change password: {ex.Message}");
             }
+        }
+
+        private void CancelAdminPasswordPrompt()
+        {
+            IsAdminPasswordPromptVisible = false;
+            UpdateAdminPassword = string.Empty;
+            IsUpdateAdminPasswordVisible = false;
         }
 
         private void SaveUpdateSecurity()
@@ -1819,8 +1967,18 @@ namespace CruzNeryClinic.ViewModels
             OnPropertyChanged(nameof(SelectedQuestionText3));
         }
 
-        private UserListItem ConvertToUserListItem(User user)
+        private UserListItem ConvertToUserListItem(User user, Dictionary<int, string>? creatorNames = null)
         {
+            string createdByDisplay = "System / Existing Data";
+
+            if (user.CreatedByUserId.HasValue &&
+                creatorNames != null &&
+                creatorNames.TryGetValue(user.CreatedByUserId.Value, out string? creatorName) &&
+                !string.IsNullOrWhiteSpace(creatorName))
+            {
+                createdByDisplay = creatorName;
+            }
+
             return new UserListItem
             {
                 UserId = user.UserId,
@@ -1829,8 +1987,14 @@ namespace CruzNeryClinic.ViewModels
                 MiddleName = user.MiddleName,
                 FirstName = user.FirstName,
                 ContactNumber = user.ContactNumber,
+                Username = user.Username,
                 Role = user.Role,
-                IsActive = user.IsActive
+                IsActive = user.IsActive,
+                CreatedByUserId = user.CreatedByUserId,
+                CreatedByDisplay = createdByDisplay,
+                CreatedAt = user.CreatedAt,
+                UpdatedAt = user.UpdatedAt,
+                LastLoginAt = user.LastLoginAt
             };
         }
 
@@ -1863,10 +2027,13 @@ namespace CruzNeryClinic.ViewModels
             UpdateOldPassword = string.Empty;
             UpdateNewPassword = string.Empty;
             UpdateConfirmNewPassword = string.Empty;
+            UpdateAdminPassword = string.Empty;
 
             IsUpdateOldPasswordVisible = false;
             IsUpdateNewPasswordVisible = false;
             IsUpdateConfirmNewPasswordVisible = false;
+            IsUpdateAdminPasswordVisible = false;
+            IsAdminPasswordPromptVisible = false;
         }
 
         private void ResetUpdateSecurityFields()

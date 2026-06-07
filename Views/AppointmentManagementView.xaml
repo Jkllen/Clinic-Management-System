@@ -406,77 +406,78 @@
 
             <Grid Grid.Row="2" Margin="0,12,0,0">
                 <Grid.ColumnDefinitions>
-                    <!-- Search flexes; everything else sizes to content so the
-                         buttons stay on-screen regardless of window width. -->
-                    <ColumnDefinition Width="*" MinWidth="150" />
-                    <ColumnDefinition Width="12" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="10" />
-                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="16" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <Grid
+                <StackPanel
                     Grid.Column="0"
-                    Height="52"
-                    VerticalAlignment="Center">
-                    <TextBox Style="{StaticResource SearchTextBoxStyle}" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+                    ClipToBounds="True"
+                    HorizontalAlignment="Left"
+                    Orientation="Horizontal">
 
-                    <TextBlock
-                        Margin="51,0,0,0"
-                        VerticalAlignment="Center"
-                        FontSize="18"
-                        Foreground="#8A8A8A"
-                        IsHitTestVisible="False"
-                        Text="Search">
+                    <Grid
+                        Width="230"
+                        Height="52"
+                        VerticalAlignment="Center">
+                        <TextBox Style="{StaticResource SearchTextBoxStyle}" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
 
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Visibility" Value="Collapsed" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding SearchText}" Value="">
-                                        <Setter Property="Visibility" Value="Visible" />
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding SearchText}" Value="{x:Null}">
-                                        <Setter Property="Visibility" Value="Visible" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
+                        <TextBlock
+                            Margin="51,0,0,0"
+                            VerticalAlignment="Center"
+                            FontSize="18"
+                            Foreground="#8A8A8A"
+                            IsHitTestVisible="False"
+                            Text="Search">
 
-                    <fa:IconBlock
-                        Margin="18,0,0,0"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Center"
-                        FontSize="20"
-                        Foreground="Black"
-                        Icon="Search" />
-                </Grid>
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SearchText}" Value="">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding SearchText}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
 
-                <ComboBox
-                    Grid.Column="2"
-                    Width="160"
-                    Height="42"
-                    FontSize="15"
-                    ItemsSource="{Binding FilterOptions}"
-                    SelectedItem="{Binding SelectedFilterOption, Mode=TwoWay}"
-                    Style="{StaticResource ExactStyleComboBox}"
-                    Tag="Filter" />
+                        <fa:IconBlock
+                            Margin="18,0,0,0"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            FontSize="20"
+                            Foreground="Black"
+                            Icon="Search" />
+                    </Grid>
 
-                <ComboBox
-                    Grid.Column="4"
-                    Width="160"
-                    Height="42"
-                    FontSize="15"
-                    ItemsSource="{Binding SortOptions}"
-                    SelectedItem="{Binding SelectedSortOption, Mode=TwoWay}"
-                    Style="{StaticResource ExactStyleComboBox}"
-                    Tag="Sort By" />
+                    <ComboBox
+                        Width="230"
+                        Height="42"
+                        Margin="12,0,0,0"
+                        FontSize="15"
+                        ItemsSource="{Binding FilterOptions}"
+                        SelectedItem="{Binding SelectedFilterOption, Mode=TwoWay}"
+                        Style="{StaticResource ExactStyleComboBox}"
+                        Tag="Filter" />
+
+                    <ComboBox
+                        Width="160"
+                        Height="42"
+                        Margin="10,0,0,0"
+                        FontSize="15"
+                        ItemsSource="{Binding SortOptions}"
+                        SelectedItem="{Binding SelectedSortOption, Mode=TwoWay}"
+                        Style="{StaticResource ExactStyleComboBox}"
+                        Tag="Sort By" />
+                </StackPanel>
 
                 <StackPanel
-                    Grid.Column="6"
+                    Grid.Column="2"
                     HorizontalAlignment="Right"
                     Orientation="Horizontal">
 
@@ -643,12 +644,12 @@
                                 </DataGridTemplateColumn>
 
                                 <DataGridTemplateColumn
-                                    Width="4.2*"
-                                    MinWidth="520"
+                                    Width="Auto"
+                                    MinWidth="90"
                                     Header="Actions">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                            <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
 
                                                 <Button
                                                     Width="65"
@@ -977,26 +978,50 @@
             <Border
                 Width="820"
                 MaxHeight="760"
-                Padding="32"
+                Padding="32,28,32,32"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 Background="White"
                 CornerRadius="24">
 
+                <DockPanel LastChildFill="True">
+                    <Grid DockPanel.Dock="Top" Margin="0,0,0,22">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock
+                                FontSize="26"
+                                FontWeight="Bold"
+                                Foreground="#111111"
+                                Text="Appointment Details" />
+
+                            <TextBlock
+                                Margin="0,4,0,0"
+                                FontSize="15"
+                                Foreground="#777777"
+                                Text="View full appointment, queue, and patient alert information." />
+                        </StackPanel>
+
+                        <Button
+                            Grid.Column="1"
+                            Width="36"
+                            Height="36"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Command="{Binding CloseAppointmentDetailsCommand}"
+                            Cursor="Hand">
+                            <fa:IconBlock
+                                FontSize="18"
+                                Foreground="#555555"
+                                Icon="Times" />
+                        </Button>
+                    </Grid>
+
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel>
-                        <TextBlock
-                            FontSize="26"
-                            FontWeight="Bold"
-                            Foreground="#111111"
-                            Text="Appointment Details" />
-
-                        <TextBlock
-                            Margin="0,4,0,22"
-                            FontSize="15"
-                            Foreground="#777777"
-                            Text="View full appointment, queue, and patient alert information." />
-
                         <!-- Patient Information -->
                         <TextBlock
                             Margin="0,0,0,12"
@@ -1070,6 +1095,8 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="14" />
                                 <RowDefinition Height="Auto" />
+                                <RowDefinition Height="14" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
 
                             <StackPanel Grid.Row="0" Grid.Column="0">
@@ -1113,7 +1140,95 @@
                                     Style="{StaticResource AppointmentReadOnlyTextBoxStyle}"
                                     Text="{Binding SelectedAppointmentDetails.Status, Mode=OneWay}" />
                             </StackPanel>
+
+                            <StackPanel Grid.Row="6" Grid.Column="0">
+                                <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Treatment Step" />
+                                <TextBox
+                                    Style="{StaticResource AppointmentReadOnlyTextBoxStyle}"
+                                    Text="{Binding SelectedAppointmentDetails.ServiceStageDisplay, Mode=OneWay}" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="6" Grid.Column="2">
+                                <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Return Date / Next Step" />
+                                <TextBox
+                                    Style="{StaticResource AppointmentReadOnlyTextBoxStyle}"
+                                    Text="{Binding SelectedAppointmentDetails.FollowUpDateDisplay, Mode=OneWay}" />
+                            </StackPanel>
                         </Grid>
+
+                        <TextBlock
+                            Margin="0,18,0,8"
+                            FontSize="18"
+                            FontWeight="Bold"
+                            Foreground="#223357"
+                            Text="Treatment Details" />
+
+                        <TextBox
+                            Height="95"
+                            IsReadOnly="True"
+                            AcceptsReturn="True"
+                            TextWrapping="Wrap"
+                            VerticalScrollBarVisibility="Auto"
+                            Style="{StaticResource AppointmentOverlayTextAreaStyle}"
+                            Text="{Binding SelectedAppointmentDetails.TreatmentDetailsDisplay, Mode=OneWay}" />
+
+                        <StackPanel Margin="0,14,0,0" Visibility="{Binding SelectedAppointmentDetails.HasSelectedTeeth, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Teeth Involved Chart" />
+
+                            <ItemsControl ItemsSource="{Binding SelectedAppointmentDetails.ToothChart}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <UniformGrid Columns="16" Rows="2" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border
+                                            Width="36"
+                                            Height="44"
+                                            Margin="2"
+                                            CornerRadius="6"
+                                            >
+
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="#F8FBFF" />
+                                                    <Setter Property="BorderBrush" Value="#D7E3E4" />
+                                                    <Setter Property="BorderThickness" Value="1" />
+                                                    <Setter Property="Opacity" Value="0.45" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                            <Setter Property="Background" Value="#CFF4EF" />
+                                                            <Setter Property="BorderBrush" Value="#073C98" />
+                                                            <Setter Property="BorderThickness" Value="2" />
+                                                            <Setter Property="Opacity" Value="1" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+
+                                            <Grid>
+                                                <fa:IconBlock
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    FontSize="30"
+                                                    Foreground="#2E7E82"
+                                                    Icon="Tooth" />
+                                                <TextBlock
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Top"
+                                                    Margin="0,4,0,0"
+                                                    FontSize="12"
+                                                    FontWeight="Bold"
+                                                    Foreground="White"
+                                                    Text="{Binding DisplayText}" />
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
 
                         <!-- Queue / Timeline -->
                         <TextBlock
@@ -1286,8 +1401,9 @@
                             Content="Close"
                             Foreground="White"
                             Style="{StaticResource SecondaryButtonStyle}" />
-                    </StackPanel>
+                        </StackPanel>
                 </ScrollViewer>
+                </DockPanel>
             </Border>
         </Grid>
 

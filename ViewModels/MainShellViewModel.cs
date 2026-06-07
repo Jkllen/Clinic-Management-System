@@ -160,13 +160,13 @@ namespace CruzNeryClinic.ViewModels
             {
                 case "Patients":
                     PatientManagementViewModel patientViewModel = new();
-                    patientViewModel.SearchText = searchKey;
+                    patientViewModel.OpenPatientHistoryFromSearchKey(searchKey);
                     CurrentModuleView = new PatientManagementView { DataContext = patientViewModel };
                     break;
 
                 case "ManageUsers":
                     UserManagementViewModel userViewModel = new();
-                    userViewModel.SearchText = searchKey;
+                    userViewModel.OpenUserDetailsFromSearchKey(searchKey);
                     CurrentModuleView = new UserManagementView { DataContext = userViewModel };
                     break;
 

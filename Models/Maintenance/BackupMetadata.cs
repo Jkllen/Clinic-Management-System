@@ -6,7 +6,7 @@ namespace CruzNeryClinic.Models.Maintenance
     {
         public string BackupId { get; set; } = Guid.NewGuid().ToString();
 
-        public string AppName { get; set; } = "Cruz-Nery Dental Clinic Management System";
+        public string AppName { get; set; } = "Dental Clinic Management System";
 
         public string BackupType { get; set; } = "Manual";
 
