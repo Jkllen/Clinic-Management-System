@@ -89,20 +89,20 @@
     </UserControl.Resources>
 
     <Grid Background="#FAF9F6">
-        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-
-            <ScrollViewer.Resources>
-                <Style BasedOn="{StaticResource BlueDataGridScrollBarStyle}" TargetType="{x:Type ScrollBar}" />
-            </ScrollViewer.Resources>
-
-            <StackPanel Margin="28,14,28,20">
+        <Grid Margin="28,14,28,20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
 
                 <!--
                     =====================================================
                     PAGE HEADER
                     =====================================================
                 -->
-                <StackPanel>
+                <StackPanel Grid.Row="0">
                     <TextBlock
                         FontSize="30"
                         FontWeight="Bold"
@@ -127,7 +127,7 @@
                     TOP STAT CARDS
                     =====================================================
                 -->
-                <Grid Margin="0,15,0,0">
+                <Grid Grid.Row="1" Margin="0,15,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="28" />
@@ -254,7 +254,7 @@
                     CONFIGURATION + MANUAL BACKUP RESTORE
                     =====================================================
                 -->
-                <Grid Margin="0,15,0,0">
+                <Grid Grid.Row="2" Margin="0,15,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="1.08*" />
                         <ColumnDefinition Width="28" />
@@ -629,6 +629,7 @@
                     =====================================================
                 -->
                 <Border
+                    Grid.Row="3"
                     MinHeight="260"
                     Margin="0,18,0,0"
                     Style="{StaticResource MaintenanceSectionCardStyle}">
@@ -637,7 +638,7 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="15" />
-                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
 
                         <TextBlock
@@ -649,7 +650,6 @@
 
                             <DataGrid
                                 Grid.Row="2"
-                                MaxHeight="320"
                                 AutoGenerateColumns="False"
                                 CanUserAddRows="False"
                                 CanUserDeleteRows="False"
@@ -770,8 +770,7 @@
                     
                     </Grid>
                 </Border>
-            </StackPanel>
-        </ScrollViewer>
+        </Grid>
 
         <!--
             =====================================================
