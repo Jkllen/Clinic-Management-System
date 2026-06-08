@@ -12,6 +12,9 @@ namespace CruzNeryClinic.ViewModels
 {
     public class InventoryViewModel : BaseViewModel
     {
+        // Number of rows shown per page in the usage / restock history overlays.
+        private const int HistoryPageSize = 10;
+
         // ── Summary counts ───────────────────────────────────────────────────
 
         private int _totalItems;
@@ -220,6 +223,7 @@ namespace CruzNeryClinic.ViewModels
         }
 
         private List<RecentItemUsage> _allUsageHistory = new();
+        private List<RecentItemUsage> _usageFiltered = new();
         public ObservableCollection<RecentItemUsage> UsageHistoryItems { get; } = new();
 
         private string _usageHistorySearch = "";
@@ -229,16 +233,57 @@ namespace CruzNeryClinic.ViewModels
             set { if (SetProperty(ref _usageHistorySearch, value)) ApplyUsageHistoryFilter(); }
         }
 
+        // ── Usage history pagination (HistoryPageSize rows per page) ──────────
+        private int _usagePage = 1;
+        public int UsagePage
+        {
+            get => _usagePage;
+            private set { if (SetProperty(ref _usagePage, value)) OnPropertyChanged(nameof(UsagePageInfo)); }
+        }
+
+        public int UsageTotalPages =>
+            Math.Max(1, (int)Math.Ceiling(_usageFiltered.Count / (double)HistoryPageSize));
+
+        public string UsagePageInfo => $"Page {UsagePage} of {UsageTotalPages}";
+
+        public bool UsageHasMultiplePages => _usageFiltered.Count > HistoryPageSize;
+
         private void ApplyUsageHistoryFilter()
         {
-            UsageHistoryItems.Clear();
             var q = UsageHistorySearch.Trim();
-            var view = string.IsNullOrWhiteSpace(q)
+            _usageFiltered = (string.IsNullOrWhiteSpace(q)
                 ? _allUsageHistory
                 : _allUsageHistory.Where(u =>
                     u.ItemId.Contains(q, StringComparison.OrdinalIgnoreCase) ||
-                    u.ItemName.Contains(q, StringComparison.OrdinalIgnoreCase));
-            foreach (var u in view) UsageHistoryItems.Add(u);
+                    u.ItemName.Contains(q, StringComparison.OrdinalIgnoreCase))).ToList();
+
+            UsagePage = 1;
+            RefreshUsagePage();
+        }
+
+        private void RefreshUsagePage()
+        {
+            if (UsagePage > UsageTotalPages) UsagePage = UsageTotalPages;
+
+            UsageHistoryItems.Clear();
+            foreach (var u in _usageFiltered.Skip((UsagePage - 1) * HistoryPageSize).Take(HistoryPageSize))
+                UsageHistoryItems.Add(u);
+
+            OnPropertyChanged(nameof(UsageTotalPages));
+            OnPropertyChanged(nameof(UsagePageInfo));
+            OnPropertyChanged(nameof(UsageHasMultiplePages));
+            UsageNextPageCommand.NotifyCanExecuteChanged();
+            UsagePrevPageCommand.NotifyCanExecuteChanged();
+        }
+
+        private void UsageNextPage()
+        {
+            if (UsagePage < UsageTotalPages) { UsagePage++; RefreshUsagePage(); }
+        }
+
+        private void UsagePrevPage()
+        {
+            if (UsagePage > 1) { UsagePage--; RefreshUsagePage(); }
         }
 
         // ── Restock History overlay ──────────────────────────────────────────
@@ -251,6 +296,7 @@ namespace CruzNeryClinic.ViewModels
         }
 
         private List<RecentRestockItem> _allRestockHistory = new();
+        private List<RecentRestockItem> _restockFiltered = new();
         public ObservableCollection<RecentRestockItem> RestockHistoryItems { get; } = new();
 
         private string _restockHistorySearch = "";
@@ -260,16 +306,57 @@ namespace CruzNeryClinic.ViewModels
             set { if (SetProperty(ref _restockHistorySearch, value)) ApplyRestockHistoryFilter(); }
         }
 
+        // ── Restock history pagination (HistoryPageSize rows per page) ────────
+        private int _restockPage = 1;
+        public int RestockPage
+        {
+            get => _restockPage;
+            private set { if (SetProperty(ref _restockPage, value)) OnPropertyChanged(nameof(RestockPageInfo)); }
+        }
+
+        public int RestockTotalPages =>
+            Math.Max(1, (int)Math.Ceiling(_restockFiltered.Count / (double)HistoryPageSize));
+
+        public string RestockPageInfo => $"Page {RestockPage} of {RestockTotalPages}";
+
+        public bool RestockHasMultiplePages => _restockFiltered.Count > HistoryPageSize;
+
         private void ApplyRestockHistoryFilter()
         {
-            RestockHistoryItems.Clear();
             var q = RestockHistorySearch.Trim();
-            var view = string.IsNullOrWhiteSpace(q)
+            _restockFiltered = (string.IsNullOrWhiteSpace(q)
                 ? _allRestockHistory
                 : _allRestockHistory.Where(r =>
                     r.ItemId.Contains(q, StringComparison.OrdinalIgnoreCase) ||
-                    r.ItemName.Contains(q, StringComparison.OrdinalIgnoreCase));
-            foreach (var r in view) RestockHistoryItems.Add(r);
+                    r.ItemName.Contains(q, StringComparison.OrdinalIgnoreCase))).ToList();
+
+            RestockPage = 1;
+            RefreshRestockPage();
+        }
+
+        private void RefreshRestockPage()
+        {
+            if (RestockPage > RestockTotalPages) RestockPage = RestockTotalPages;
+
+            RestockHistoryItems.Clear();
+            foreach (var r in _restockFiltered.Skip((RestockPage - 1) * HistoryPageSize).Take(HistoryPageSize))
+                RestockHistoryItems.Add(r);
+
+            OnPropertyChanged(nameof(RestockTotalPages));
+            OnPropertyChanged(nameof(RestockPageInfo));
+            OnPropertyChanged(nameof(RestockHasMultiplePages));
+            RestockNextPageCommand.NotifyCanExecuteChanged();
+            RestockPrevPageCommand.NotifyCanExecuteChanged();
+        }
+
+        private void RestockNextPage()
+        {
+            if (RestockPage < RestockTotalPages) { RestockPage++; RefreshRestockPage(); }
+        }
+
+        private void RestockPrevPage()
+        {
+            if (RestockPage > 1) { RestockPage--; RefreshRestockPage(); }
         }
 
         // ── View Item overlay ────────────────────────────────────────────────
@@ -366,6 +453,10 @@ namespace CruzNeryClinic.ViewModels
         public ICommand CloseUsageHistoryCommand { get; }
         public ICommand ViewAllRestocksCommand { get; }
         public ICommand CloseRestockHistoryCommand { get; }
+        public IRelayCommand UsageNextPageCommand { get; }
+        public IRelayCommand UsagePrevPageCommand { get; }
+        public IRelayCommand RestockNextPageCommand { get; }
+        public IRelayCommand RestockPrevPageCommand { get; }
         public ICommand CloseSuccessPromptCommand { get; }
         public ICommand SuccessActionCommand { get; }
         public ICommand GoBackConfirmCommand { get; }
@@ -379,6 +470,20 @@ namespace CruzNeryClinic.ViewModels
         public ICommand ConfirmRestockCommand { get; }
         public ICommand CloseUsageOverlayCommand { get; }
         public ICommand ConfirmUsageCommand { get; }
+
+        // Spin box step commands (increment / decrement)
+        public ICommand UsageQtyIncrementCommand { get; }
+        public ICommand UsageQtyDecrementCommand { get; }
+        public ICommand RestockQtyIncrementCommand { get; }
+        public ICommand RestockQtyDecrementCommand { get; }
+        public ICommand RestockPriceIncrementCommand { get; }
+        public ICommand RestockPriceDecrementCommand { get; }
+        public ICommand EditStockIncrementCommand { get; }
+        public ICommand EditStockDecrementCommand { get; }
+        public ICommand EditUnitPriceIncrementCommand { get; }
+        public ICommand EditUnitPriceDecrementCommand { get; }
+        public ICommand EditThresholdIncrementCommand { get; }
+        public ICommand EditThresholdDecrementCommand { get; }
 
         // ── Repository ───────────────────────────────────────────────────────
 
@@ -401,10 +506,27 @@ namespace CruzNeryClinic.ViewModels
             CloseUsageHistoryCommand  = new RelayCommand(() => { IsUsageHistoryOpen = false; UsageHistorySearch = ""; });
             ViewAllRestocksCommand    = new RelayCommand(OpenRestockHistory);
             CloseRestockHistoryCommand = new RelayCommand(() => { IsRestockHistoryOpen = false; RestockHistorySearch = ""; });
+            UsageNextPageCommand      = new RelayCommand(UsageNextPage, () => UsagePage < UsageTotalPages);
+            UsagePrevPageCommand      = new RelayCommand(UsagePrevPage, () => UsagePage > 1);
+            RestockNextPageCommand    = new RelayCommand(RestockNextPage, () => RestockPage < RestockTotalPages);
+            RestockPrevPageCommand    = new RelayCommand(RestockPrevPage, () => RestockPage > 1);
             CloseSuccessPromptCommand = new RelayCommand(() => IsSuccessPromptVisible = false);
             SuccessActionCommand      = new RelayCommand(SuccessAction);
             GoBackConfirmCommand      = new RelayCommand(GoBackConfirm);
             FinalConfirmCommand       = new RelayCommand(FinalConfirm);
+
+            UsageQtyIncrementCommand     = new RelayCommand(() => UsageQuantityUsed = StepInt(UsageQuantityUsed, +1).ToString());
+            UsageQtyDecrementCommand     = new RelayCommand(() => UsageQuantityUsed = StepInt(UsageQuantityUsed, -1).ToString());
+            RestockQtyIncrementCommand   = new RelayCommand(() => RestockStockAdded = StepInt(RestockStockAdded, +1).ToString());
+            RestockQtyDecrementCommand   = new RelayCommand(() => RestockStockAdded = StepInt(RestockStockAdded, -1).ToString());
+            RestockPriceIncrementCommand = new RelayCommand(() => RestockUnitPriceStr = StepDecimal(RestockUnitPriceStr, +1m).ToString("N2"));
+            RestockPriceDecrementCommand = new RelayCommand(() => RestockUnitPriceStr = StepDecimal(RestockUnitPriceStr, -1m).ToString("N2"));
+            EditStockIncrementCommand     = new RelayCommand(() => EditStock = StepInt(EditStock, +1).ToString());
+            EditStockDecrementCommand     = new RelayCommand(() => EditStock = StepInt(EditStock, -1).ToString());
+            EditUnitPriceIncrementCommand = new RelayCommand(() => EditUnitPrice = StepDecimal(EditUnitPrice, +1m).ToString("N2"));
+            EditUnitPriceDecrementCommand = new RelayCommand(() => EditUnitPrice = StepDecimal(EditUnitPrice, -1m).ToString("N2"));
+            EditThresholdIncrementCommand = new RelayCommand(() => EditLowStockThreshold = StepInt(EditLowStockThreshold, +1).ToString());
+            EditThresholdDecrementCommand = new RelayCommand(() => EditLowStockThreshold = StepInt(EditLowStockThreshold, -1).ToString());
 
             ViewItemCommand           = new RelayCommand<InventoryItem>(ViewItem);
             CloseViewOverlayCommand   = new RelayCommand(() => IsViewOverlayOpen = false);
@@ -518,9 +640,9 @@ namespace CruzNeryClinic.ViewModels
             SaveButtonLabel         = "Add Item";
             PreviewItemId           = _repository.GetNextItemId();
             EditItemName            = "";
-            EditStock               = "";
+            EditStock               = "1";
             EditUnitPrice           = "";
-            EditLowStockThreshold   = "";
+            EditLowStockThreshold   = "1";
             EditNotes               = "";
             HasItemOverlayError     = false;
             ItemOverlayErrorMessage = "";
@@ -986,6 +1108,24 @@ namespace CruzNeryClinic.ViewModels
             set => SetProperty(ref _hasUsageError, value);
         }
 
+        // ── Spin box step helpers ────────────────────────────────────────────
+
+        // Steps an integer field by delta, clamped to a minimum of 1.
+        private static int StepInt(string current, int delta)
+        {
+            int.TryParse(current, out int value);
+            value += delta;
+            return value < 1 ? 1 : value;
+        }
+
+        // Steps a decimal field by delta, clamped to a minimum of 0.
+        private static decimal StepDecimal(string current, decimal delta)
+        {
+            decimal.TryParse(current, out decimal value);
+            value += delta;
+            return value < 0 ? 0 : value;
+        }
+
         // ── Overlay item-list helpers ────────────────────────────────────────
 
         private void PopulateActiveItemNames()
@@ -999,6 +1139,10 @@ namespace CruzNeryClinic.ViewModels
         {
             _restockSelectedItem = _allItems.FirstOrDefault(i => i.ItemName == RestockSelectedItemName);
             RestockItemIdDisplay = _restockSelectedItem?.ItemId ?? "Auto-Filled";
+            // Auto-fill the unit price from the selected item's stored information.
+            RestockUnitPriceStr = _restockSelectedItem != null
+                ? _restockSelectedItem.UnitPrice.ToString("N2")
+                : "";
             RestockCurrentStockDisplay = _restockSelectedItem != null
                 ? $"Item Current Stock: {_restockSelectedItem.QuantityInStock}"
                 : "Item Current Stock: —";
@@ -1023,7 +1167,7 @@ namespace CruzNeryClinic.ViewModels
             _restockSelectedItem       = null;
             RestockSelectedItemName    = "";
             RestockItemIdDisplay       = "Auto-Filled";
-            RestockStockAdded          = "";
+            RestockStockAdded          = "1";
             RestockDate                = null;
             RestockUnitPriceStr        = "";
             RestockSupplier            = "";
@@ -1129,7 +1273,7 @@ namespace CruzNeryClinic.ViewModels
             _usageSelectedItem       = null;
             UsageSelectedItemName    = "";
             UsageItemIdDisplay       = "Auto-Filled";
-            UsageQuantityUsed        = "";
+            UsageQuantityUsed        = "1";
             UsageDate                = null;
             UsageNotes               = "";
             UsageCurrentStockDisplay = "Item Current Stock: —";

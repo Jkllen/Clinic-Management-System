@@ -69,6 +69,37 @@
             </Setter>
         </Style>
 
+        <!--  Small up/down spinner button used inside numeric form fields  -->
+        <Style x:Key="SpinnerButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="24" />
+            <Setter Property="Height" Value="18" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Background" Value="#EEF3FA" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="SpinnerBorder"
+                            Margin="0,0.5"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="5">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="SpinnerBorder" Property="Background" Value="#D7E4F5" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="SpinnerBorder" Property="Background" Value="#C0D4EE" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <!--  Icon-only square action button for DataGrid rows  -->
         <Style x:Key="IconSquareButtonStyle" TargetType="Button">
             <Setter Property="Width" Value="30" />
@@ -201,6 +232,8 @@
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Padding" Value="34,0,16,0" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="TextAlignment" Value="Left" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TextBox">
@@ -214,6 +247,7 @@
                                 <ScrollViewer
                                     x:Name="PART_ContentHost"
                                     Margin="{TemplateBinding Padding}"
+                                    HorizontalAlignment="Stretch"
                                     VerticalAlignment="Center" />
                                 <TextBlock
                                     Margin="14,0,0,0"
@@ -224,7 +258,7 @@
                                     IsHitTestVisible="False"
                                     Text="₱" />
                                 <TextBlock
-                                    Margin="34,0,16,0"
+                                    Margin="36,0,16,0"
                                     VerticalAlignment="Center"
                                     FontSize="{TemplateBinding FontSize}"
                                     Foreground="#A0A0A0"
@@ -1354,6 +1388,22 @@
                             </Button.Template>
                         </Button>
                     </StackPanel>
+
+                    <!--  Pagination  -->
+                    <StackPanel
+                        Grid.Row="3"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Visibility="{Binding UsageHasMultiplePages, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <Button Width="40" Height="40" Command="{Binding UsagePrevPageCommand}" Cursor="Hand" Style="{StaticResource IconButtonStyle}">
+                            <fa:IconBlock FontSize="16" Foreground="#444444" Icon="ChevronLeft" />
+                        </Button>
+                        <TextBlock Margin="14,0" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold" Foreground="#444444" Text="{Binding UsagePageInfo}" />
+                        <Button Width="40" Height="40" Command="{Binding UsageNextPageCommand}" Cursor="Hand" Style="{StaticResource IconButtonStyle}">
+                            <fa:IconBlock FontSize="16" Foreground="#444444" Icon="ChevronRight" />
+                        </Button>
+                    </StackPanel>
                 </Grid>
             </Border>
         </Grid>
@@ -1482,6 +1532,22 @@
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
                             </Button.Template>
+                        </Button>
+                    </StackPanel>
+
+                    <!--  Pagination  -->
+                    <StackPanel
+                        Grid.Row="3"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Visibility="{Binding RestockHasMultiplePages, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <Button Width="40" Height="40" Command="{Binding RestockPrevPageCommand}" Cursor="Hand" Style="{StaticResource IconButtonStyle}">
+                            <fa:IconBlock FontSize="16" Foreground="#444444" Icon="ChevronLeft" />
+                        </Button>
+                        <TextBlock Margin="14,0" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold" Foreground="#444444" Text="{Binding RestockPageInfo}" />
+                        <Button Width="40" Height="40" Command="{Binding RestockNextPageCommand}" Cursor="Hand" Style="{StaticResource IconButtonStyle}">
+                            <fa:IconBlock FontSize="16" Foreground="#444444" Icon="ChevronRight" />
                         </Button>
                     </StackPanel>
                 </Grid>
@@ -1844,7 +1910,17 @@
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
-                                        <TextBox Grid.Column="0" x:Name="StockTextBox" Style="{StaticResource InventoryOverlayTextBoxStyle}" Tag="Enter Item Stock" Text="{Binding EditStock, UpdateSourceTrigger=PropertyChanged}" PreviewTextInput="IntegerOnly_PreviewTextInput" />
+                                        <Grid Grid.Column="0">
+                                            <TextBox x:Name="StockTextBox" Padding="12,0,40,0" Style="{StaticResource InventoryOverlayTextBoxStyle}" Tag="Enter Item Stock" Text="{Binding EditStock, UpdateSourceTrigger=PropertyChanged}" PreviewTextInput="IntegerOnly_PreviewTextInput" />
+                                            <StackPanel Margin="0,0,8,0" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                                <Button Command="{Binding EditStockIncrementCommand}" Style="{StaticResource SpinnerButtonStyle}">
+                                                    <fa:IconBlock FontSize="11" Foreground="#223357" Icon="AngleUp" />
+                                                </Button>
+                                                <Button Command="{Binding EditStockDecrementCommand}" Style="{StaticResource SpinnerButtonStyle}">
+                                                    <fa:IconBlock FontSize="11" Foreground="#223357" Icon="AngleDown" />
+                                                </Button>
+                                            </StackPanel>
+                                        </Grid>
                                         <Border Grid.Column="1" Width="34" Height="34" Margin="8,0,0,0" VerticalAlignment="Center" Background="#FFF3CD" CornerRadius="17" ToolTip="Editable field" Visibility="{Binding EditIsEditMode, Converter={StaticResource BoolToVisibilityConverter}}">
                                             <fa:IconBlock Icon="Edit" FontSize="13" Foreground="#E08600" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                         </Border>
@@ -1857,7 +1933,17 @@
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
-                                        <TextBox Grid.Column="0" x:Name="UnitPriceTextBox" Style="{StaticResource InventoryOverlayPriceTextBoxStyle}" Tag="0.00" Text="{Binding EditUnitPrice, UpdateSourceTrigger=PropertyChanged}" PreviewTextInput="DecimalOnly_PreviewTextInput" />
+                                        <Grid Grid.Column="0">
+                                            <TextBox x:Name="UnitPriceTextBox" Padding="34,0,40,0" Style="{StaticResource InventoryOverlayPriceTextBoxStyle}" Tag="0.00" Text="{Binding EditUnitPrice, UpdateSourceTrigger=PropertyChanged}" PreviewTextInput="DecimalOnly_PreviewTextInput" />
+                                            <StackPanel Margin="0,0,8,0" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                                <Button Command="{Binding EditUnitPriceIncrementCommand}" Style="{StaticResource SpinnerButtonStyle}">
+                                                    <fa:IconBlock FontSize="11" Foreground="#223357" Icon="AngleUp" />
+                                                </Button>
+                                                <Button Command="{Binding EditUnitPriceDecrementCommand}" Style="{StaticResource SpinnerButtonStyle}">
+                                                    <fa:IconBlock FontSize="11" Foreground="#223357" Icon="AngleDown" />
+                                                </Button>
+                                            </StackPanel>
+                                        </Grid>
                                         <Border Grid.Column="1" Width="34" Height="34" Margin="8,0,0,0" VerticalAlignment="Center" Background="#FFF3CD" CornerRadius="17" ToolTip="Editable field" Visibility="{Binding EditIsEditMode, Converter={StaticResource BoolToVisibilityConverter}}">
                                             <fa:IconBlock Icon="Edit" FontSize="13" Foreground="#E08600" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                         </Border>
@@ -1950,7 +2036,17 @@
                             <!--  Low Stock Threshold  -->
                             <StackPanel Margin="0,0,0,12" Visibility="{Binding EditIsAddMode, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Low Stock Threshold :" />
-                                <TextBox x:Name="ThresholdTextBox" Style="{StaticResource InventoryOverlayTextBoxStyle}" Tag="Enter the minimum stock level for this item" Text="{Binding EditLowStockThreshold, UpdateSourceTrigger=PropertyChanged}" PreviewTextInput="IntegerOnly_PreviewTextInput" />
+                                <Grid>
+                                    <TextBox x:Name="ThresholdTextBox" Padding="12,0,40,0" Style="{StaticResource InventoryOverlayTextBoxStyle}" Tag="Enter the minimum stock level for this item" Text="{Binding EditLowStockThreshold, UpdateSourceTrigger=PropertyChanged}" PreviewTextInput="IntegerOnly_PreviewTextInput" />
+                                    <StackPanel Margin="0,0,8,0" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                        <Button Command="{Binding EditThresholdIncrementCommand}" Style="{StaticResource SpinnerButtonStyle}">
+                                            <fa:IconBlock FontSize="11" Foreground="#223357" Icon="AngleUp" />
+                                        </Button>
+                                        <Button Command="{Binding EditThresholdDecrementCommand}" Style="{StaticResource SpinnerButtonStyle}">
+                                            <fa:IconBlock FontSize="11" Foreground="#223357" Icon="AngleDown" />
+                                        </Button>
+                                    </StackPanel>
+                                </Grid>
                                 <TextBlock Margin="4,5,0,0" FontSize="11" Foreground="#7A7A7A" Text="Note: Set the minimum stock level for this item. The system will trigger a Low Stock alert when the available quantity reaches this threshold." TextWrapping="Wrap" />
                             </StackPanel>
 
@@ -2022,7 +2118,17 @@
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
-                                        <TextBox Grid.Column="0" Style="{StaticResource InventoryOverlayTextBoxStyle}" Tag="Enter the minimum stock level for this item" Text="{Binding EditLowStockThreshold, UpdateSourceTrigger=PropertyChanged}" PreviewTextInput="IntegerOnly_PreviewTextInput" />
+                                        <Grid Grid.Column="0">
+                                            <TextBox Padding="12,0,40,0" Style="{StaticResource InventoryOverlayTextBoxStyle}" Tag="Enter the minimum stock level for this item" Text="{Binding EditLowStockThreshold, UpdateSourceTrigger=PropertyChanged}" PreviewTextInput="IntegerOnly_PreviewTextInput" />
+                                            <StackPanel Margin="0,0,8,0" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                                <Button Command="{Binding EditThresholdIncrementCommand}" Style="{StaticResource SpinnerButtonStyle}">
+                                                    <fa:IconBlock FontSize="11" Foreground="#223357" Icon="AngleUp" />
+                                                </Button>
+                                                <Button Command="{Binding EditThresholdDecrementCommand}" Style="{StaticResource SpinnerButtonStyle}">
+                                                    <fa:IconBlock FontSize="11" Foreground="#223357" Icon="AngleDown" />
+                                                </Button>
+                                            </StackPanel>
+                                        </Grid>
                                         <Border Grid.Column="1" Width="34" Height="34" Margin="8,0,0,0" VerticalAlignment="Center" Background="#FFF3CD" CornerRadius="17" ToolTip="Editable field">
                                             <fa:IconBlock Icon="Edit" FontSize="13" Foreground="#E08600" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                         </Border>
@@ -2280,7 +2386,17 @@
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0">
                                     <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Stock Added :" />
-                                    <TextBox Style="{StaticResource InventoryOverlayTextBoxStyle}" Tag="e.g. 50" Text="{Binding RestockStockAdded, UpdateSourceTrigger=PropertyChanged}" PreviewTextInput="IntegerOnly_PreviewTextInput" />
+                                    <Grid>
+                                        <TextBox Padding="12,0,40,0" Style="{StaticResource InventoryOverlayTextBoxStyle}" Tag="" Text="{Binding RestockStockAdded, UpdateSourceTrigger=PropertyChanged}" PreviewTextInput="IntegerOnly_PreviewTextInput" />
+                                        <StackPanel Margin="0,0,8,0" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                            <Button Command="{Binding RestockQtyIncrementCommand}" Style="{StaticResource SpinnerButtonStyle}">
+                                                <fa:IconBlock FontSize="11" Foreground="#223357" Icon="AngleUp" />
+                                            </Button>
+                                            <Button Command="{Binding RestockQtyDecrementCommand}" Style="{StaticResource SpinnerButtonStyle}">
+                                                <fa:IconBlock FontSize="11" Foreground="#223357" Icon="AngleDown" />
+                                            </Button>
+                                        </StackPanel>
+                                    </Grid>
                                 </StackPanel>
                                 <StackPanel Grid.Column="2">
                                     <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Date of Restock :" />
@@ -2297,7 +2413,17 @@
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0">
                                     <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Unit Price :" />
-                                    <TextBox Style="{StaticResource InventoryOverlayPriceTextBoxStyle}" Tag="0.00" Text="{Binding RestockUnitPriceStr, UpdateSourceTrigger=PropertyChanged}" PreviewTextInput="DecimalOnly_PreviewTextInput" />
+                                    <Grid>
+                                        <TextBox Padding="34,0,40,0" Style="{StaticResource InventoryOverlayPriceTextBoxStyle}" Tag="0.00" Text="{Binding RestockUnitPriceStr, UpdateSourceTrigger=PropertyChanged}" PreviewTextInput="DecimalOnly_PreviewTextInput" />
+                                        <StackPanel Margin="0,0,8,0" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                            <Button Command="{Binding RestockPriceIncrementCommand}" Style="{StaticResource SpinnerButtonStyle}">
+                                                <fa:IconBlock FontSize="11" Foreground="#223357" Icon="AngleUp" />
+                                            </Button>
+                                            <Button Command="{Binding RestockPriceDecrementCommand}" Style="{StaticResource SpinnerButtonStyle}">
+                                                <fa:IconBlock FontSize="11" Foreground="#223357" Icon="AngleDown" />
+                                            </Button>
+                                        </StackPanel>
+                                    </Grid>
                                 </StackPanel>
                                 <StackPanel Grid.Column="2">
                                     <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Supplier (optional) :" />
@@ -2325,14 +2451,14 @@
                                 <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Notes (optional) :" />
                                 <Border BorderBrush="#C8DCF0" BorderThickness="1" CornerRadius="10">
                                     <TextBox
-                                        Height="80"
+                                        Height="100"
                                         Padding="12,8"
                                         AcceptsReturn="True"
                                         Background="#FFFDFD"
                                         BorderThickness="0"
                                         FontSize="13"
                                         Foreground="#111111"
-                                        Tag="Optional notes about this restock..."
+                                        Tag="Add additional notes..."
                                         Text="{Binding RestockNotes, UpdateSourceTrigger=PropertyChanged}"
                                         TextWrapping="Wrap"
                                         VerticalScrollBarVisibility="Auto">
@@ -2344,7 +2470,7 @@
                                                             <Border x:Name="NotesBorder" Background="{TemplateBinding Background}" BorderBrush="Transparent" BorderThickness="0" CornerRadius="10">
                                                                 <Grid>
                                                                     <ScrollViewer x:Name="PART_ContentHost" Margin="12,8,12,8" />
-                                                                    <TextBlock Margin="12,8,12,8" VerticalAlignment="Top" FontSize="{TemplateBinding FontSize}" Foreground="#A0A0A0" IsHitTestVisible="False" Text="{TemplateBinding Tag}" TextWrapping="Wrap">
+                                                                    <TextBlock Margin="24,16,12,12" VerticalAlignment="Top" FontSize="{TemplateBinding FontSize}" Foreground="#A0A0A0" IsHitTestVisible="False" Text="{TemplateBinding Tag}" TextWrapping="Wrap">
                                                                         <TextBlock.Style>
                                                                             <Style TargetType="TextBlock">
                                                                                 <Setter Property="Visibility" Value="Collapsed" />
@@ -2562,7 +2688,17 @@
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0">
                                     <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Quantity Used :" />
-                                    <TextBox Style="{StaticResource InventoryOverlayTextBoxStyle}" Tag="e.g. 10" Text="{Binding UsageQuantityUsed, UpdateSourceTrigger=PropertyChanged}" PreviewTextInput="IntegerOnly_PreviewTextInput" />
+                                    <Grid>
+                                        <TextBox Padding="12,0,40,0" Style="{StaticResource InventoryOverlayTextBoxStyle}" Tag="" Text="{Binding UsageQuantityUsed, UpdateSourceTrigger=PropertyChanged}" PreviewTextInput="IntegerOnly_PreviewTextInput" />
+                                        <StackPanel Margin="0,0,8,0" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                            <Button Command="{Binding UsageQtyIncrementCommand}" Style="{StaticResource SpinnerButtonStyle}">
+                                                <fa:IconBlock FontSize="11" Foreground="#223357" Icon="AngleUp" />
+                                            </Button>
+                                            <Button Command="{Binding UsageQtyDecrementCommand}" Style="{StaticResource SpinnerButtonStyle}">
+                                                <fa:IconBlock FontSize="11" Foreground="#223357" Icon="AngleDown" />
+                                            </Button>
+                                        </StackPanel>
+                                    </Grid>
                                 </StackPanel>
                                 <StackPanel Grid.Column="2">
                                     <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Date of Usage :" />
@@ -2590,14 +2726,14 @@
                                 <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Notes (optional) :" />
                                 <Border BorderBrush="#C8DCF0" BorderThickness="1" CornerRadius="10">
                                     <TextBox
-                                        Height="80"
+                                        Height="100"
                                         Padding="12,8"
                                         AcceptsReturn="True"
                                         Background="#FFFDFD"
                                         BorderThickness="0"
                                         FontSize="13"
                                         Foreground="#111111"
-                                        Tag="Optional notes about this usage..."
+                                        Tag="Add additional notes..."
                                         Text="{Binding UsageNotes, UpdateSourceTrigger=PropertyChanged}"
                                         TextWrapping="Wrap"
                                         VerticalScrollBarVisibility="Auto">
@@ -2609,7 +2745,7 @@
                                                             <Border x:Name="NotesBorder" Background="{TemplateBinding Background}" BorderBrush="Transparent" BorderThickness="0" CornerRadius="10">
                                                                 <Grid>
                                                                     <ScrollViewer x:Name="PART_ContentHost" Margin="12,8,12,8" />
-                                                                    <TextBlock Margin="12,8,12,8" VerticalAlignment="Top" FontSize="{TemplateBinding FontSize}" Foreground="#A0A0A0" IsHitTestVisible="False" Text="{TemplateBinding Tag}" TextWrapping="Wrap">
+                                                                    <TextBlock Margin="24,16,12,12" VerticalAlignment="Top" FontSize="{TemplateBinding FontSize}" Foreground="#A0A0A0" IsHitTestVisible="False" Text="{TemplateBinding Tag}" TextWrapping="Wrap">
                                                                         <TextBlock.Style>
                                                                             <Style TargetType="TextBlock">
                                                                                 <Setter Property="Visibility" Value="Collapsed" />

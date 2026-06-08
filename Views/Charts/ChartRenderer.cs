@@ -92,6 +92,7 @@ namespace CruzNeryClinic.Views.Charts
                     Fill = barBrush,
                     RadiusX = 3,
                     RadiusY = 3,
+                    ToolTip = MakeToolTip($"{data[i].Label}: {FormatValue(data[i].Value)}"),
                 };
                 Canvas.SetLeft(rect, x);
                 Canvas.SetTop(rect, y);
@@ -213,6 +214,21 @@ namespace CruzNeryClinic.Views.Charts
                 StrokeStartLineCap = PenLineCap.Round,
                 StrokeEndLineCap = PenLineCap.Round,
             });
+
+            // Transparent hit-targets so hovering near a point reveals its value.
+            for (int i = 0; i < points.Count; i++)
+            {
+                var hit = new Ellipse
+                {
+                    Width = 14,
+                    Height = 14,
+                    Fill = Brushes.Transparent,
+                    ToolTip = MakeToolTip($"{data[i].Label}: {FormatValue(data[i].Value)}"),
+                };
+                Canvas.SetLeft(hit, points[i].X - 7);
+                Canvas.SetTop(hit, points[i].Y - 7);
+                canvas.Children.Add(hit);
+            }
         }
 
         // ── Dual-series line chart ─────────────────────────────────────────────
@@ -299,11 +315,11 @@ namespace CruzNeryClinic.Views.Charts
             canvas.Children.Add(SmoothLinePath(pts1, brush1, 2.4));
             canvas.Children.Add(SmoothLinePath(pts2, brush2, 2.4));
 
-            // Markers (filled circle with white ring)
-            foreach (var pt in pts1)
-                AddMarker(canvas, pt, brush1);
-            foreach (var pt in pts2)
-                AddMarker(canvas, pt, brush2);
+            // Markers (filled circle with white ring) with value tooltips
+            for (int i = 0; i < pts1.Count; i++)
+                AddMarker(canvas, pts1[i], brush1, $"{data[i].Label} — {legend1}: {FormatValue(data[i].Value1)}");
+            for (int i = 0; i < pts2.Count; i++)
+                AddMarker(canvas, pts2[i], brush2, $"{data[i].Label} — {legend2}: {FormatValue(data[i].Value2)}");
 
             // Legend
             double legendY = padTop + chartH + 26;
@@ -364,6 +380,7 @@ namespace CruzNeryClinic.Views.Charts
                     Fill = BrushFromHex(slice.HexColor),
                     Stroke = Brushes.White,
                     StrokeThickness = 1.5,
+                    ToolTip = MakeToolTip($"{slice.Label}: {FormatValue(slice.Value)} ({slice.Percentage}%)"),
                 };
                 canvas.Children.Add(path);
 
@@ -446,7 +463,7 @@ namespace CruzNeryClinic.Views.Charts
         }
 
         /// <summary>Draws a filled data-point marker with a white ring.</summary>
-        private static void AddMarker(Canvas canvas, Point pt, Brush fill)
+        private static void AddMarker(Canvas canvas, Point pt, Brush fill, string? tooltip = null)
         {
             var dot = new Ellipse
             {
@@ -456,6 +473,7 @@ namespace CruzNeryClinic.Views.Charts
                 Stroke = Brushes.White,
                 StrokeThickness = 1.5,
             };
+            if (tooltip != null) dot.ToolTip = MakeToolTip(tooltip);
             Canvas.SetLeft(dot, pt.X - 4);
             Canvas.SetTop(dot, pt.Y - 4);
             canvas.Children.Add(dot);
@@ -509,6 +527,18 @@ namespace CruzNeryClinic.Views.Charts
             canvas.Children.Add(tb);
             Canvas.SetLeft(tb, (canvas.ActualWidth - 120) / 2);
             Canvas.SetTop(tb, (canvas.ActualHeight - 20) / 2);
+        }
+
+        /// <summary>Builds a snappy tooltip shown on chart shapes.</summary>
+        private static ToolTip MakeToolTip(string text)
+        {
+            var tip = new ToolTip
+            {
+                Content = text,
+                FontSize = 12,
+            };
+            ToolTipService.SetInitialShowDelay(tip, 150);
+            return tip;
         }
 
         private static TextBlock MakeText(string text, double fontSize, Brush foreground, bool bold = false)

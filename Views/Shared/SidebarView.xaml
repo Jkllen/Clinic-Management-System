@@ -65,7 +65,7 @@
 
             <!-- Clinic logo -->
             <Image Grid.Row="0"
-                   Source="/Assets/Images/logo.png"
+                   Source="/Assets/Images/cruz-nery-logo.png"
                    Width="180"
                    Height="180"
                    Margin="0,-10,0,0"

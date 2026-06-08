@@ -3,6 +3,7 @@ using CruzNeryClinic.Models.Maintenance;
 using CruzNeryClinic.Services;
 using Microsoft.Win32;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Security.Cryptography;
@@ -39,7 +40,16 @@ namespace CruzNeryClinic.ViewModels
 
         public ObservableCollection<string> BackupRetentionOptions { get; }
 
+        // Main card: shows only the most recent backup.
         public ObservableCollection<BackupHistoryItem> BackupHistoryItems { get; }
+
+        // "View All" overlay: shows the current page of the full backup list.
+        public ObservableCollection<BackupHistoryItem> BackupHistoryPageItems { get; }
+
+        // Full backup list backing the overlay pagination.
+        private readonly List<BackupHistoryItem> allBackupHistory = new();
+
+        private const int BackupHistoryPageSize = 5;
 
         #endregion
 
@@ -128,6 +138,28 @@ namespace CruzNeryClinic.ViewModels
             set => SetProperty(ref isPromptVisible, value);
         }
 
+        // ── Backup history pagination (BackupHistoryPageSize rows per page) ────
+        private int backupPage = 1;
+        public int BackupPage
+        {
+            get => backupPage;
+            private set { if (SetProperty(ref backupPage, value)) OnPropertyChanged(nameof(BackupPageInfo)); }
+        }
+
+        public int BackupTotalPages =>
+            Math.Max(1, (int)Math.Ceiling(allBackupHistory.Count / (double)BackupHistoryPageSize));
+
+        public string BackupPageInfo => $"Page {BackupPage} of {BackupTotalPages}";
+
+        public bool BackupHasMultiplePages => allBackupHistory.Count > BackupHistoryPageSize;
+
+        private bool isBackupHistoryOpen;
+        public bool IsBackupHistoryOpen
+        {
+            get => isBackupHistoryOpen;
+            set => SetProperty(ref isBackupHistoryOpen, value);
+        }
+
         #endregion
 
         #region Commands
@@ -148,6 +180,14 @@ namespace CruzNeryClinic.ViewModels
 
         public ICommand ClosePromptCommand { get; }
 
+        public IRelayCommand BackupNextPageCommand { get; }
+
+        public IRelayCommand BackupPrevPageCommand { get; }
+
+        public ICommand OpenBackupHistoryCommand { get; }
+
+        public ICommand CloseBackupHistoryCommand { get; }
+
         #endregion
 
         #region Constructor
@@ -165,6 +205,7 @@ namespace CruzNeryClinic.ViewModels
             };
 
             BackupHistoryItems = new ObservableCollection<BackupHistoryItem>();
+            BackupHistoryPageItems = new ObservableCollection<BackupHistoryItem>();
 
             BrowsePrimaryBackupLocationCommand = new RelayCommand(BrowsePrimaryBackupLocation);
             BrowseSecondaryBackupLocationCommand = new RelayCommand(BrowseSecondaryBackupLocation);
@@ -176,6 +217,11 @@ namespace CruzNeryClinic.ViewModels
 
             OpenBackupLocationCommand = new RelayCommand<BackupHistoryItem>(OpenBackupLocation);
             ClosePromptCommand = new RelayCommand(ClosePrompt);
+
+            BackupNextPageCommand = new RelayCommand(BackupNextPage, () => BackupPage < BackupTotalPages);
+            BackupPrevPageCommand = new RelayCommand(BackupPrevPage, () => BackupPage > 1);
+            OpenBackupHistoryCommand = new RelayCommand(OpenBackupHistory);
+            CloseBackupHistoryCommand = new RelayCommand(CloseBackupHistory);
 
             LoadDefaultBackupLocation();
             RefreshBackupHistory();
@@ -383,7 +429,7 @@ namespace CruzNeryClinic.ViewModels
 
         private void RefreshBackupHistory()
         {
-            BackupHistoryItems.Clear();
+            allBackupHistory.Clear();
 
             if (string.IsNullOrWhiteSpace(PrimaryBackupLocation) ||
                 !Directory.Exists(PrimaryBackupLocation))
@@ -391,6 +437,9 @@ namespace CruzNeryClinic.ViewModels
                 LastBackupTime = "--:--";
                 LastBackupDate = "No backup yet";
                 TotalBackupsDisplay = "0";
+                BackupHistoryItems.Clear();
+                BackupPage = 1;
+                RefreshBackupPage();
                 return;
             }
 
@@ -401,7 +450,7 @@ namespace CruzNeryClinic.ViewModels
 
             foreach (FileInfo file in backupFiles)
             {
-                BackupHistoryItems.Add(new BackupHistoryItem
+                allBackupHistory.Add(new BackupHistoryItem
                 {
                     CreatedAt = file.CreationTime,
                     BackupType = AutoBackupService.IsAutoBackupFile(file.FullName) ? "Auto" : "Manual",
@@ -412,6 +461,14 @@ namespace CruzNeryClinic.ViewModels
             }
 
             TotalBackupsDisplay = backupFiles.Length.ToString();
+
+            // Main card shows only the most recent backup.
+            BackupHistoryItems.Clear();
+            if (allBackupHistory.Count > 0)
+                BackupHistoryItems.Add(allBackupHistory[0]);
+
+            BackupPage = 1;
+            RefreshBackupPage();
 
             if (backupFiles.Length == 0)
             {
@@ -424,6 +481,49 @@ namespace CruzNeryClinic.ViewModels
 
             LastBackupTime = latestBackup.CreationTime.ToString("HH:mm");
             LastBackupDate = latestBackup.CreationTime.ToString("yyyy-MM-dd");
+        }
+
+        // Rebuilds BackupHistoryPageItems (the "View All" overlay) to show the current page's slice.
+        private void RefreshBackupPage()
+        {
+            if (BackupPage > BackupTotalPages) BackupPage = BackupTotalPages;
+            if (BackupPage < 1) BackupPage = 1;
+
+            BackupHistoryPageItems.Clear();
+            foreach (var item in allBackupHistory
+                .Skip((BackupPage - 1) * BackupHistoryPageSize)
+                .Take(BackupHistoryPageSize))
+            {
+                BackupHistoryPageItems.Add(item);
+            }
+
+            OnPropertyChanged(nameof(BackupTotalPages));
+            OnPropertyChanged(nameof(BackupPageInfo));
+            OnPropertyChanged(nameof(BackupHasMultiplePages));
+            BackupNextPageCommand.NotifyCanExecuteChanged();
+            BackupPrevPageCommand.NotifyCanExecuteChanged();
+        }
+
+        private void BackupNextPage()
+        {
+            if (BackupPage < BackupTotalPages) { BackupPage++; RefreshBackupPage(); }
+        }
+
+        private void BackupPrevPage()
+        {
+            if (BackupPage > 1) { BackupPage--; RefreshBackupPage(); }
+        }
+
+        private void OpenBackupHistory()
+        {
+            BackupPage = 1;
+            RefreshBackupPage();
+            IsBackupHistoryOpen = true;
+        }
+
+        private void CloseBackupHistory()
+        {
+            IsBackupHistoryOpen = false;
         }
 
         private void ApplyBackupRetentionPolicy()

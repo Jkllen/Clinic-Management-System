@@ -1,5 +1,6 @@
 using CruzNeryClinic.Data;
 using CruzNeryClinic.Models;
+using CruzNeryClinic.Services;
 using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
@@ -129,9 +130,10 @@ namespace CruzNeryClinic.Repositories
                     ReceiptNumber = SafeString(reader, 1),
                     PatientCode = SafeString(reader, 2),
                     PatientName = SafeString(reader, 3),
-                    Service = SafeString(reader, 4),
-                    Amount = reader.IsDBNull(5) ? 0 : reader.GetDouble(5),
-                    PaymentMethod = SafeString(reader, 6),
+                    // ServiceName, AmountPaid and PaymentMethod are stored encrypted.
+                    Service = CryptoService.DecryptString(SafeString(reader, 4)),
+                    Amount = (double)SecureDecimal(reader, 5),
+                    PaymentMethod = CryptoService.DecryptString(SafeString(reader, 6)),
                 });
             }
             return items;
@@ -369,6 +371,16 @@ namespace CruzNeryClinic.Repositories
 
         private static string SafeString(SqliteDataReader reader, int col)
             => reader.IsDBNull(col) ? "" : reader.GetString(col);
+
+        // Reads a possibly-encrypted (or plain numeric) amount column safely.
+        private static decimal SecureDecimal(SqliteDataReader reader, int col)
+        {
+            if (reader.IsDBNull(col))
+                return 0m;
+
+            string raw = reader.GetValue(col)?.ToString() ?? string.Empty;
+            return CryptoService.DecryptDecimal(raw, 0m);
+        }
 
         private static string ResolveActionColor(string action)
         {

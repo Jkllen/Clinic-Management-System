@@ -545,6 +545,7 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
                             <Grid Grid.Row="0" Margin="0,0,0,4">
@@ -563,6 +564,13 @@
                                     Grid.Row="1"
                                     ClipToBounds="True"
                                     SizeChanged="DashPatientVisitCanvas_SizeChanged"/>
+
+                            <TextBlock Grid.Row="2"
+                                       Margin="0,6,0,0"
+                                       FontSize="11"
+                                       Foreground="#6B7280"
+                                       TextWrapping="Wrap"
+                                       Text="{Binding PatientVisitInsight}"/>
                         </Grid>
                     </Border>
 
@@ -574,6 +582,7 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
                             <Grid Grid.Row="0" Margin="0,0,0,4">
@@ -592,6 +601,13 @@
                                     Grid.Row="1"
                                     ClipToBounds="True"
                                     SizeChanged="DashRevenueCanvas_SizeChanged"/>
+
+                            <TextBlock Grid.Row="2"
+                                       Margin="0,6,0,0"
+                                       FontSize="11"
+                                       Foreground="#6B7280"
+                                       TextWrapping="Wrap"
+                                       Text="{Binding RevenueInsight}"/>
                         </Grid>
                     </Border>
                 </Grid>

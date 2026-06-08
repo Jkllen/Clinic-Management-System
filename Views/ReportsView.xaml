@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:fa="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
     d:DesignHeight="900"
     d:DesignWidth="1300"
     mc:Ignorable="d">
@@ -227,21 +228,77 @@
 
             <!-- ═══════════════════════════════ HEADER ═══════════════════════════════ -->
             <Grid Grid.Row="0" Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <TextBlock
                     Grid.Row="0"
+                    Grid.Column="0"
                     FontSize="28"
                     FontWeight="Bold"
                     Text="Reports and Analytics" />
                 <TextBlock
                     Grid.Row="1"
+                    Grid.Column="0"
                     FontSize="15"
                     Foreground="#7A7A7A"
                     Margin="0,2,0,0"
                     Text="Comprehensive clinic reports and data visualization" />
+
+                <!-- Print Report Button -->
+                <Button
+                    Grid.Row="0"
+                    Grid.RowSpan="2"
+                    Grid.Column="1"
+                    Height="38"
+                    Padding="26,0"
+                    VerticalAlignment="Center"
+                    Command="{Binding PrintReportCommand}">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Background" Value="#111111" />
+                            <Setter Property="Foreground" Value="White" />
+                            <Setter Property="Cursor" Value="Hand" />
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border
+                                            x:Name="Bd"
+                                            Background="{TemplateBinding Background}"
+                                            CornerRadius="8">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Bd" Property="Background" Value="#333333" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Button.Style>
+                    <StackPanel Orientation="Horizontal">
+                        <fa:IconBlock
+                            Margin="8,0,5,0"
+                            VerticalAlignment="Center"
+                            FontSize="13"
+                            Foreground="White"
+                            Icon="Print" />
+                        <TextBlock
+                            Margin="0,0,8,0"
+                            VerticalAlignment="Center"
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            Foreground="White"
+                            Text="Print Report" />
+                    </StackPanel>
+                </Button>
             </Grid>
 
             <!-- ═══════════════════════════════ TAB BUTTONS ══════════════════════════ -->
@@ -586,7 +643,7 @@
             </Border>
 
             <!-- ═══════════════════════════════ CONTENT ══════════════════════════════ -->
-            <Grid Grid.Row="3">
+            <Grid Grid.Row="3" x:Name="ReportContentArea">
                 <Grid.RowDefinitions>
                     <!-- Charts area -->
                     <RowDefinition Height="2*" MinHeight="160" />
@@ -607,6 +664,7 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <TextBlock
                             Grid.Row="0"
@@ -619,6 +677,9 @@
                             Grid.Row="1"
                             ClipToBounds="True"
                             SizeChanged="PatientVisitCanvas_SizeChanged" />
+                        <TextBlock Grid.Row="2" Margin="0,6,0,0" FontSize="11"
+                                   Foreground="#6B7280" TextWrapping="Wrap"
+                                   Text="{Binding PatientVisitInsight}" />
                     </Grid>
                 </Border>
 
@@ -637,6 +698,7 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <TextBlock
                                 Grid.Row="0"
@@ -649,6 +711,9 @@
                                 Grid.Row="1"
                                 ClipToBounds="True"
                                 SizeChanged="RevenueTrendCanvas_SizeChanged" />
+                            <TextBlock Grid.Row="2" Margin="0,6,0,0" FontSize="11"
+                                       Foreground="#6B7280" TextWrapping="Wrap"
+                                       Text="{Binding RevenueInsight}" />
                         </Grid>
                     </Border>
 
@@ -657,6 +722,7 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <TextBlock
                                 Grid.Row="0"
@@ -669,6 +735,9 @@
                                 Grid.Row="1"
                                 ClipToBounds="True"
                                 SizeChanged="DailyTransactionsCanvas_SizeChanged" />
+                            <TextBlock Grid.Row="2" Margin="0,6,0,0" FontSize="11"
+                                       Foreground="#6B7280" TextWrapping="Wrap"
+                                       Text="{Binding DailyTransactionsInsight}" />
                         </Grid>
                     </Border>
                 </Grid>
@@ -682,6 +751,7 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <TextBlock
                             Grid.Row="0"
@@ -694,6 +764,9 @@
                             Grid.Row="1"
                             ClipToBounds="True"
                             SizeChanged="InventoryBarCanvas_SizeChanged" />
+                        <TextBlock Grid.Row="2" Margin="0,6,0,0" FontSize="11"
+                                   Foreground="#6B7280" TextWrapping="Wrap"
+                                   Text="{Binding InventoryInsight}" />
                     </Grid>
                 </Border>
 
@@ -712,6 +785,7 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <TextBlock
                                 Grid.Row="0"
@@ -724,6 +798,9 @@
                                 Grid.Row="1"
                                 ClipToBounds="True"
                                 SizeChanged="ActivityPieCanvas_SizeChanged" />
+                            <TextBlock Grid.Row="2" Margin="0,6,0,0" FontSize="11"
+                                       Foreground="#6B7280" TextWrapping="Wrap"
+                                       Text="{Binding ActivityByTypeInsight}" />
                         </Grid>
                     </Border>
 
@@ -732,6 +809,7 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <TextBlock
                                 Grid.Row="0"
@@ -744,6 +822,9 @@
                                 Grid.Row="1"
                                 ClipToBounds="True"
                                 SizeChanged="ActivityModuleCanvas_SizeChanged" />
+                            <TextBlock Grid.Row="2" Margin="0,6,0,0" FontSize="11"
+                                       Foreground="#6B7280" TextWrapping="Wrap"
+                                       Text="{Binding ActivityByModuleInsight}" />
                         </Grid>
                     </Border>
                 </Grid>
@@ -918,6 +999,68 @@
                     </Grid>
                 </Grid>
             </Grid>
+        </Grid>
+
+        <!--  Report Print Preview Overlay  -->
+        <Grid Background="#66000000" Visibility="{Binding IsReportPrintPreviewOpen, Converter={StaticResource BoolToVisibilityConverter}}">
+
+            <Border
+                Width="980"
+                Height="720"
+                Padding="26"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Background="White"
+                CornerRadius="16">
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="14" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="16" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock
+                        Grid.Row="0"
+                        FontSize="24"
+                        FontWeight="Bold"
+                        Foreground="#223357"
+                        Text="{Binding ReportPrintPreviewTitle}" />
+
+                    <wv2:WebView2 x:Name="ReportPrintWebView" Grid.Row="2" />
+
+                    <StackPanel
+                        Grid.Row="4"
+                        HorizontalAlignment="Right"
+                        Orientation="Horizontal">
+
+                        <Button
+                            Width="120"
+                            Height="42"
+                            Margin="0,0,10,0"
+                            Background="#223357"
+                            Click="OpenReportPrintDialog_Click"
+                            Content="Print"
+                            FontWeight="Bold"
+                            Foreground="White"
+                            Style="{StaticResource SecondaryButtonStyle}" />
+
+                        <Button
+                            Width="120"
+                            Height="42"
+                            Background="White"
+                            BorderBrush="#111111"
+                            BorderThickness="1"
+                            Command="{Binding CloseReportPrintPreviewCommand}"
+                            Content="Close"
+                            FontWeight="Bold"
+                            Foreground="Black"
+                            Style="{StaticResource SecondaryButtonStyle}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
         </Grid>
     </Grid>
 </UserControl>

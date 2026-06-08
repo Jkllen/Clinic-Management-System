@@ -3,6 +3,7 @@ using CruzNeryClinic.Models;
 using CruzNeryClinic.Models.Dashboard;
 using CruzNeryClinic.Repositories;
 using CruzNeryClinic.Services;
+using CruzNeryClinic.Views.Charts;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -222,6 +223,21 @@ namespace CruzNeryClinic.ViewModels
         public List<DualChartDataPoint> PatientVisitTrend { get; private set; } = new();
         public List<ChartDataPoint> RevenueTrend { get; private set; } = new();
 
+        // Plain-language interpretation shown under each chart.
+        private string _patientVisitInsight = "";
+        public string PatientVisitInsight
+        {
+            get => _patientVisitInsight;
+            private set => SetProperty(ref _patientVisitInsight, value);
+        }
+
+        private string _revenueInsight = "";
+        public string RevenueInsight
+        {
+            get => _revenueInsight;
+            private set => SetProperty(ref _revenueInsight, value);
+        }
+
         public ICommand RefreshCommand { get; }
 
         public ICommand LogoutCommand { get; }
@@ -323,6 +339,9 @@ namespace CruzNeryClinic.ViewModels
 
             PatientVisitTrend = reportsRepository.GetPatientVisitTrend(from, to);
             RevenueTrend = reportsRepository.GetRevenueTrend(from, to);
+
+            PatientVisitInsight = ChartInsight.SummarizeDual(PatientVisitTrend, "scheduled", "walk-in");
+            RevenueInsight = ChartInsight.Summarize(RevenueTrend, "days", "₱");
 
             ChartDataRefreshed?.Invoke();
         }

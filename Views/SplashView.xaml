@@ -42,7 +42,7 @@
                 Width="440"
                 Height="440"
                 RenderOptions.BitmapScalingMode="HighQuality"
-                Source="/Assets/Images/logo.png"
+                Source="/Assets/Images/cruz-nery-logo.png"
                 Stretch="Uniform" />
 
         </StackPanel>
