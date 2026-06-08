@@ -424,6 +424,152 @@
 
         <!--#endregion Default Dropdown Combobox Style-->
 
+        <!--#region Modern Dropdown MenuItem Style-->
+        <Style x:Key="ModernMoreDropdownMenuItemStyle" TargetType="{x:Type MenuItem}">
+            <Setter Property="Height" Value="38" />
+            <Setter Property="Padding" Value="14,0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource TextRegular}" />
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type MenuItem}">
+                        <Border
+                            x:Name="menuItemBorder"
+                            Margin="0,1"
+                            Padding="{TemplateBinding Padding}"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="6"
+                            SnapsToDevicePixels="True">
+                            <ContentPresenter
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                ContentSource="Header"
+                                RecognizesAccessKey="True" />
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter TargetName="menuItemBorder" Property="Background" Value="#EEF2F7" />
+                                <Setter Property="Foreground" Value="{StaticResource AccentDarkBlue}" />
+                            </Trigger>
+
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="#A0A7B2" />
+                                <Setter Property="Cursor" Value="Arrow" />
+                                <Setter TargetName="menuItemBorder" Property="Opacity" Value="0.58" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ModernMoreMenuHeaderStyle" TargetType="{x:Type MenuItem}">
+            <Setter Property="Width" Value="78" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Background" Value="#073C98" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderBrush" Value="#073C98" />
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="ItemContainerStyle" Value="{StaticResource ModernMoreDropdownMenuItemStyle}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type MenuItem}">
+                        <Grid>
+                            <Border
+                                x:Name="headerBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="6"
+                                SnapsToDevicePixels="True">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="20" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <ContentPresenter
+                                        Grid.Column="0"
+                                        Margin="10,0,2,0"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        ContentSource="Header"
+                                        RecognizesAccessKey="True" />
+
+                                    <Path
+                                        x:Name="headerArrow"
+                                        Grid.Column="1"
+                                        Width="8"
+                                        Height="5"
+                                        Margin="0,1,8,0"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Center"
+                                        Data="M 0 0 L 4 4 L 8 0"
+                                        Stroke="{TemplateBinding Foreground}"
+                                        StrokeEndLineCap="Round"
+                                        StrokeStartLineCap="Round"
+                                        StrokeThickness="1.8" />
+                                </Grid>
+                            </Border>
+
+                            <Popup
+                                x:Name="PART_Popup"
+                                AllowsTransparency="True"
+                                Focusable="False"
+                                IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}"
+                                Placement="Bottom"
+                                PopupAnimation="Slide">
+                                <Border
+                                    MinWidth="170"
+                                    Margin="0,6,0,0"
+                                    Padding="6"
+                                    Background="{StaticResource DropdownBackground}"
+                                    BorderBrush="{StaticResource DropdownBorder}"
+                                    BorderThickness="1"
+                                    CornerRadius="10"
+                                    Effect="{StaticResource SoftShadow}"
+                                    SnapsToDevicePixels="True">
+                                    <StackPanel
+                                        IsItemsHost="True"
+                                        KeyboardNavigation.DirectionalNavigation="Cycle" />
+                                </Border>
+                            </Popup>
+                        </Grid>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter TargetName="headerBorder" Property="Background" Value="#0B4EBF" />
+                                <Setter TargetName="headerBorder" Property="BorderBrush" Value="#0B4EBF" />
+                            </Trigger>
+
+                            <Trigger Property="IsSubmenuOpen" Value="True">
+                                <Setter TargetName="headerBorder" Property="Background" Value="#223357" />
+                                <Setter TargetName="headerBorder" Property="BorderBrush" Value="#223357" />
+                                <Setter TargetName="headerArrow" Property="Data" Value="M 0 4 L 4 0 L 8 4" />
+                            </Trigger>
+
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Background" Value="#E5E7EB" />
+                                <Setter Property="BorderBrush" Value="#D1D5DB" />
+                                <Setter Property="Foreground" Value="#9CA3AF" />
+                                <Setter Property="Cursor" Value="Arrow" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <!--#endregion Modern Dropdown Menu Style-->
+
         <!--  Default PasswordBox font  -->
         <Style TargetType="PasswordBox">
             <Setter Property="FontFamily" Value="{StaticResource AppFont}" />

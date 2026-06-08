@@ -1,11 +1,21 @@
 using CruzNeryClinic.Services;
 using Microsoft.Data.Sqlite;
 using System;
+using System.Collections.Generic;
 
 namespace CruzNeryClinic.Data
 {
     public static class DatabaseInitializer
     {
+        private static readonly HashSet<string> AllowedSchemaTables = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "Appointments",
+            "BillingTransactions",
+            "Patients",
+            "TreatmentRecords",
+            "Users"
+        };
+
         public static void Initialize()
         {
             using SqliteConnection connection = DatabaseService.GetConnection();
@@ -14,16 +24,48 @@ namespace CruzNeryClinic.Data
             EnableForeignKeys(connection);
             MigrateInventoryTables(connection);
             CreateTables(connection);
+            EnsurePatientConsentSchema(connection);
+            EnsureUserSchema(connection);
             // Security questions must be seeded before admin accounts,
             // because Users now store SecurityQuestionId1, 2, and 3.
             SeedDefaultSecurityQuestions(connection);
 
             SeedDefaultAdminAccounts(connection);
+            MergeCruzNeryAdminDentistAccount(connection);
             SeedDefaultServices(connection);
             EnsureUpdatedClinicServices(connection);
-            EnsureUserSchema(connection);
             EnsureBillingInvoiceSchema(connection);
             EnsureAppointmentSchema(connection);
+        }
+
+        private static void EnsurePatientConsentSchema(SqliteConnection connection)
+        {
+            if (!ColumnExists(connection, "Patients", "HasDataPrivacyConsent"))
+            {
+                using SqliteCommand command = connection.CreateCommand();
+                command.CommandText = @"
+        ALTER TABLE Patients
+        ADD COLUMN HasDataPrivacyConsent INTEGER NOT NULL DEFAULT 0;";
+                command.ExecuteNonQuery();
+            }
+
+            if (!ColumnExists(connection, "Patients", "DataPrivacyConsentAt"))
+            {
+                using SqliteCommand command = connection.CreateCommand();
+                command.CommandText = @"
+        ALTER TABLE Patients
+        ADD COLUMN DataPrivacyConsentAt TEXT;";
+                command.ExecuteNonQuery();
+            }
+
+            if (!ColumnExists(connection, "Patients", "DataPrivacyConsentVersion"))
+            {
+                using SqliteCommand command = connection.CreateCommand();
+                command.CommandText = @"
+        ALTER TABLE Patients
+        ADD COLUMN DataPrivacyConsentVersion TEXT;";
+                command.ExecuteNonQuery();
+            }
         }
 
         private static void EnsureUserSchema(SqliteConnection connection)
@@ -36,6 +78,17 @@ namespace CruzNeryClinic.Data
         ADD COLUMN CreatedByUserId INTEGER;";
                 command.ExecuteNonQuery();
             }
+
+            if (!ColumnExists(connection, "Users", "IsDentistRole"))
+            {
+                using SqliteCommand command = connection.CreateCommand();
+                command.CommandText = @"
+        ALTER TABLE Users
+        ADD COLUMN IsDentistRole INTEGER NOT NULL DEFAULT 0;";
+                command.ExecuteNonQuery();
+            }
+
+            MergeCruzNeryAdminDentistAccount(connection);
         }
 
         // Adds the appointment columns/tables introduced after the initial schema:
@@ -182,6 +235,7 @@ CREATE TABLE IF NOT EXISTS Users (
 
     -- Supported roles based on the system design.
     Role TEXT NOT NULL CHECK(Role IN ('Admin', 'Dentist', 'Secretary', 'Dental Assistant')),
+    IsDentistRole INTEGER NOT NULL DEFAULT 0,
 
     -- Dynamic security question IDs from the SecurityQuestions table.
     SecurityQuestionId1 INTEGER NOT NULL,
@@ -243,6 +297,10 @@ CREATE TABLE IF NOT EXISTS Patients (
 
     -- Initial service/treatment shown in Patient Management list.
     InitialTreatment TEXT,
+
+    HasDataPrivacyConsent INTEGER NOT NULL DEFAULT 0,
+    DataPrivacyConsentAt TEXT,
+    DataPrivacyConsentVersion TEXT,
 
     IsActive INTEGER NOT NULL DEFAULT 1,
 
@@ -665,7 +723,7 @@ CREATE INDEX IF NOT EXISTS idx_activity_created ON ActivityLogs(CreatedAt);
                 firstName: "Nery",
                 middleName: "",
                 lastName: "Cruz",
-                username: "admin01",
+                username: "CNAdmin",
                 plainPassword: "Admin@2026",
                 role: "Admin",
                 contactNumber: "N/A",
@@ -677,28 +735,8 @@ CREATE INDEX IF NOT EXISTS idx_activity_created ON ActivityLogs(CreatedAt);
                 securityAnswer2: "teacher",
 
                 securityQuestionId3: foodQuestionId,
-                securityAnswer3: "food"
-            );
-
-            SeedUser(
-                connection,
-                userCode: "2026-002",
-                firstName: "Clinic",
-                middleName: "",
-                lastName: "Administrator Two",
-                username: "admin02",
-                plainPassword: "AdminClinic2@2025",
-                role: "Admin",
-                contactNumber: "N/A",
-
-                securityQuestionId1: motherQuestionId,
-                securityAnswer1: "admin02-mother",
-
-                securityQuestionId2: teacherQuestionId,
-                securityAnswer2: "admin02-teacher",
-
-                securityQuestionId3: foodQuestionId,
-                securityAnswer3: "admin02-food"
+                securityAnswer3: "food",
+                isDentistRole: true
             );
 
             // Dev account keeps simple known answers for testing only.
@@ -781,7 +819,8 @@ CREATE INDEX IF NOT EXISTS idx_activity_created ON ActivityLogs(CreatedAt);
             int securityQuestionId2,
             string securityAnswer2,
             int securityQuestionId3,
-            string securityAnswer3)
+            string securityAnswer3,
+            bool isDentistRole = false)
         {
             // Check first if the username already exists.
             // This prevents duplicate admin accounts every time the app starts.
@@ -792,7 +831,12 @@ CREATE INDEX IF NOT EXISTS idx_activity_created ON ActivityLogs(CreatedAt);
             long existingCount = (long)checkCommand.ExecuteScalar()!;
 
             if (existingCount > 0)
+            {
+                if (isDentistRole)
+                    MarkUserAsDentistRole(connection, username);
+
                 return;
+            }
 
             // Generate password salt and hash.
             // The plain password is never stored in the database.
@@ -822,6 +866,7 @@ CREATE INDEX IF NOT EXISTS idx_activity_created ON ActivityLogs(CreatedAt);
             PasswordHash,
             PasswordSalt,
             Role,
+            IsDentistRole,
 
             SecurityQuestionId1,
             SecurityAnswerHash1,
@@ -848,6 +893,7 @@ CREATE INDEX IF NOT EXISTS idx_activity_created ON ActivityLogs(CreatedAt);
             @PasswordHash,
             @PasswordSalt,
             @Role,
+            @IsDentistRole,
 
             @SecurityQuestionId1,
             @SecurityAnswerHash1,
@@ -874,6 +920,7 @@ CREATE INDEX IF NOT EXISTS idx_activity_created ON ActivityLogs(CreatedAt);
             insertCommand.Parameters.AddWithValue("@PasswordHash", passwordHash);
             insertCommand.Parameters.AddWithValue("@PasswordSalt", passwordSalt);
             insertCommand.Parameters.AddWithValue("@Role", role);
+            insertCommand.Parameters.AddWithValue("@IsDentistRole", isDentistRole ? 1 : 0);
 
             insertCommand.Parameters.AddWithValue("@SecurityQuestionId1", securityQuestionId1);
             insertCommand.Parameters.AddWithValue("@SecurityAnswerHash1", answerHash1);
@@ -890,6 +937,91 @@ CREATE INDEX IF NOT EXISTS idx_activity_created ON ActivityLogs(CreatedAt);
             insertCommand.Parameters.AddWithValue("@CreatedAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
 
             insertCommand.ExecuteNonQuery();
+        }
+
+        private static void MarkUserAsDentistRole(SqliteConnection connection, string username)
+        {
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+        UPDATE Users
+        SET IsDentistRole = 1
+        WHERE Username = @Username;";
+            command.Parameters.AddWithValue("@Username", username);
+            command.ExecuteNonQuery();
+        }
+
+        private static void MergeCruzNeryAdminDentistAccount(SqliteConnection connection)
+        {
+            int? adminUserId = GetUserIdByUsername(connection, "CNAdmin");
+            int? dentistUserId = GetUserIdByUsername(connection, "CNDentist");
+
+            if (!adminUserId.HasValue)
+                return;
+
+            using (SqliteCommand command = connection.CreateCommand())
+            {
+                command.CommandText = @"
+        UPDATE Users
+        SET IsDentistRole = 1,
+            Role = 'Admin'
+        WHERE UserId = @AdminUserId;";
+                command.Parameters.AddWithValue("@AdminUserId", adminUserId.Value);
+                command.ExecuteNonQuery();
+            }
+
+            if (!dentistUserId.HasValue)
+                return;
+
+            using (SqliteCommand command = connection.CreateCommand())
+            {
+                command.CommandText = @"
+        UPDATE Appointments
+        SET DentistUserId = @AdminUserId,
+            DentistName = 'Nery Cruz'
+        WHERE DentistUserId = @DentistUserId;";
+                command.Parameters.AddWithValue("@AdminUserId", adminUserId.Value);
+                command.Parameters.AddWithValue("@DentistUserId", dentistUserId.Value);
+                command.ExecuteNonQuery();
+            }
+
+            using (SqliteCommand command = connection.CreateCommand())
+            {
+                command.CommandText = @"
+        UPDATE TreatmentRecords
+        SET DentistUserId = @AdminUserId,
+            DentistName = 'Nery Cruz'
+        WHERE DentistUserId = @DentistUserId;";
+                command.Parameters.AddWithValue("@AdminUserId", adminUserId.Value);
+                command.Parameters.AddWithValue("@DentistUserId", dentistUserId.Value);
+                command.ExecuteNonQuery();
+            }
+
+            using (SqliteCommand command = connection.CreateCommand())
+            {
+                command.CommandText = @"
+        UPDATE Users
+        SET IsActive = 0,
+            IsDentistRole = 0,
+            UpdatedAt = @UpdatedAt
+        WHERE UserId = @DentistUserId;";
+                command.Parameters.AddWithValue("@UpdatedAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                command.Parameters.AddWithValue("@DentistUserId", dentistUserId.Value);
+                command.ExecuteNonQuery();
+            }
+        }
+
+        private static int? GetUserIdByUsername(SqliteConnection connection, string username)
+        {
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+        SELECT UserId
+        FROM Users
+        WHERE Username = @Username
+        LIMIT 1;";
+            command.Parameters.AddWithValue("@Username", username);
+
+            object? result = command.ExecuteScalar();
+            return result == null ? null : Convert.ToInt32(result);
         }
         private static void SeedDefaultServices(SqliteConnection connection)
         {
@@ -955,8 +1087,11 @@ VALUES (
 
         private static bool ColumnExists(SqliteConnection connection, string tableName, string columnName)
         {
+            if (!AllowedSchemaTables.Contains(tableName) || !IsSafeIdentifier(columnName))
+                throw new ArgumentException("Only approved schema identifiers can be inspected.");
+
             using SqliteCommand command = connection.CreateCommand();
-            command.CommandText = $"PRAGMA table_info({tableName});";
+            command.CommandText = BuildPragmaTableInfoSql(tableName);
 
             using SqliteDataReader reader = command.ExecuteReader();
 
@@ -969,6 +1104,23 @@ VALUES (
             }
 
             return false;
+        }
+
+        private static string BuildPragmaTableInfoSql(string tableName)
+            => "PRAGMA table_info(" + tableName + ");";
+
+        private static bool IsSafeIdentifier(string identifier)
+        {
+            if (string.IsNullOrWhiteSpace(identifier))
+                return false;
+
+            foreach (char character in identifier)
+            {
+                if (!char.IsLetterOrDigit(character) && character != '_')
+                    return false;
+            }
+
+            return true;
         }
 
         private static void EnsureBillingInvoiceSchema(SqliteConnection connection)

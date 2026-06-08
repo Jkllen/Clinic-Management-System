@@ -19,7 +19,7 @@ namespace CruzNeryClinic.Services
 
         private const string BackupMagic = "CNBAK1";
 
-        public string CreateEncryptedBackup(string outputFolder, string backupPassword)
+        public string CreateEncryptedBackup(string outputFolder, string backupPassword, string backupType = "Manual")
         {
             if (string.IsNullOrWhiteSpace(outputFolder))
                 throw new InvalidOperationException("Backup location is required.");
@@ -30,7 +30,8 @@ namespace CruzNeryClinic.Services
             Directory.CreateDirectory(outputFolder);
 
             string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-            string backupFilePath = Path.Combine(outputFolder, $"CruzNeryClinic_Backup_{timestamp}.cnbak");
+            string backupName = backupType == "Auto" ? "AutoBackup" : "Backup";
+            string backupFilePath = Path.Combine(outputFolder, $"CruzNeryClinic_{backupName}_{timestamp}.cnbak");
 
             string tempFolder = Path.Combine(Path.GetTempPath(), $"CruzNeryClinic_Backup_{Guid.NewGuid()}");
             Directory.CreateDirectory(tempFolder);
@@ -48,15 +49,16 @@ namespace CruzNeryClinic.Services
                 File.Copy(databasePath, databaseCopyPath, true);
 
                 byte[] rawAesKey = CryptoService.ExportRawKeyForBackup();
-                string keyPath = Path.Combine(tempFolder, "clinic_data.key");
-                File.WriteAllBytes(keyPath, rawAesKey);
+                byte[] encryptedRawAesKey = EncryptBackupBytes(rawAesKey, backupPassword);
+                string keyPath = Path.Combine(tempFolder, "clinic_data.key.enc");
+                File.WriteAllBytes(keyPath, encryptedRawAesKey);
 
                 BackupMetadata metadata = new()
                 {
-                    BackupType = "Manual",
+                    BackupType = backupType,
                     CreatedAt = DateTime.Now,
                     DatabaseFileName = databaseFileName,
-                    KeyFileName = "clinic_data.key"
+                    KeyFileName = "clinic_data.key.enc"
                 };
 
                 string metadataJson = JsonSerializer.Serialize(metadata, new JsonSerializerOptions
@@ -83,7 +85,7 @@ namespace CruzNeryClinic.Services
                 ActivityLogService.Log(
                     "Backup",
                     "Maintenance",
-                    $"Created database backup '{Path.GetFileName(backupFilePath)}'");
+                    $"Created {backupType.ToLowerInvariant()} database backup '{Path.GetFileName(backupFilePath)}'");
 
                 return backupFilePath;
             }
@@ -143,7 +145,8 @@ namespace CruzNeryClinic.Services
 
                 File.Copy(restoredDatabasePath, currentDatabasePath, true);
 
-                byte[] rawKey = File.ReadAllBytes(restoredKeyPath);
+                byte[] encryptedRawKey = File.ReadAllBytes(restoredKeyPath);
+                byte[] rawKey = DecryptBackupBytes(encryptedRawKey, backupPassword);
                 CryptoService.ImportRawKeyFromBackup(rawKey);
 
                 ActivityLogService.Log(

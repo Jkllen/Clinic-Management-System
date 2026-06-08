@@ -32,6 +32,8 @@ SELECT
     p.InitialTreatment,
     p.IsPWD,
     p.IsSeniorCitizen,
+    p.HasDataPrivacyConsent,
+    p.DataPrivacyConsentAt,
     p.IsActive,
     p.CreatedAt,
 
@@ -113,6 +115,9 @@ SELECT
     p.IsPWD,
     p.IsSeniorCitizen,
     p.InitialTreatment,
+    p.HasDataPrivacyConsent,
+    p.DataPrivacyConsentAt,
+    p.DataPrivacyConsentVersion,
     p.IsActive,
     p.CreatedAt,
     p.UpdatedAt,
@@ -172,6 +177,9 @@ LIMIT 1;";
             IsPWD,
             IsSeniorCitizen,
             InitialTreatment,
+            HasDataPrivacyConsent,
+            DataPrivacyConsentAt,
+            DataPrivacyConsentVersion,
             IsActive,
             CreatedAt
         )
@@ -187,6 +195,9 @@ LIMIT 1;";
             @IsPWD,
             @IsSeniorCitizen,
             @InitialTreatment,
+            @HasDataPrivacyConsent,
+            @DataPrivacyConsentAt,
+            @DataPrivacyConsentVersion,
             1,
             @CreatedAt
         );
@@ -204,6 +215,9 @@ LIMIT 1;";
                 insertPatientCommand.Parameters.AddWithValue("@IsPWD", patient.IsPwd ? 1 : 0);
                 insertPatientCommand.Parameters.AddWithValue("@IsSeniorCitizen", patient.IsSeniorCitizen ? 1 : 0);
                 insertPatientCommand.Parameters.AddWithValue("@InitialTreatment", patient.InitialTreatment.Trim());
+                insertPatientCommand.Parameters.AddWithValue("@HasDataPrivacyConsent", patient.HasDataPrivacyConsent ? 1 : 0);
+                insertPatientCommand.Parameters.AddWithValue("@DataPrivacyConsentAt", ToDatabaseDateTime(patient.DataPrivacyConsentAt));
+                insertPatientCommand.Parameters.AddWithValue("@DataPrivacyConsentVersion", patient.DataPrivacyConsentVersion.Trim());
                 insertPatientCommand.Parameters.AddWithValue("@CreatedAt", createdAt);
 
                 int patientId = Convert.ToInt32(insertPatientCommand.ExecuteScalar());
@@ -286,6 +300,9 @@ LIMIT 1;";
             IsPWD = @IsPWD,
             IsSeniorCitizen = @IsSeniorCitizen,
             InitialTreatment = @InitialTreatment,
+            HasDataPrivacyConsent = @HasDataPrivacyConsent,
+            DataPrivacyConsentAt = @DataPrivacyConsentAt,
+            DataPrivacyConsentVersion = @DataPrivacyConsentVersion,
             UpdatedAt = @UpdatedAt
         WHERE PatientId = @PatientId;";
 
@@ -299,6 +316,9 @@ LIMIT 1;";
                 updatePatientCommand.Parameters.AddWithValue("@IsPWD", patient.IsPwd ? 1 : 0);
                 updatePatientCommand.Parameters.AddWithValue("@IsSeniorCitizen", patient.IsSeniorCitizen ? 1 : 0);
                 updatePatientCommand.Parameters.AddWithValue("@InitialTreatment", patient.InitialTreatment.Trim());
+                updatePatientCommand.Parameters.AddWithValue("@HasDataPrivacyConsent", patient.HasDataPrivacyConsent ? 1 : 0);
+                updatePatientCommand.Parameters.AddWithValue("@DataPrivacyConsentAt", ToDatabaseDateTime(patient.DataPrivacyConsentAt));
+                updatePatientCommand.Parameters.AddWithValue("@DataPrivacyConsentVersion", patient.DataPrivacyConsentVersion.Trim());
                 updatePatientCommand.Parameters.AddWithValue("@UpdatedAt", updatedAt);
                 updatePatientCommand.Parameters.AddWithValue("@PatientId", patient.PatientId);
 
@@ -500,6 +520,8 @@ WHERE PatientId = @PatientId;";
             InitialTreatment,
             IsPWD,
             IsSeniorCitizen,
+            HasDataPrivacyConsent,
+            DataPrivacyConsentAt,
             IsActive,
             CreatedAt,
             0 AS HasPatientHistory,
@@ -510,20 +532,14 @@ WHERE PatientId = @PatientId;";
             AND LOWER(TRIM(IFNULL(MiddleName, ''))) = LOWER(TRIM(@MiddleName))
             AND LOWER(TRIM(LastName)) = LOWER(TRIM(@LastName))
             AND BirthDate = @BirthDate
-        ";
+            AND (@ExcludedPatientId IS NULL OR PatientId <> @ExcludedPatientId)
+        LIMIT 1;";
 
-            if (excludedPatientId.HasValue)
-            {
-                command.CommandText += " AND PatientId <> @ExcludedPatientId";
-                command.Parameters.AddWithValue("@ExcludedPatientId", excludedPatientId.Value);
-            }
-
-            command.CommandText += " LIMIT 1;";
-
-            command.Parameters.AddWithValue("@FirstName", firstName.Trim());
-            command.Parameters.AddWithValue("@MiddleName", middleName.Trim());
-            command.Parameters.AddWithValue("@LastName", lastName.Trim());
-            command.Parameters.AddWithValue("@BirthDate", birthDate.ToString("yyyy-MM-dd"));
+            command.AddTextParameter("@FirstName", firstName.Trim());
+            command.AddTextParameter("@MiddleName", middleName.Trim());
+            command.AddTextParameter("@LastName", lastName.Trim());
+            command.AddDateParameter("@BirthDate", birthDate);
+            command.AddNullableParameter("@ExcludedPatientId", excludedPatientId);
 
             using SqliteDataReader reader = command.ExecuteReader();
 
@@ -615,6 +631,8 @@ LIMIT 1;";
                 Treatment = reader["InitialTreatment"]?.ToString() ?? string.Empty,
                 IsPwd = Convert.ToInt32(reader["IsPWD"]) == 1,
                 IsSenior = Convert.ToInt32(reader["IsSeniorCitizen"]) == 1,
+                HasDataPrivacyConsent = SafeGetInt(reader, "HasDataPrivacyConsent") == 1,
+                DataPrivacyConsentAt = ParseNullableDate(reader["DataPrivacyConsentAt"]?.ToString()),
                 IsActive = Convert.ToInt32(reader["IsActive"]) == 1,
                 CreatedAt = ParseDate(reader["CreatedAt"]?.ToString()),
                 HasPatientHistory = Convert.ToInt32(reader["HasPatientHistory"]) == 1,
@@ -638,6 +656,9 @@ LIMIT 1;";
                 IsPwd = Convert.ToInt32(reader["IsPWD"]) == 1,
                 IsSeniorCitizen = Convert.ToInt32(reader["IsSeniorCitizen"]) == 1,
                 InitialTreatment = reader["InitialTreatment"]?.ToString() ?? string.Empty,
+                HasDataPrivacyConsent = SafeGetInt(reader, "HasDataPrivacyConsent") == 1,
+                DataPrivacyConsentAt = ParseNullableDate(reader["DataPrivacyConsentAt"]?.ToString()),
+                DataPrivacyConsentVersion = SafeGetString(reader, "DataPrivacyConsentVersion"),
                 IsActive = Convert.ToInt32(reader["IsActive"]) == 1,
                 CreatedAt = ParseDate(reader["CreatedAt"]?.ToString()),
                 UpdatedAt = ParseNullableDate(reader["UpdatedAt"]?.ToString()),
@@ -692,6 +713,13 @@ LIMIT 1;";
             return DateTime.TryParse(value, out DateTime date)
                 ? date
                 : null;
+        }
+
+        private static object ToDatabaseDateTime(DateTime? value)
+        {
+            return value.HasValue
+                ? value.Value.ToString("yyyy-MM-dd HH:mm:ss")
+                : DBNull.Value;
         }
 
         private TimeSpan? ParseNullableTime(string? value)

@@ -9,6 +9,7 @@ using System.Windows.Media;
 using System.Windows;
 using System.Text.RegularExpressions;
 using System.Collections.ObjectModel;
+using System.Security.Cryptography;
 using System.Windows.Input;
 
 namespace CruzNeryClinic.ViewModels
@@ -41,6 +42,7 @@ namespace CruzNeryClinic.ViewModels
         // Add User overlay state.
         private bool isAddUserOverlayOpen;
         private bool isSuccessPromptVisible;
+        private bool isGeneratedPasswordPromptVisible;
         private int currentStep = 1;
 
         // Add User basic fields.
@@ -68,6 +70,7 @@ namespace CruzNeryClinic.ViewModels
         private bool hasAddUserError;
 
         private string createdUserDisplayName = string.Empty;
+        private string createdTemporaryPassword = string.Empty;
 
 
         // Filter and sorting state.
@@ -177,6 +180,7 @@ namespace CruzNeryClinic.ViewModels
             SaveNewUserCommand = new RelayCommand(SaveNewUser);
             RegisterAgainCommand = new RelayCommand(RegisterAgain);
             CloseSuccessPromptCommand = new RelayCommand(CloseAddUserOverlay);
+            CopyCreatedPasswordCommand = new RelayCommand(CopyCreatedPassword);
 
             ToggleAddUserPasswordVisibilityCommand = new RelayCommand(() =>
             {
@@ -192,6 +196,9 @@ namespace CruzNeryClinic.ViewModels
             {
                 IsConfirmationPasswordVisible = !IsConfirmationPasswordVisible;
             });
+            GenerateNewUserPasswordCommand = new RelayCommand(GenerateNewUserPassword);
+            CloseGeneratedPasswordPromptCommand = new RelayCommand(() => IsGeneratedPasswordPromptVisible = false);
+            CopyGeneratedPasswordCommand = new RelayCommand(CopyGeneratedPassword);
 
             CloseUpdateUserOverlayCommand = new RelayCommand(CloseUpdateUserOverlay);
             CloseUserDetailsCommand = new RelayCommand(CloseUserDetailsOverlay);
@@ -689,6 +696,12 @@ namespace CruzNeryClinic.ViewModels
             set => SetProperty(ref isSuccessPromptVisible, value);
         }
 
+        public bool IsGeneratedPasswordPromptVisible
+        {
+            get => isGeneratedPasswordPromptVisible;
+            set => SetProperty(ref isGeneratedPasswordPromptVisible, value);
+        }
+
         public string AddUserPasswordEyeIcon =>
             IsAddUserPasswordVisible ? "Eye" : "EyeSlash";
 
@@ -714,6 +727,12 @@ namespace CruzNeryClinic.ViewModels
         public ICommand ToggleAddUserConfirmPasswordVisibilityCommand { get; }
 
         public ICommand ToggleConfirmationPasswordVisibilityCommand { get; }
+
+        public ICommand GenerateNewUserPasswordCommand { get; }
+
+        public ICommand CloseGeneratedPasswordPromptCommand { get; }
+
+        public ICommand CopyGeneratedPasswordCommand { get; }
 
         public bool IsAddUserPasswordHidden => !IsAddUserPasswordVisible;
 
@@ -742,7 +761,9 @@ namespace CruzNeryClinic.ViewModels
         }
 
         public string ConfirmationPasswordDisplay =>
-            IsConfirmationPasswordVisible ? NewUserPassword : "••••••••••••";
+            string.IsNullOrWhiteSpace(NewUserPassword)
+                ? "Auto-generated after creation"
+                : IsConfirmationPasswordVisible ? NewUserPassword : "••••••••••••";
 
         public int CurrentStep
         {
@@ -963,6 +984,12 @@ namespace CruzNeryClinic.ViewModels
             set => SetProperty(ref createdUserDisplayName, value);
         }
 
+        public string CreatedTemporaryPassword
+        {
+            get => createdTemporaryPassword;
+            set => SetProperty(ref createdTemporaryPassword, value);
+        }
+
         public string GeneratedUsername
         {
             get
@@ -1021,6 +1048,8 @@ namespace CruzNeryClinic.ViewModels
         public ICommand RegisterAgainCommand { get; }
 
         public ICommand CloseSuccessPromptCommand { get; }
+
+        public ICommand CopyCreatedPasswordCommand { get; }
 
         public ICommand RestoreUserCommand { get; }
 
@@ -1098,7 +1127,7 @@ namespace CruzNeryClinic.ViewModels
                 "All Users" => query,
                 "Archived Users" => query.Where(user => !user.IsActive),
                 "Administrators" => query.Where(user => user.IsActive && user.Role == "Admin"),
-                "Dentists" => query.Where(user => user.IsActive && user.Role == "Dentist"),
+                "Dentists" => query.Where(user => user.IsActive && (user.Role == "Dentist" || user.IsDentistRole)),
                 "Secretaries" => query.Where(user => user.IsActive && user.Role == "Secretary"),
                 "Dental Assistants" => query.Where(user => user.IsActive && user.Role == "Dental Assistant"),
                 "Staff Only" => query.Where(user => user.IsActive && user.Role != "Admin"),
@@ -1114,7 +1143,7 @@ namespace CruzNeryClinic.ViewModels
                     user.FirstName.ToLower().Contains(keyword) ||
                     user.LastName.ToLower().Contains(keyword) ||
                     user.ContactNumber.ToLower().Contains(keyword) ||
-                    user.Role.ToLower().Contains(keyword) ||
+                    user.RoleDisplay.ToLower().Contains(keyword) ||
                     user.AccountStatus.ToLower().Contains(keyword));
             }
 
@@ -1136,9 +1165,9 @@ namespace CruzNeryClinic.ViewModels
 
                 "First Name Z-A" => query.OrderByDescending(user => user.FirstName).ThenByDescending(user => user.LastName),
 
-                "Role A-Z" => query.OrderBy(user => user.Role).ThenBy(user => user.LastName),
+                "Role A-Z" => query.OrderBy(user => user.RoleDisplay).ThenBy(user => user.LastName),
 
-                "Role Z-A" => query.OrderByDescending(user => user.Role).ThenBy(user => user.LastName),
+                "Role Z-A" => query.OrderByDescending(user => user.RoleDisplay).ThenBy(user => user.LastName),
 
                 _ => query
                     .OrderBy(user => GetUserCodePrefixRank(user.UserCode))
@@ -1244,6 +1273,7 @@ namespace CruzNeryClinic.ViewModels
         {
             IsAddUserOverlayOpen = false;
             IsSuccessPromptVisible = false;
+            IsGeneratedPasswordPromptVisible = false;
             ResetAddUserForm();
         }
 
@@ -1294,7 +1324,6 @@ namespace CruzNeryClinic.ViewModels
             {
                 string userCode = userRepository.GenerateNextUserCode();
                 string username = GenerateUniqueUsername();
-
                 userRepository.AddUser(
                     userCode,
                     NewUserFirstName,
@@ -1316,6 +1345,7 @@ namespace CruzNeryClinic.ViewModels
                 );
 
                 CreatedUserDisplayName = $"{NewUserFirstName} {NewUserLastName}";
+                CreatedTemporaryPassword = NewUserPassword;
                 IsSuccessPromptVisible = true;
 
                 LoadUsers();
@@ -1331,6 +1361,26 @@ namespace CruzNeryClinic.ViewModels
             ResetAddUserForm();
             IsSuccessPromptVisible = false;
             CurrentStep = 1;
+        }
+
+        private void CopyCreatedPassword()
+        {
+            if (!string.IsNullOrWhiteSpace(CreatedTemporaryPassword))
+                Clipboard.SetText(CreatedTemporaryPassword);
+        }
+
+        private void GenerateNewUserPassword()
+        {
+            NewUserPassword = GenerateTemporaryPassword();
+            NewUserConfirmPassword = NewUserPassword;
+            IsConfirmationPasswordVisible = true;
+            IsGeneratedPasswordPromptVisible = true;
+        }
+
+        private void CopyGeneratedPassword()
+        {
+            if (!string.IsNullOrWhiteSpace(NewUserPassword))
+                Clipboard.SetText(NewUserPassword);
         }
 
         #endregion
@@ -1804,19 +1854,7 @@ namespace CruzNeryClinic.ViewModels
 
             if (string.IsNullOrWhiteSpace(NewUserPassword))
             {
-                ShowAddUserError("Password is required.");
-                return false;
-            }
-
-            if (NewUserPassword.Length < 12)
-            {
-                ShowAddUserError("Password must contain at least 12 characters.");
-                return false;
-            }
-
-            if (!IsStrongPassword(NewUserPassword))
-            {
-                ShowAddUserError("Password must contain at least 12 characters, uppercase, lowercase, number, and special character.");
+                ShowAddUserError("Please generate a temporary password.");
                 return false;
             }
 
@@ -1893,11 +1931,48 @@ namespace CruzNeryClinic.ViewModels
         private bool IsStrongPassword(string password)
         {
             return HasMinimumPasswordLength(password) &&
-                HasUppercaseCharacter(password) &&
-                HasLowercaseCharacter(password) &&
-                HasNumberCharacter(password) &&
-                HasSpecialCharacter(password);
+                   HasUppercaseCharacter(password) &&
+                   HasLowercaseCharacter(password) &&
+                   HasNumberCharacter(password) &&
+                   HasSpecialCharacter(password);
         }
+
+        private string GenerateTemporaryPassword()
+        {
+            const string uppercase = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+            const string lowercase = "abcdefghijkmnopqrstuvwxyz";
+            const string numbers = "23456789";
+            const string symbols = "!@#$%&*?";
+            string allCharacters = uppercase + lowercase + numbers + symbols;
+
+            char[] passwordCharacters =
+            {
+                PickRandomCharacter(uppercase),
+                PickRandomCharacter(lowercase),
+                PickRandomCharacter(numbers),
+                PickRandomCharacter(symbols),
+                PickRandomCharacter(allCharacters),
+                PickRandomCharacter(allCharacters),
+                PickRandomCharacter(allCharacters),
+                PickRandomCharacter(allCharacters),
+                PickRandomCharacter(allCharacters),
+                PickRandomCharacter(allCharacters),
+                PickRandomCharacter(allCharacters),
+                PickRandomCharacter(allCharacters)
+            };
+
+            for (int index = passwordCharacters.Length - 1; index > 0; index--)
+            {
+                int swapIndex = RandomNumberGenerator.GetInt32(index + 1);
+                (passwordCharacters[index], passwordCharacters[swapIndex]) =
+                    (passwordCharacters[swapIndex], passwordCharacters[index]);
+            }
+
+            return new string(passwordCharacters);
+        }
+
+        private static char PickRandomCharacter(string characters)
+            => characters[RandomNumberGenerator.GetInt32(characters.Length)];
 
         private bool ConfirmUpdateAction(string title, string message)
         {
@@ -1943,6 +2018,7 @@ namespace CruzNeryClinic.ViewModels
             NewUserContactNumber = string.Empty;
             NewUserPassword = string.Empty;
             NewUserConfirmPassword = string.Empty;
+            IsGeneratedPasswordPromptVisible = false;
 
             SelectedSecurityQuestion1 = null;
             SelectedSecurityQuestion2 = null;
@@ -1953,6 +2029,7 @@ namespace CruzNeryClinic.ViewModels
             SecurityAnswer3 = string.Empty;
 
             CreatedUserDisplayName = string.Empty;
+            CreatedTemporaryPassword = string.Empty;
 
             ClearAddUserError();
             RefreshConfirmationBindings();
@@ -1989,6 +2066,7 @@ namespace CruzNeryClinic.ViewModels
                 ContactNumber = user.ContactNumber,
                 Username = user.Username,
                 Role = user.Role,
+                IsDentistRole = user.IsDentistRole,
                 IsActive = user.IsActive,
                 CreatedByUserId = user.CreatedByUserId,
                 CreatedByDisplay = createdByDisplay,

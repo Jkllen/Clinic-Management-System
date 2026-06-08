@@ -28,6 +28,12 @@ namespace CruzNeryClinic.Models
 
         public string InitialTreatment { get; set; } = string.Empty;
 
+        public bool HasDataPrivacyConsent { get; set; }
+
+        public DateTime? DataPrivacyConsentAt { get; set; }
+
+        public string DataPrivacyConsentVersion { get; set; } = string.Empty;
+
         public bool HasMedicalCondition { get; set; }
 
         public string MedicalConditionNotes { get; set; } = string.Empty;

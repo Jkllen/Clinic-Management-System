@@ -62,6 +62,10 @@ namespace CruzNeryClinic.ViewModels
 
         private string formInitialTreatment = string.Empty;
         private string formAddress = string.Empty;
+        private bool formHasDataPrivacyConsent;
+        private DateTime? formDataPrivacyConsentAt;
+        private string formDataPrivacyConsentVersion = DataPrivacyConsentVersion;
+        private bool isDataPrivacyConsentOverlayOpen;
 
         private string patientFormErrorMessage = string.Empty;
         private bool hasPatientFormError;
@@ -82,6 +86,13 @@ namespace CruzNeryClinic.ViewModels
         private int historyTreatmentCurrentPage = 1;
         private int historyTreatmentTotalPages = 1;
         private const int HistoryTreatmentPageSize = 3;
+        private const string DataPrivacyConsentVersion = "CNDC-DPA-2026-01";
+        private const string DataPrivacyConsentBody =
+            "CRUZ-NERY DENTAL CLINIC DATA PRIVACY CONSENT FORM\n\n" +
+            "By signing or agreeing to this consent, the patient or authorized representative allows Cruz-Nery Dental Clinic to collect, use, store, and process personal information, contact details, dental and medical history, treatment records, appointment records, billing records, and related documents for legitimate clinic purposes.\n\n" +
+            "The clinic may use this information to provide dental care, manage appointments, document treatments, prepare invoices and receipts, contact the patient for follow-ups, comply with legal and regulatory requirements, and maintain clinic records.\n\n" +
+            "Patient records will be handled confidentially and accessed only by authorized clinic personnel. The patient may request correction of inaccurate information and may ask the clinic about how their data is used, subject to legal and clinic record-retention requirements.\n\n" +
+            "The patient confirms that the information provided is true and that the clinic explained why the data is needed before the record is saved.";
 
         #endregion
 
@@ -136,6 +147,9 @@ namespace CruzNeryClinic.ViewModels
             ClosePatientHistoryCommand = new RelayCommand(ClosePatientHistoryOverlay);
             CloseAddPatientPromptCommand = new RelayCommand(CloseAddPatientPrompt);
             CloseUpdatePatientPromptCommand = new RelayCommand(CloseUpdatePatientPrompt);
+            OpenDataPrivacyConsentCommand = new RelayCommand(OpenDataPrivacyConsent);
+            AcceptDataPrivacyConsentCommand = new RelayCommand(AcceptDataPrivacyConsent);
+            CloseDataPrivacyConsentCommand = new RelayCommand(CloseDataPrivacyConsent);
             PreviousHistoryTreatmentPageCommand = new RelayCommand(GoToPreviousHistoryTreatmentPage);
             NextHistoryTreatmentPageCommand = new RelayCommand(GoToNextHistoryTreatmentPage);
 
@@ -262,6 +276,12 @@ namespace CruzNeryClinic.ViewModels
         {
             get => isPatientHistoryOverlayOpen;
             set => SetProperty(ref isPatientHistoryOverlayOpen, value);
+        }
+
+        public bool IsDataPrivacyConsentOverlayOpen
+        {
+            get => isDataPrivacyConsentOverlayOpen;
+            set => SetProperty(ref isDataPrivacyConsentOverlayOpen, value);
         }
 
         #endregion
@@ -444,6 +464,36 @@ namespace CruzNeryClinic.ViewModels
             set => SetProperty(ref formAddress, value);
         }
 
+        public bool FormHasDataPrivacyConsent
+        {
+            get => formHasDataPrivacyConsent;
+            set
+            {
+                if (SetProperty(ref formHasDataPrivacyConsent, value))
+                {
+                    if (value)
+                    {
+                        formDataPrivacyConsentAt ??= DateTime.Now;
+                        formDataPrivacyConsentVersion = DataPrivacyConsentVersion;
+                    }
+                    else
+                    {
+                        formDataPrivacyConsentAt = null;
+                        formDataPrivacyConsentVersion = string.Empty;
+                    }
+
+                    OnPropertyChanged(nameof(DataPrivacyConsentStatusDisplay));
+                }
+            }
+        }
+
+        public string DataPrivacyConsentText => DataPrivacyConsentBody;
+
+        public string DataPrivacyConsentStatusDisplay =>
+            FormHasDataPrivacyConsent && formDataPrivacyConsentAt.HasValue
+                ? $"Consent recorded on {formDataPrivacyConsentAt.Value:MM/dd/yyyy}"
+                : "Consent has not been recorded yet.";
+
         public string PatientFormErrorMessage
         {
             get => patientFormErrorMessage;
@@ -578,6 +628,12 @@ namespace CruzNeryClinic.ViewModels
         public ICommand CloseAddPatientPromptCommand { get; }
 
         public ICommand CloseUpdatePatientPromptCommand { get; }
+
+        public ICommand OpenDataPrivacyConsentCommand { get; }
+
+        public ICommand AcceptDataPrivacyConsentCommand { get; }
+
+        public ICommand CloseDataPrivacyConsentCommand { get; }
 
         public ICommand PreviousHistoryTreatmentPageCommand { get; }
 
@@ -1130,6 +1186,12 @@ namespace CruzNeryClinic.ViewModels
                 return false;
             }
 
+            if (!FormHasDataPrivacyConsent)
+            {
+                ShowPatientFormError("Please review and confirm the patient's Data Privacy Consent before saving.");
+                return false;
+            }
+
             if (FormHasMedicalCondition && string.IsNullOrWhiteSpace(FormMedicalConditionNotes))
             {
                 ShowPatientFormError("Please enter the patient's medical condition notes.");
@@ -1181,7 +1243,10 @@ namespace CruzNeryClinic.ViewModels
                 ClearanceNotes = FormClearanceNotes.Trim(),
 
                 InitialTreatmentNotes = FormInitialTreatmentNotes.Trim(),
-                InitialTreatment = GetSelectedServiceName()
+                InitialTreatment = GetSelectedServiceName(),
+                HasDataPrivacyConsent = FormHasDataPrivacyConsent,
+                DataPrivacyConsentAt = formDataPrivacyConsentAt,
+                DataPrivacyConsentVersion = formDataPrivacyConsentVersion
             };
         }
 
@@ -1196,6 +1261,12 @@ namespace CruzNeryClinic.ViewModels
             FormIsPwd = patient.IsPwd;
             FormIsSeniorCitizen = patient.IsSeniorCitizen;
             FormAddress = patient.Address;
+            FormHasDataPrivacyConsent = patient.HasDataPrivacyConsent;
+            formDataPrivacyConsentAt = patient.DataPrivacyConsentAt;
+            formDataPrivacyConsentVersion = string.IsNullOrWhiteSpace(patient.DataPrivacyConsentVersion)
+                ? DataPrivacyConsentVersion
+                : patient.DataPrivacyConsentVersion;
+            OnPropertyChanged(nameof(DataPrivacyConsentStatusDisplay));
 
             // Medical Background
             FormHasMedicalCondition = patient.HasMedicalCondition;
@@ -1286,6 +1357,26 @@ namespace CruzNeryClinic.ViewModels
             OtherServiceName = string.Empty;
             IsOtherServiceSelected = false;
             FormAddress = string.Empty;
+            FormHasDataPrivacyConsent = false;
+            formDataPrivacyConsentAt = null;
+            formDataPrivacyConsentVersion = DataPrivacyConsentVersion;
+            IsDataPrivacyConsentOverlayOpen = false;
+        }
+
+        private void OpenDataPrivacyConsent()
+        {
+            IsDataPrivacyConsentOverlayOpen = true;
+        }
+
+        private void AcceptDataPrivacyConsent()
+        {
+            FormHasDataPrivacyConsent = true;
+            IsDataPrivacyConsentOverlayOpen = false;
+        }
+
+        private void CloseDataPrivacyConsent()
+        {
+            IsDataPrivacyConsentOverlayOpen = false;
         }
 
         private void ApplySelectedServiceFromExistingTreatment(string treatment)

@@ -275,8 +275,6 @@ LIMIT @Limit;";
             using SqliteConnection connection = DatabaseService.GetConnection();
             connection.Open();
 
-            string pattern = $"%{searchText.Trim()}%";
-
             // Patients
             using (SqliteCommand command = connection.CreateCommand())
             {
@@ -295,8 +293,9 @@ WHERE IsActive = 1
 ORDER BY LastName ASC, FirstName ASC
 LIMIT @Limit;";
 
-                command.Parameters.AddWithValue("@SearchText", pattern);
-                command.Parameters.AddWithValue("@Limit", limit);
+                command
+                    .AddLikeParameter("@SearchText", searchText)
+                    .AddIntParameter("@Limit", Math.Max(1, limit));
 
                 using SqliteDataReader reader = command.ExecuteReader();
                 while (reader.Read())
@@ -338,8 +337,9 @@ WHERE IsActive = 1
 ORDER BY LastName ASC, FirstName ASC
 LIMIT @Limit;";
 
-                command.Parameters.AddWithValue("@SearchText", pattern);
-                command.Parameters.AddWithValue("@Limit", limit);
+                command
+                    .AddLikeParameter("@SearchText", searchText)
+                    .AddIntParameter("@Limit", Math.Max(1, limit));
 
                 using SqliteDataReader reader = command.ExecuteReader();
                 while (reader.Read())

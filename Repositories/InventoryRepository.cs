@@ -11,22 +11,24 @@ namespace CruzNeryClinic.Repositories
     public class InventoryRepository
     {
         public List<InventoryItem> GetAllItems()
-            => QueryItems("WHERE IsActive = 1");
+            => QueryItems(isActive: true);
 
         public List<InventoryItem> GetArchivedItems()
-            => QueryItems("WHERE IsActive = 0");
+            => QueryItems(isActive: false);
 
-        private List<InventoryItem> QueryItems(string whereClause)
+        private List<InventoryItem> QueryItems(bool isActive)
         {
             var items = new List<InventoryItem>();
 
             using SqliteConnection connection = DatabaseService.GetConnection();
             connection.Open();
 
-            using SqliteCommand command = connection.CreateCommand();
-            command.CommandText =
-                $"SELECT ItemId, ItemName, Quantity, UnitPrice, MinimumThreshold, IsActive, " +
-                $"LastRestock, UpdatedAt, ItemCreated, Note FROM InventoryItems {whereClause};";
+            using SqliteCommand command = connection.CreateCommand(@"
+                SELECT ItemId, ItemName, Quantity, UnitPrice, MinimumThreshold, IsActive,
+                       LastRestock, UpdatedAt, ItemCreated, Note
+                FROM InventoryItems
+                WHERE IsActive = @IsActive;");
+            command.AddBoolParameter("@IsActive", isActive);
 
             using SqliteDataReader reader = command.ExecuteReader();
             while (reader.Read())
@@ -196,12 +198,12 @@ namespace CruzNeryClinic.Repositories
         }
 
         public List<RecentItemUsage> GetRecentUsages(int count = 5)
-            => QueryUsages($"ORDER BY UsageId DESC LIMIT {count}");
+            => QueryUsages(limit: count);
 
         public List<RecentItemUsage> GetAllUsages()
-            => QueryUsages("ORDER BY UsageId DESC");
+            => QueryUsages();
 
-        private List<RecentItemUsage> QueryUsages(string orderClause)
+        private List<RecentItemUsage> QueryUsages(int? limit = null)
         {
             var list = new List<RecentItemUsage>();
 
@@ -209,9 +211,18 @@ namespace CruzNeryClinic.Repositories
             connection.Open();
 
             using SqliteCommand command = connection.CreateCommand();
-            command.CommandText =
-                $"SELECT UsageId, ItemId, ItemName, QuantityUsed, UsageDate, IFNULL(Notes,'') " +
-                $"FROM InventoryUsage {orderClause};";
+            command.CommandText = @"
+                SELECT UsageId, ItemId, ItemName, QuantityUsed, UsageDate, IFNULL(Notes,'')
+                FROM InventoryUsage
+                ORDER BY UsageId DESC";
+
+            if (limit.HasValue)
+            {
+                command.CommandText += " LIMIT @Limit";
+                command.AddIntParameter("@Limit", Math.Max(0, limit.Value));
+            }
+
+            command.CommandText += ";";
 
             using SqliteDataReader reader = command.ExecuteReader();
             while (reader.Read())
@@ -231,12 +242,12 @@ namespace CruzNeryClinic.Repositories
         }
 
         public List<RecentRestockItem> GetRecentRestocks(int count = 5)
-            => QueryRestocks($"ORDER BY RestockId DESC LIMIT {count}");
+            => QueryRestocks(limit: count);
 
         public List<RecentRestockItem> GetAllRestocks()
-            => QueryRestocks("ORDER BY RestockId DESC");
+            => QueryRestocks();
 
-        private List<RecentRestockItem> QueryRestocks(string orderClause)
+        private List<RecentRestockItem> QueryRestocks(int? limit = null)
         {
             var list = new List<RecentRestockItem>();
 
@@ -244,10 +255,19 @@ namespace CruzNeryClinic.Repositories
             connection.Open();
 
             using SqliteCommand command = connection.CreateCommand();
-            command.CommandText =
-                $"SELECT RestockId, ItemId, ItemName, QuantityAdded, RestockedDate, " +
-                $"IFNULL(Supplier,''), UnitPrice, IFNULL(Note,'') " +
-                $"FROM InventoryRestocks {orderClause};";
+            command.CommandText = @"
+                SELECT RestockId, ItemId, ItemName, QuantityAdded, RestockedDate,
+                       IFNULL(Supplier,''), UnitPrice, IFNULL(Note,'')
+                FROM InventoryRestocks
+                ORDER BY RestockId DESC";
+
+            if (limit.HasValue)
+            {
+                command.CommandText += " LIMIT @Limit";
+                command.AddIntParameter("@Limit", Math.Max(0, limit.Value));
+            }
+
+            command.CommandText += ";";
 
             using SqliteDataReader reader = command.ExecuteReader();
             while (reader.Read())

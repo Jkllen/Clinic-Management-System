@@ -20,6 +20,11 @@ namespace CruzNeryClinic.Models.UserManagement
 
         public string Role { get; set; } = string.Empty;
 
+        public bool IsDentistRole { get; set; }
+
+        public string RoleDisplay =>
+            Role == "Admin" && IsDentistRole ? "Admin, Dentist" : Role;
+
         public bool IsActive { get; set; }
 
         public int? CreatedByUserId { get; set; }

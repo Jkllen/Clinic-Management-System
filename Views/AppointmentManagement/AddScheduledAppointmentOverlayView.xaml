@@ -418,7 +418,7 @@
 
                 <StackPanel
                     Margin="0,18,0,0"
-                    Visibility="{Binding HasTreatmentDetailSection, Converter={StaticResource BoolToVisibilityConverter}}">
+                    Visibility="Collapsed">
 
                     <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Treatment Details" />
 
@@ -554,7 +554,7 @@
                     </Grid>
                 </StackPanel>
 
-                <StackPanel Margin="0,18,0,0">
+                <StackPanel Margin="0,18,0,0" Visibility="Collapsed">
                     <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Teeth Images" />
 
                     <Button

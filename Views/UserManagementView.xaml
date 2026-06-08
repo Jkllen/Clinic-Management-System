@@ -461,7 +461,7 @@
                                 <DataGridTextColumn
                                     Width="1*"
                                     MinWidth="120"
-                                    Binding="{Binding Role}"
+                                    Binding="{Binding RoleDisplay}"
                                     Header="Role" />
 
                                 <DataGridTextColumn

@@ -349,7 +349,7 @@ AND (
 )
 ORDER BY u.CreatedAt DESC;";
 
-            command.Parameters.AddWithValue("@SearchText", $"%{searchText.Trim()}%");
+            command.AddLikeParameter("@SearchText", searchText);
 
             using SqliteDataReader reader = command.ExecuteReader();
 
@@ -434,6 +434,7 @@ ORDER BY u.CreatedAt DESC;";
             PasswordHash,
             PasswordSalt,
             Role,
+            IsDentistRole,
 
             SecurityQuestionId1,
             SecurityAnswerHash1,
@@ -461,6 +462,7 @@ ORDER BY u.CreatedAt DESC;";
             @PasswordHash,
             @PasswordSalt,
             @Role,
+            @IsDentistRole,
 
             @SecurityQuestionId1,
             @SecurityAnswerHash1,
@@ -488,6 +490,7 @@ ORDER BY u.CreatedAt DESC;";
                 command.Parameters.AddWithValue("@PasswordHash", passwordHash);
                 command.Parameters.AddWithValue("@PasswordSalt", passwordSalt);
                 command.Parameters.AddWithValue("@Role", role.Trim());
+                command.Parameters.AddWithValue("@IsDentistRole", role.Trim() == "Dentist" ? 1 : 0);
 
                 command.Parameters.AddWithValue("@SecurityQuestionId1", securityQuestionId1);
                 command.Parameters.AddWithValue("@SecurityAnswerHash1", answerHash1);
@@ -559,6 +562,11 @@ SET FirstName = @FirstName,
     LastName = @LastName,
     ContactNumber = @ContactNumber,
     Role = @Role,
+    IsDentistRole = CASE
+        WHEN @Role = 'Dentist' THEN 1
+        WHEN @Role = 'Admin' AND IsDentistRole = 1 THEN 1
+        ELSE 0
+    END,
     UpdatedAt = @UpdatedAt
 WHERE UserId = @UserId;";
 
@@ -621,6 +629,11 @@ SET FirstName = @FirstName,
     MiddleName = @MiddleName,
     LastName = @LastName,
     Role = @Role,
+    IsDentistRole = CASE
+        WHEN @Role = 'Dentist' THEN 1
+        WHEN @Role = 'Admin' AND IsDentistRole = 1 THEN 1
+        ELSE 0
+    END,
     ContactNumber = @ContactNumber,
     UpdatedAt = @UpdatedAt
 WHERE UserId = @UserId;";
@@ -1190,6 +1203,7 @@ VALUES (
                 PasswordSalt = reader["PasswordSalt"].ToString() ?? string.Empty,
 
                 Role = reader["Role"].ToString() ?? string.Empty,
+                IsDentistRole = SafeGetNullableInt(reader, "IsDentistRole") == 1,
 
                 SecurityQuestionId1 = Convert.ToInt32(reader["SecurityQuestionId1"]),
                 SecurityQuestionId2 = Convert.ToInt32(reader["SecurityQuestionId2"]),
