@@ -41,6 +41,10 @@ namespace CruzNeryClinic.ViewModels
         private string completionTreatmentNotes = string.Empty;
         private string completionErrorMessage = string.Empty;
         private bool hasCompletionError;
+        private bool isOperationDetailsOverlayOpen;
+        private AppointmentListItem? appointmentPendingOperation;
+        private string operationErrorMessage = string.Empty;
+        private bool hasOperationError;
 
 
         // Reschedule
@@ -78,6 +82,9 @@ namespace CruzNeryClinic.ViewModels
 
         private DateTime? formAppointmentDate = DateTime.Today;
         private string formAppointmentTimeText = string.Empty;
+        private string walkInArrivalHourText = string.Empty;
+        private string walkInArrivalMinuteText = string.Empty;
+        private string walkInArrivalPeriod = "AM";
         private string formNotes = string.Empty;
         private string formTreatmentStage = string.Empty;
         private DateTime? formFollowUpDate;
@@ -112,6 +119,7 @@ namespace CruzNeryClinic.ViewModels
             ServiceOptions = new ObservableCollection<AppointmentServiceOption>();
             DentistOptions = new ObservableCollection<AppointmentDentistOption>();
             AppointmentTimeOptions = new ObservableCollection<string>();
+            TimePeriodOptions = new ObservableCollection<string> { "AM", "PM" };
             TreatmentStageOptions = new ObservableCollection<string>();
             ProphylaxisSeverityOptions = new ObservableCollection<string> { "Mild", "Moderate", "Severe" };
             RestorationDepthOptions = new ObservableCollection<string> { "Shallow", "Medium", "Deep" };
@@ -179,6 +187,9 @@ namespace CruzNeryClinic.ViewModels
             MarkNoShowCommand = new RelayCommand<AppointmentListItem>(MarkNoShow);
             
             StartTreatmentCommand = new RelayCommand<AppointmentListItem>(StartTreatment);
+            OpenOperationDetailsCommand = new RelayCommand<AppointmentListItem>(OpenOperationDetails);
+            SaveOperationDetailsCommand = new RelayCommand(SaveOperationDetails);
+            CloseOperationDetailsCommand = new RelayCommand(CloseOperationDetails);
             CompleteAppointmentCommand = new RelayCommand<AppointmentListItem>(CompleteAppointment);
             CancelAppointmentCommand = new RelayCommand<AppointmentListItem>(CancelAppointment);
             ToggleUrgentCommand = new RelayCommand<AppointmentListItem>(ToggleUrgent);
@@ -216,6 +227,8 @@ namespace CruzNeryClinic.ViewModels
         public ObservableCollection<AppointmentDentistOption> DentistOptions { get; }
 
         public ObservableCollection<string> AppointmentTimeOptions { get; }
+
+        public ObservableCollection<string> TimePeriodOptions { get; }
 
         public ObservableCollection<string> TreatmentStageOptions { get; }
 
@@ -387,6 +400,30 @@ namespace CruzNeryClinic.ViewModels
         {
             get => isCompleteTreatmentOverlayOpen;
             set => SetProperty(ref isCompleteTreatmentOverlayOpen, value);
+        }
+
+        public bool IsOperationDetailsOverlayOpen
+        {
+            get => isOperationDetailsOverlayOpen;
+            set => SetProperty(ref isOperationDetailsOverlayOpen, value);
+        }
+
+        public AppointmentListItem? AppointmentPendingOperation
+        {
+            get => appointmentPendingOperation;
+            set => SetProperty(ref appointmentPendingOperation, value);
+        }
+
+        public string OperationErrorMessage
+        {
+            get => operationErrorMessage;
+            set => SetProperty(ref operationErrorMessage, value);
+        }
+
+        public bool HasOperationError
+        {
+            get => hasOperationError;
+            set => SetProperty(ref hasOperationError, value);
         }
 
         public AppointmentListItem? AppointmentPendingCompletion
@@ -568,6 +605,24 @@ namespace CruzNeryClinic.ViewModels
         {
             get => formAppointmentTimeText;
             set => SetProperty(ref formAppointmentTimeText, value);
+        }
+
+        public string WalkInArrivalHourText
+        {
+            get => walkInArrivalHourText;
+            set => SetProperty(ref walkInArrivalHourText, value);
+        }
+
+        public string WalkInArrivalMinuteText
+        {
+            get => walkInArrivalMinuteText;
+            set => SetProperty(ref walkInArrivalMinuteText, value);
+        }
+
+        public string WalkInArrivalPeriod
+        {
+            get => walkInArrivalPeriod;
+            set => SetProperty(ref walkInArrivalPeriod, value);
         }
 
         public string FormNotes
@@ -761,6 +816,12 @@ namespace CruzNeryClinic.ViewModels
         public ICommand MarkNoShowCommand { get; }
 
         public ICommand StartTreatmentCommand { get; }
+
+        public ICommand OpenOperationDetailsCommand { get; }
+
+        public ICommand SaveOperationDetailsCommand { get; }
+
+        public ICommand CloseOperationDetailsCommand { get; }
 
         public ICommand CompleteAppointmentCommand { get; }
 
@@ -1069,7 +1130,7 @@ namespace CruzNeryClinic.ViewModels
 
             FormTitle = "Add Walk-in Visit";
             FormAppointmentDate = DateTime.Today;
-            FormAppointmentTimeText = GetNearestAppointmentTimeText(DateTime.Today, DateTime.Now.TimeOfDay);
+            SetWalkInArrivalTime(DateTime.Now);
             SelectedDentist = null;
 
             IsWalkInOverlayOpen = true;
@@ -1383,7 +1444,7 @@ namespace CruzNeryClinic.ViewModels
                 if (!ConfirmMedicalClearanceIfNeeded("add this walk-in visit"))
                     return;
 
-                TimeSpan appointmentTime = ParseFormTime();
+                TimeSpan appointmentTime = ParseFormTime(isScheduled: false);
                 DateTime appointmentDate = FormAppointmentDate!.Value.Date;
 
                 if (!ValidateAppointmentConflict(appointmentDate, appointmentTime, isScheduled: false))
@@ -1396,9 +1457,9 @@ namespace CruzNeryClinic.ViewModels
                     Category = SelectedPatient.Category,
                     ServiceId = SelectedServices.First().ServiceId,
                     ServiceName = BuildCombinedServiceName(),
-                    ServiceStage = RequiresTreatmentStage ? FormTreatmentStage.Trim() : null,
-                    FollowUpDate = RequiresFollowUpDate ? FormFollowUpDate : null,
-                    TreatmentDetails = BuildTreatmentDetails(),
+                    ServiceStage = null,
+                    FollowUpDate = null,
+                    TreatmentDetails = string.Empty,
                     DentistUserId = SelectedDentist!.DentistUserId,
                     DentistName = SelectedDentist.DentistName,
                     AppointmentDate = appointmentDate,
@@ -1410,8 +1471,7 @@ namespace CruzNeryClinic.ViewModels
                     Notes = FormNotes.Trim()
                 };
 
-                int newAppointmentId = appointmentRepository.AddAppointment(appointment);
-                SaveTeethImages(newAppointmentId);
+                appointmentRepository.AddAppointment(appointment);
 
                 IsWalkInOverlayOpen = false;
 
@@ -1442,7 +1502,7 @@ namespace CruzNeryClinic.ViewModels
                 if (!ConfirmMedicalClearanceIfNeeded("save this scheduled appointment"))
                     return;
     
-                TimeSpan appointmentTime = ParseFormTime();
+                TimeSpan appointmentTime = ParseFormTime(isScheduled: true);
                 DateTime appointmentDate = FormAppointmentDate!.Value.Date;
 
                 if (!ValidateAppointmentConflict(appointmentDate, appointmentTime, isScheduled: true))
@@ -1455,9 +1515,9 @@ namespace CruzNeryClinic.ViewModels
                     Category = SelectedPatient.Category,
                     ServiceId = SelectedServices.First().ServiceId,
                     ServiceName = BuildCombinedServiceName(),
-                    ServiceStage = RequiresTreatmentStage ? FormTreatmentStage.Trim() : null,
-                    FollowUpDate = RequiresFollowUpDate ? FormFollowUpDate : null,
-                    TreatmentDetails = BuildTreatmentDetails(),
+                    ServiceStage = null,
+                    FollowUpDate = null,
+                    TreatmentDetails = string.Empty,
                     DentistUserId = SelectedDentist!.DentistUserId,
                     DentistName = SelectedDentist.DentistName,
                     AppointmentDate = appointmentDate,
@@ -1469,8 +1529,7 @@ namespace CruzNeryClinic.ViewModels
                     Notes = FormNotes.Trim()
                 };
 
-                int newAppointmentId = appointmentRepository.AddAppointment(appointment);
-                SaveTeethImages(newAppointmentId);
+                appointmentRepository.AddAppointment(appointment);
 
                 IsScheduledOverlayOpen = false;
 
@@ -1804,14 +1863,17 @@ namespace CruzNeryClinic.ViewModels
         // current appointment immediately.
         public void AddAppointmentDetailsImage(string sourcePath)
         {
-            if (SelectedAppointmentDetails == null || string.IsNullOrWhiteSpace(sourcePath))
+            int? appointmentId = SelectedAppointmentDetails?.AppointmentId
+                ?? AppointmentPendingOperation?.AppointmentId;
+
+            if (!appointmentId.HasValue || string.IsNullOrWhiteSpace(sourcePath))
                 return;
 
             try
             {
                 string storedPath = AppointmentImageService.SaveImage(sourcePath);
-                appointmentRepository.AddAppointmentImage(SelectedAppointmentDetails.AppointmentId, storedPath);
-                LoadAppointmentDetailsImages(SelectedAppointmentDetails.AppointmentId);
+                appointmentRepository.AddAppointmentImage(appointmentId.Value, storedPath);
+                LoadAppointmentDetailsImages(appointmentId.Value);
             }
             catch (Exception ex)
             {
@@ -1821,7 +1883,10 @@ namespace CruzNeryClinic.ViewModels
 
         private void RemoveAppointmentDetailsImage(AppointmentImageItem? image)
         {
-            if (image == null || SelectedAppointmentDetails == null)
+            int? appointmentId = SelectedAppointmentDetails?.AppointmentId
+                ?? AppointmentPendingOperation?.AppointmentId;
+
+            if (image == null || !appointmentId.HasValue)
                 return;
 
             MessageBoxResult confirm = MessageBox.Show(
@@ -1834,7 +1899,7 @@ namespace CruzNeryClinic.ViewModels
                 return;
 
             appointmentRepository.DeleteAppointmentImage(image.AppointmentImageId);
-            LoadAppointmentDetailsImages(SelectedAppointmentDetails.AppointmentId);
+            LoadAppointmentDetailsImages(appointmentId.Value);
         }
 
         #endregion
@@ -1947,6 +2012,155 @@ namespace CruzNeryClinic.ViewModels
             {
                 ShowError($"Failed to start treatment: {ex.Message}");
             }
+        }
+
+        private void OpenOperationDetails(AppointmentListItem? appointment)
+        {
+            if (appointment == null)
+                return;
+
+            if (appointment.Status != "In Treatment")
+            {
+                MessageBox.Show(
+                    "Operation details are only available while the appointment is in treatment.",
+                    "Operation Details Not Available",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning
+                );
+                return;
+            }
+
+            AppointmentPendingOperation = appointmentRepository.GetAppointmentListItemById(appointment.AppointmentId) ?? appointment;
+            LoadOperationFieldsFromAppointment(AppointmentPendingOperation);
+            LoadAppointmentDetailsImages(AppointmentPendingOperation.AppointmentId);
+            ClearOperationError();
+            RefreshTreatmentDetailState();
+            IsOperationDetailsOverlayOpen = true;
+        }
+
+        private void SaveOperationDetails()
+        {
+            if (AppointmentPendingOperation == null)
+            {
+                CloseOperationDetails();
+                return;
+            }
+
+            ClearOperationError();
+
+            if (!ValidateOperationDetails())
+                return;
+
+            try
+            {
+                appointmentRepository.UpdateOperationDetails(
+                    AppointmentPendingOperation.AppointmentId,
+                    RequiresTreatmentStage ? FormTreatmentStage.Trim() : null,
+                    RequiresFollowUpDate ? FormFollowUpDate : null,
+                    BuildTreatmentDetails()
+                );
+
+                CloseOperationDetails();
+                LoadAppointments();
+
+                MessageBox.Show(
+                    "Operation details were saved successfully.",
+                    "Operation Details Saved",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information
+                );
+            }
+            catch (Exception ex)
+            {
+                ShowOperationError($"Failed to save operation details: {ex.Message}");
+            }
+        }
+
+        private void CloseOperationDetails()
+        {
+            IsOperationDetailsOverlayOpen = false;
+            AppointmentPendingOperation = null;
+            AppointmentDetailsImages.Clear();
+            ClearOperationFields();
+            ClearOperationError();
+            RefreshTreatmentDetailState();
+        }
+
+        private void LoadOperationFieldsFromAppointment(AppointmentListItem appointment)
+        {
+            ClearOperationFields();
+
+            FormTreatmentStage = appointment.ServiceStage ?? string.Empty;
+            FormFollowUpDate = appointment.FollowUpDate;
+
+            string details = appointment.TreatmentDetails ?? string.Empty;
+
+            foreach (string rawLine in details.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                string line = rawLine.Trim();
+
+                if (line.StartsWith("Teeth involved:", StringComparison.OrdinalIgnoreCase) ||
+                    line.StartsWith("Treated teeth:", StringComparison.OrdinalIgnoreCase))
+                {
+                    string teethText = line
+                        .Replace("Teeth involved:", string.Empty, StringComparison.OrdinalIgnoreCase)
+                        .Replace("Treated teeth:", string.Empty, StringComparison.OrdinalIgnoreCase);
+
+                    foreach (string value in teethText.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                    {
+                        if (int.TryParse(value, out int toothNumber))
+                        {
+                            AppointmentToothOption? tooth = ToothOptions.FirstOrDefault(option => option.ToothNumber == toothNumber);
+                            if (tooth != null)
+                                tooth.IsSelected = true;
+                        }
+                    }
+                }
+                else if (line.StartsWith("Prescription / medication:", StringComparison.OrdinalIgnoreCase))
+                {
+                    FormPrescription = line.Replace("Prescription / medication:", string.Empty, StringComparison.OrdinalIgnoreCase).Trim();
+                }
+                else if (line.StartsWith("Prophylaxis severity:", StringComparison.OrdinalIgnoreCase))
+                {
+                    FormProphylaxisSeverity = line.Replace("Prophylaxis severity:", string.Empty, StringComparison.OrdinalIgnoreCase).Trim();
+                }
+                else if (line.StartsWith("Restoration surface:", StringComparison.OrdinalIgnoreCase))
+                {
+                    FormRestorationSurface = line.Replace("Restoration surface:", string.Empty, StringComparison.OrdinalIgnoreCase).Trim();
+                }
+                else if (line.StartsWith("Restoration depth:", StringComparison.OrdinalIgnoreCase))
+                {
+                    FormRestorationDepth = line.Replace("Restoration depth:", string.Empty, StringComparison.OrdinalIgnoreCase).Trim();
+                }
+            }
+
+            OnPropertyChanged(nameof(ToothOptions));
+        }
+
+        private void ClearOperationFields()
+        {
+            FormTreatmentStage = string.Empty;
+            FormFollowUpDate = null;
+            FormToothNumber = string.Empty;
+            foreach (AppointmentToothOption tooth in ToothOptions)
+                tooth.IsSelected = false;
+            FormPrescription = string.Empty;
+            FormProphylaxisSeverity = string.Empty;
+            FormRestorationSurface = string.Empty;
+            FormRestorationDepth = string.Empty;
+            OnPropertyChanged(nameof(ToothOptions));
+        }
+
+        private void ShowOperationError(string message)
+        {
+            OperationErrorMessage = message;
+            HasOperationError = true;
+        }
+
+        private void ClearOperationError()
+        {
+            OperationErrorMessage = string.Empty;
+            HasOperationError = false;
         }
 
         private void CompleteAppointment(AppointmentListItem? appointment)
@@ -2132,15 +2346,25 @@ namespace CruzNeryClinic.ViewModels
                 return false;
             }
 
-            if (string.IsNullOrWhiteSpace(FormAppointmentTimeText))
-            {
-                ShowFormError("Please enter appointment time.");
-                return false;
-            }
+            TimeSpan appointmentTime;
 
-            if (!TryParseTime(FormAppointmentTimeText, out TimeSpan appointmentTime))
+            if (isScheduled)
             {
-                ShowFormError("Please enter a valid time. Example: 02:30 PM or 14:30.");
+                if (string.IsNullOrWhiteSpace(FormAppointmentTimeText))
+                {
+                    ShowFormError("Please enter appointment time.");
+                    return false;
+                }
+
+                if (!TryParseTime(FormAppointmentTimeText, out appointmentTime))
+                {
+                    ShowFormError("Please enter a valid time. Example: 02:30 PM or 14:30.");
+                    return false;
+                }
+            }
+            else if (!TryParseWalkInArrivalTime(out appointmentTime))
+            {
+                ShowFormError("Please enter a valid arrival time.");
                 return false;
             }
 
@@ -2153,9 +2377,19 @@ namespace CruzNeryClinic.ViewModels
                 return false;
             }
 
+            return true;
+        }
+
+        private bool ValidateOperationDetails()
+        {
+            if (AppointmentPendingOperation == null)
+                return false;
+
+            DateTime appointmentDate = AppointmentPendingOperation.AppointmentDate.Date;
+
             if (RequiresTreatmentStage && string.IsNullOrWhiteSpace(FormTreatmentStage))
             {
-                ShowFormError("Please select the treatment step for denture or orthodontic work.");
+                ShowOperationError("Please select the treatment step for denture or orthodontic work.");
                 return false;
             }
 
@@ -2163,13 +2397,13 @@ namespace CruzNeryClinic.ViewModels
             {
                 if (!FormFollowUpDate.HasValue)
                 {
-                    ShowFormError("Please enter the return date for the next clinic step.");
+                    ShowOperationError("Please enter the return date for the next clinic step.");
                     return false;
                 }
 
                 if (FormFollowUpDate.Value.Date < appointmentDate)
                 {
-                    ShowFormError("Return date cannot be before the appointment date.");
+                    ShowOperationError("Return date cannot be before the appointment date.");
                     return false;
                 }
             }
@@ -2178,20 +2412,20 @@ namespace CruzNeryClinic.ViewModels
             {
                 if (!ToothOptions.Any(tooth => tooth.IsSelected))
                 {
-                    ShowFormError("Please select at least one tooth number for extraction.");
+                    ShowOperationError("Please select at least one tooth number for extraction.");
                     return false;
                 }
 
                 if (string.IsNullOrWhiteSpace(FormPrescription))
                 {
-                    ShowFormError("Please enter the medication or prescription for extraction.");
+                    ShowOperationError("Please enter the medication or prescription for extraction.");
                     return false;
                 }
             }
 
             if (HasProphylaxisService && string.IsNullOrWhiteSpace(FormProphylaxisSeverity))
             {
-                ShowFormError("Please select whether prophylaxis is mild, moderate, or severe.");
+                ShowOperationError("Please select whether prophylaxis is mild, moderate, or severe.");
                 return false;
             }
 
@@ -2199,13 +2433,13 @@ namespace CruzNeryClinic.ViewModels
             {
                 if (string.IsNullOrWhiteSpace(FormRestorationSurface))
                 {
-                    ShowFormError("Please enter the restoration surface.");
+                    ShowOperationError("Please enter the restoration surface.");
                     return false;
                 }
 
                 if (string.IsNullOrWhiteSpace(FormRestorationDepth))
                 {
-                    ShowFormError("Please select the restoration depth.");
+                    ShowOperationError("Please select the restoration depth.");
                     return false;
                 }
             }
@@ -2258,10 +2492,54 @@ namespace CruzNeryClinic.ViewModels
 
             return true;
         }
-        private TimeSpan ParseFormTime()
+        private TimeSpan ParseFormTime(bool isScheduled)
         {
+            if (!isScheduled && TryParseWalkInArrivalTime(out TimeSpan walkInTime))
+                return walkInTime;
+
             TryParseTime(FormAppointmentTimeText, out TimeSpan time);
             return time;
+        }
+
+        private bool TryParseWalkInArrivalTime(out TimeSpan time)
+        {
+            time = TimeSpan.Zero;
+
+            if (!int.TryParse(WalkInArrivalHourText.Trim(), out int hour) ||
+                !int.TryParse(WalkInArrivalMinuteText.Trim(), out int minute))
+            {
+                return false;
+            }
+
+            if (hour < 1 || hour > 12 || minute < 0 || minute > 59)
+                return false;
+
+            string period = (WalkInArrivalPeriod ?? string.Empty).Trim().ToUpperInvariant();
+
+            if (period != "AM" && period != "PM")
+                return false;
+
+            int hour24 = hour % 12;
+
+            if (period == "PM")
+                hour24 += 12;
+
+            time = new TimeSpan(hour24, minute, 0);
+            FormAppointmentTimeText = DateTime.Today.Add(time).ToString("hh:mm tt");
+
+            return true;
+        }
+
+        private void SetWalkInArrivalTime(DateTime arrivalTime)
+        {
+            int hour = arrivalTime.Hour % 12;
+            if (hour == 0)
+                hour = 12;
+
+            WalkInArrivalHourText = hour.ToString();
+            WalkInArrivalMinuteText = arrivalTime.Minute.ToString("00");
+            WalkInArrivalPeriod = arrivalTime.Hour >= 12 ? "PM" : "AM";
+            FormAppointmentTimeText = arrivalTime.ToString("hh:mm tt");
         }
 
         private bool TryParseTime(string value, out TimeSpan time)
@@ -2355,6 +2633,9 @@ namespace CruzNeryClinic.ViewModels
 
             FormAppointmentDate = DateTime.Today;
             FormAppointmentTimeText = string.Empty;
+            WalkInArrivalHourText = string.Empty;
+            WalkInArrivalMinuteText = string.Empty;
+            WalkInArrivalPeriod = "AM";
             FormTreatmentStage = string.Empty;
             FormFollowUpDate = null;
             FormToothNumber = string.Empty;
@@ -2370,8 +2651,18 @@ namespace CruzNeryClinic.ViewModels
 
         private bool HasSelectedService(string serviceName)
         {
-            return SelectedServices.Any(service =>
+            bool hasSelectedFormService = SelectedServices.Any(service =>
                 string.Equals(service.ServiceName, serviceName, StringComparison.OrdinalIgnoreCase));
+
+            if (hasSelectedFormService)
+                return true;
+
+            if (AppointmentPendingOperation == null)
+                return false;
+
+            return AppointmentPendingOperation.ServiceName
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Any(name => string.Equals(name, serviceName, StringComparison.OrdinalIgnoreCase));
         }
 
         private bool ConfirmMedicalClearanceIfNeeded(string actionText)

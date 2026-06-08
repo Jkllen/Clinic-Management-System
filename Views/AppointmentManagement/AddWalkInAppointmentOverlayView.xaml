@@ -307,12 +307,51 @@
 
                     <StackPanel Grid.Row="2" Grid.Column="2">
                         <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Arrival Time *" />
-                        <ComboBox
+                        <Border
                             Height="42"
-                            ItemsSource="{Binding AppointmentTimeOptions}"
-                            SelectedItem="{Binding FormAppointmentTimeText, Mode=TwoWay}"
-                            Style="{StaticResource ExactStyleComboBox}"
-                            Tag="Select arrival time" />
+                            Background="White"
+                            BorderBrush="#D8D8D8"
+                            BorderThickness="1"
+                            CornerRadius="5">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <TextBox
+                                    Grid.Column="0"
+                                    MaxLength="2"
+                                    HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    BorderThickness="0"
+                                    FontSize="14"
+                                    Text="{Binding WalkInArrivalHourText, UpdateSourceTrigger=PropertyChanged}" />
+
+                                <Border
+                                    Grid.Column="1"
+                                    BorderBrush="#E5E7EB"
+                                    BorderThickness="1,0,1,0">
+                                    <TextBox
+                                        MaxLength="2"
+                                        HorizontalContentAlignment="Center"
+                                        VerticalContentAlignment="Center"
+                                        BorderThickness="0"
+                                        FontSize="14"
+                                        Text="{Binding WalkInArrivalMinuteText, UpdateSourceTrigger=PropertyChanged}" />
+                                </Border>
+
+                                <ComboBox
+                                    Grid.Column="2"
+                                    HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    BorderThickness="0"
+                                    FontSize="14"
+                                    ItemsSource="{Binding TimePeriodOptions}"
+                                    SelectedItem="{Binding WalkInArrivalPeriod, Mode=TwoWay}" />
+                            </Grid>
+                        </Border>
                     </StackPanel>
 
                     <StackPanel Grid.Row="4" Grid.Column="0">
@@ -418,7 +457,7 @@
 
                 <StackPanel
                     Margin="0,18,0,0"
-                    Visibility="{Binding HasTreatmentDetailSection, Converter={StaticResource BoolToVisibilityConverter}}">
+                    Visibility="Collapsed">
 
                     <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Treatment Details" />
 
@@ -554,7 +593,7 @@
                     </Grid>
                 </StackPanel>
 
-                <StackPanel Margin="0,18,0,0">
+                <StackPanel Margin="0,18,0,0" Visibility="Collapsed">
                     <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Teeth Images" />
 
                     <Button

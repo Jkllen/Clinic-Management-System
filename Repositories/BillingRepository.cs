@@ -872,6 +872,67 @@ SELECT last_insert_rowid();";
 
             return Convert.ToInt32(result);
         }
+
+        public int MarkZeroBalanceInvoicesPaidAndClosed()
+        {
+            int fixedCount = 0;
+
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            List<int> billingIdsToFix = new();
+
+            using (SqliteCommand selectCommand = connection.CreateCommand())
+            {
+                selectCommand.CommandText = @"
+        SELECT
+            BillingId,
+            TotalAmount,
+            SubtotalAfterDiscount,
+            AmountPaid,
+            RemainingBalance,
+            PaymentStatus
+        FROM BillingTransactions
+        WHERE PaymentStatus IN ('Unpaid', 'Partial');";
+
+                using SqliteDataReader reader = selectCommand.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    decimal totalAmount = SafeGetSecureDecimal(reader, "TotalAmount");
+                    decimal subtotalAfterDiscount = SafeGetSecureDecimal(reader, "SubtotalAfterDiscount");
+                    decimal amountPaid = SafeGetSecureDecimal(reader, "AmountPaid");
+                    decimal remainingBalance = SafeGetSecureDecimal(reader, "RemainingBalance");
+
+                    if (totalAmount <= 0 &&
+                        subtotalAfterDiscount <= 0 &&
+                        amountPaid <= 0 &&
+                        remainingBalance <= 0)
+                    {
+                        billingIdsToFix.Add(Convert.ToInt32(reader["BillingId"]));
+                    }
+                }
+            }
+
+            foreach (int billingId in billingIdsToFix)
+            {
+                using SqliteCommand updateCommand = connection.CreateCommand();
+                updateCommand.CommandText = @"
+        UPDATE BillingTransactions
+        SET
+            PaymentStatus = 'Paid',
+            IsInvoiceOpen = 0,
+            UpdatedAt = @UpdatedAt
+        WHERE BillingId = @BillingId;";
+
+                updateCommand.Parameters.AddWithValue("@UpdatedAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                updateCommand.Parameters.AddWithValue("@BillingId", billingId);
+
+                fixedCount += updateCommand.ExecuteNonQuery();
+            }
+
+            return fixedCount;
+        }
         
         public int AddBillingTransactionItem(BillingTransactionItem item)
         {
@@ -1006,7 +1067,9 @@ SELECT last_insert_rowid();";
 
                 string paymentStatus;
 
-                if (totalPaid <= 0)
+                if (subtotalAfterDiscount <= 0)
+                    paymentStatus = "Paid";
+                else if (totalPaid <= 0)
                     paymentStatus = "Unpaid";
                 else if (remainingBalance <= 0)
                     paymentStatus = "Paid";
@@ -1125,6 +1188,9 @@ SELECT last_insert_rowid();";
 
         public string DeterminePaymentStatus(decimal netAmount, decimal amountPaid)
         {
+            if (netAmount <= 0)
+                return "Paid";
+
             if (amountPaid <= 0)
                 return "Unpaid";
 
@@ -1356,7 +1422,9 @@ SELECT last_insert_rowid();";
 
             string paymentStatus;
 
-            if (totalPaid <= 0)
+            if (subtotalAfterDiscount <= 0)
+                paymentStatus = "Paid";
+            else if (totalPaid <= 0)
                 paymentStatus = "Unpaid";
             else if (remainingBalance <= 0)
                 paymentStatus = "Paid";

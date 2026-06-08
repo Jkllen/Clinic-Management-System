@@ -877,6 +877,35 @@ WHERE AppointmentId = @AppointmentId;";
                 });
         }
 
+        public void UpdateOperationDetails(
+            int appointmentId,
+            string? serviceStage,
+            DateTime? followUpDate,
+            string treatmentDetails)
+        {
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+UPDATE Appointments
+SET
+    ServiceStage = @ServiceStage,
+    FollowUpDate = @FollowUpDate,
+    TreatmentDetails = @TreatmentDetails,
+    UpdatedAt = @UpdatedAt
+WHERE AppointmentId = @AppointmentId
+  AND Status = 'In Treatment';";
+
+            command.AddNullableParameter("@ServiceStage", string.IsNullOrWhiteSpace(serviceStage) ? null : serviceStage.Trim());
+            command.AddNullableParameter("@FollowUpDate", followUpDate?.ToString("yyyy-MM-dd"));
+            command.AddTextParameter("@TreatmentDetails", treatmentDetails.Trim());
+            command.AddDateTimeParameter("@UpdatedAt", DateTime.Now);
+            command.AddIntParameter("@AppointmentId", appointmentId);
+
+            command.ExecuteNonQuery();
+        }
+
         public void CancelAppointment(int appointmentId, string cancellationReason = "")
         {
             UpdateStatus(

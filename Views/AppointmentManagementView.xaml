@@ -708,6 +708,12 @@
                                                             Visibility="{Binding StartTreatmentButtonVisibility}" />
 
                                                         <MenuItem
+                                                            Header="Operation Details"
+                                                            Command="{Binding Tag.OpenOperationDetailsCommand, RelativeSource={RelativeSource AncestorType=Menu}}"
+                                                            CommandParameter="{Binding}"
+                                                            Visibility="{Binding OperationDetailsButtonVisibility}" />
+
+                                                        <MenuItem
                                                             Header="Complete"
                                                             Command="{Binding Tag.CompleteAppointmentCommand, RelativeSource={RelativeSource AncestorType=Menu}}"
                                                             CommandParameter="{Binding}"
@@ -1358,6 +1364,272 @@
                             Style="{StaticResource SecondaryButtonStyle}" />
                         </StackPanel>
                 </ScrollViewer>
+                </DockPanel>
+            </Border>
+        </Grid>
+
+        <!-- Operation Details Overlay -->
+        <Grid
+            Background="#99000000"
+            Visibility="{Binding IsOperationDetailsOverlayOpen, Converter={StaticResource BoolToVisibilityConverter}}">
+
+            <Border
+                Width="780"
+                MaxHeight="760"
+                Padding="30"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Background="White"
+                CornerRadius="22">
+
+                <DockPanel LastChildFill="True">
+                    <StackPanel DockPanel.Dock="Top" Margin="0,0,0,18">
+                        <TextBlock
+                            FontSize="24"
+                            FontWeight="Bold"
+                            Foreground="#111111"
+                            Text="Operation Details" />
+
+                        <TextBlock
+                            Margin="0,6,0,0"
+                            FontSize="14"
+                            Foreground="#777777"
+                            Text="Record treatment-stage details while the patient is in treatment."
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <ScrollViewer.Resources>
+                            <Style BasedOn="{StaticResource BlueDataGridScrollBarStyle}" TargetType="{x:Type ScrollBar}" />
+                        </ScrollViewer.Resources>
+
+                        <StackPanel>
+                            <TextBlock
+                                Margin="0,0,0,10"
+                                FontSize="14"
+                                FontWeight="SemiBold"
+                                Foreground="#C62828"
+                                Text="{Binding OperationErrorMessage}"
+                                TextWrapping="Wrap"
+                                Visibility="{Binding HasOperationError, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0" Visibility="{Binding RequiresTreatmentStage, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Treatment Step *" />
+                                    <ComboBox
+                                        Height="42"
+                                        ItemsSource="{Binding TreatmentStageOptions}"
+                                        SelectedItem="{Binding FormTreatmentStage, Mode=TwoWay}"
+                                        Style="{StaticResource ExactStyleComboBox}"
+                                        Tag="Select treatment step" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="2" Visibility="{Binding RequiresFollowUpDate, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Return Date / Next Step *" />
+                                    <DatePicker Height="46" SelectedDate="{Binding FormFollowUpDate, Mode=TwoWay}" />
+                                </StackPanel>
+                            </Grid>
+
+                            <StackPanel Margin="0,16,0,0" Visibility="{Binding HasToothSelection, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Teeth Involved" />
+
+                                <ItemsControl ItemsSource="{Binding ToothOptions}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <UniformGrid Columns="16" Rows="2" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Button
+                                                Width="42"
+                                                Height="50"
+                                                Margin="2"
+                                                Padding="0"
+                                                Command="{Binding DataContext.ToggleToothSelectionCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                CommandParameter="{Binding}"
+                                                Cursor="Hand">
+
+                                                <Button.Style>
+                                                    <Style TargetType="Button">
+                                                        <Setter Property="Background" Value="#F8FBFF" />
+                                                        <Setter Property="BorderBrush" Value="#B9D5D6" />
+                                                        <Setter Property="BorderThickness" Value="1" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                                <Setter Property="Background" Value="#CFF4EF" />
+                                                                <Setter Property="BorderBrush" Value="#073C98" />
+                                                                <Setter Property="BorderThickness" Value="2" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Button.Style>
+
+                                                <Grid>
+                                                    <fa:IconBlock
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        FontSize="34"
+                                                        Foreground="#2E7E82"
+                                                        Icon="Tooth" />
+                                                    <TextBlock
+                                                        Margin="0,5,0,0"
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Top"
+                                                        FontSize="13"
+                                                        FontWeight="Bold"
+                                                        Foreground="White"
+                                                        Text="{Binding DisplayText}" />
+                                                </Grid>
+                                            </Button>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+
+                            <Grid Margin="0,16,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0" Visibility="{Binding HasExtractionService, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Medication / Prescription *" />
+                                    <TextBox Style="{StaticResource AppointmentOverlayTextBoxStyle}" Text="{Binding FormPrescription, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="2" Visibility="{Binding HasProphylaxisService, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Prophylaxis Severity *" />
+                                    <ComboBox
+                                        Height="42"
+                                        ItemsSource="{Binding ProphylaxisSeverityOptions}"
+                                        SelectedItem="{Binding FormProphylaxisSeverity, Mode=TwoWay}"
+                                        Style="{StaticResource ExactStyleComboBox}"
+                                        Tag="Select severity" />
+                                </StackPanel>
+                            </Grid>
+
+                            <Grid Margin="0,16,0,0" Visibility="{Binding HasRestorationService, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Restoration Surface *" />
+                                    <TextBox Style="{StaticResource AppointmentOverlayTextBoxStyle}" Text="{Binding FormRestorationSurface, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Restoration Depth *" />
+                                    <ComboBox
+                                        Height="42"
+                                        ItemsSource="{Binding RestorationDepthOptions}"
+                                        SelectedItem="{Binding FormRestorationDepth, Mode=TwoWay}"
+                                        Style="{StaticResource ExactStyleComboBox}"
+                                        Tag="Select depth" />
+                                </StackPanel>
+                            </Grid>
+
+                            <StackPanel Margin="0,18,0,0">
+                                <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Teeth Images" />
+
+                                <Button
+                                    Width="170"
+                                    Height="40"
+                                    HorizontalAlignment="Left"
+                                    Background="#073C98"
+                                    Click="UploadAppointmentDetailsImage_Click"
+                                    Foreground="White"
+                                    Style="{StaticResource SecondaryButtonStyle}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <fa:IconBlock Margin="0,0,8,0" Foreground="White" Icon="Upload" />
+                                        <TextBlock FontWeight="Bold" Text="Upload Image" />
+                                    </StackPanel>
+                                </Button>
+
+                                <ItemsControl Margin="0,12,0,0" ItemsSource="{Binding AppointmentDetailsImages}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border
+                                                Width="110"
+                                                Margin="0,0,10,10"
+                                                Background="#F4F6FB"
+                                                BorderBrush="#D8D8D8"
+                                                BorderThickness="1"
+                                                CornerRadius="10">
+                                                <Grid>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="90" />
+                                                        <RowDefinition Height="Auto" />
+                                                    </Grid.RowDefinitions>
+
+                                                    <Image
+                                                        Grid.Row="0"
+                                                        Margin="6"
+                                                        Source="{Binding Thumbnail}"
+                                                        Stretch="UniformToFill" />
+
+                                                    <Button
+                                                        Grid.Row="1"
+                                                        Height="26"
+                                                        Background="Transparent"
+                                                        BorderThickness="0"
+                                                        Command="{Binding DataContext.RemoveAppointmentDetailsImageCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                        CommandParameter="{Binding}"
+                                                        Cursor="Hand">
+                                                        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                                            <fa:IconBlock Margin="0,0,5,0" FontSize="11" Foreground="#C62828" Icon="TrashAlt" />
+                                                            <TextBlock FontSize="11" Foreground="#C62828" Text="Remove" />
+                                                        </StackPanel>
+                                                    </Button>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+
+                            <StackPanel
+                                Margin="0,24,0,0"
+                                HorizontalAlignment="Right"
+                                Orientation="Horizontal">
+
+                                <Button
+                                    Width="110"
+                                    Height="42"
+                                    Margin="0,0,10,0"
+                                    Background="#777777"
+                                    Command="{Binding CloseOperationDetailsCommand}"
+                                    Content="Close"
+                                    Foreground="White"
+                                    Style="{StaticResource SecondaryButtonStyle}" />
+
+                                <Button
+                                    Width="150"
+                                    Height="42"
+                                    Background="#073C98"
+                                    Command="{Binding SaveOperationDetailsCommand}"
+                                    Content="Save Details"
+                                    Foreground="White"
+                                    Style="{StaticResource SecondaryButtonStyle}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </ScrollViewer>
                 </DockPanel>
             </Border>
         </Grid>

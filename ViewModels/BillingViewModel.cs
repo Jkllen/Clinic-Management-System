@@ -1151,6 +1151,7 @@ namespace CruzNeryClinic.ViewModels
             {
                 ClearError();
 
+                billingRepository.MarkZeroBalanceInvoicesPaidAndClosed();
                 LoadBillingRecords();
                 if (IsAppointmentPaymentSelected && SelectedAppointmentPaymentItem == null)
                     LoadGlobalOpenInvoicesForPayment();
@@ -1203,10 +1204,12 @@ namespace CruzNeryClinic.ViewModels
         private void UpdateBillingSummary(IEnumerable<BillingRecordListItem> allRecords)
         {
             UnpaidCount = allRecords.Count(record =>
-                string.Equals(record.PaymentStatus, "Unpaid", StringComparison.OrdinalIgnoreCase));
+                string.Equals(record.PaymentStatus, "Unpaid", StringComparison.OrdinalIgnoreCase) &&
+                record.RemainingBalance > 0);
 
             PartialCount = allRecords.Count(record =>
-                string.Equals(record.PaymentStatus, "Partial", StringComparison.OrdinalIgnoreCase));
+                string.Equals(record.PaymentStatus, "Partial", StringComparison.OrdinalIgnoreCase) &&
+                record.RemainingBalance > 0);
 
             (int paidTodayCount, decimal collectedTodayTotal) = billingRepository.GetTodayCollectionSummary();
 
@@ -1491,6 +1494,18 @@ namespace CruzNeryClinic.ViewModels
                 return;
             }
 
+            if (string.IsNullOrWhiteSpace(AppointmentInvoiceItemName))
+            {
+                ShowAppointmentPaymentError("Please enter an invoice item name.");
+                return;
+            }
+
+            if (AppointmentTotalAmount <= 0)
+            {
+                ShowAppointmentPaymentError("Please enter an amount greater than zero before creating an invoice.");
+                return;
+            }
+
             try
             {
                 string invoiceNumber = billingRepository.GenerateNextInvoiceNumber();
@@ -1524,11 +1539,36 @@ namespace CruzNeryClinic.ViewModels
 
                 int billingId = billingRepository.CreateInvoiceHeader(invoice);
 
+                BillingTransactionItem item = new()
+                {
+                    BillingId = billingId,
+                    AppointmentId = SelectedAppointmentPaymentItem.AppointmentId,
+                    TreatmentRecordId = SelectedAppointmentPaymentItem.TreatmentRecordId,
+                    ServiceId = SelectedAppointmentPaymentItem.ServiceId,
+                    ServiceName = AppointmentInvoiceItemName.Trim(),
+                    ItemDescription = string.IsNullOrWhiteSpace(AppointmentNotes)
+                        ? $"Source: {SelectedAppointmentPaymentItem.ServiceName}"
+                        : AppointmentNotes.Trim(),
+                    TreatmentDate = SelectedAppointmentPaymentItem.TreatmentDate,
+                    Amount = AppointmentTotalAmount,
+                    IsIncluded = false,
+                    CreatedAt = DateTime.Now
+                };
+
+                billingRepository.AddBillingTransactionItem(item);
+
+                LoadBillingRecords();
+                LoadBalancePaymentItems();
                 ReloadSelectedInvoiceForPayment(SelectedAppointmentPaymentItem.PatientId, billingId);
+                LoadSelectedInvoiceItems();
 
                 IsCreatingNewInvoice = false;
+                AppointmentTotalAmount = 0;
+                AppointmentPaymentAmount = 0;
+                AppointmentNotes = string.Empty;
+                AppointmentInvoiceItemName = string.Empty;
 
-                ShowPrompt("Invoice Created", $"Invoice {invoiceNumber} was created successfully.");
+                ShowPrompt("Invoice Created", $"Invoice {invoiceNumber} was created with its first billable item.");
             }
             catch (Exception ex)
             {
@@ -1594,9 +1634,9 @@ namespace CruzNeryClinic.ViewModels
                 return;
             }
 
-            if (AppointmentTotalAmount < 0)
+            if (AppointmentTotalAmount <= 0)
             {
-                ShowAppointmentPaymentError("Amount cannot be negative.");
+                ShowAppointmentPaymentError("Please enter an item amount greater than zero.");
                 return;
             }
 
@@ -1648,7 +1688,7 @@ namespace CruzNeryClinic.ViewModels
                         : DateTime.Today,
 
                     Amount = AppointmentTotalAmount,
-                    IsIncluded = AppointmentTotalAmount == 0,
+                    IsIncluded = false,
                     CreatedAt = DateTime.Now
                 };
 

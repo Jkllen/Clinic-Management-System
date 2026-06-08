@@ -185,6 +185,9 @@ namespace CruzNeryClinic.Models
         public Visibility CompleteButtonVisibility =>
             Status == "In Treatment" ? Visibility.Visible : Visibility.Collapsed;
 
+        public Visibility OperationDetailsButtonVisibility =>
+            Status == "In Treatment" ? Visibility.Visible : Visibility.Collapsed;
+
         public Visibility CancelButtonVisibility =>
             Status is "Scheduled" or "Waiting" or "In Treatment"
                 ? Visibility.Visible
