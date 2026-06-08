@@ -15,7 +15,7 @@ namespace CruzNeryClinic.Services
 
         // Returns true if the logged-in user is an Admin.
         // This will be used for role-based access later.
-        public static bool IsAdmin => CurrentUser?.Role == "Admin";
+        public static bool IsAdmin => CurrentUser?.IsAdmin == true;
 
         // Saves the user session after successful login.
         public static void Login(User user)

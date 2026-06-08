@@ -150,7 +150,7 @@ WHERE IsActive = 1
 ORDER BY LastName ASC, FirstName ASC
 LIMIT 10;";
 
-            command.Parameters.AddWithValue("@SearchText", $"%{searchText.Trim()}%");
+            command.AddLikeParameter("@SearchText", searchText);
 
             using SqliteDataReader reader = command.ExecuteReader();
 
@@ -265,7 +265,7 @@ SELECT
     LastName
 FROM Users
 WHERE IsActive = 1
-  AND Role = 'Dentist'
+  AND (Role = 'Dentist' OR IsDentistRole = 1)
 ORDER BY LastName ASC, FirstName ASC;";
 
             using SqliteDataReader reader = command.ExecuteReader();
@@ -785,11 +785,10 @@ ORDER BY AppointmentImageId DESC;";
         {
             UpdateStatus(
                 appointmentId,
-                status: "Waiting",
-                extraSetSql: "ArrivalTime = @ArrivalTime, UpdatedAt = @UpdatedAt",
+                updateType: AppointmentStatusUpdate.Arrived,
                 configureParameters: command =>
                 {
-                    command.Parameters.AddWithValue("@ArrivalTime", DateTime.Now.ToString("HH:mm"));
+                    command.AddTextParameter("@ArrivalTime", DateTime.Now.ToString("HH:mm"));
                 });
         }
 
@@ -797,8 +796,7 @@ ORDER BY AppointmentImageId DESC;";
         {
             UpdateStatus(
                 appointmentId,
-                status: "No Show",
-                extraSetSql: "UpdatedAt = @UpdatedAt",
+                updateType: AppointmentStatusUpdate.NoShow,
                 configureParameters: command =>
                 {
 
@@ -872,11 +870,10 @@ WHERE AppointmentId = @AppointmentId;";
         {
             UpdateStatus(
                 appointmentId,
-                status: "Completed",
-                extraSetSql: "CompletedAt = @CompletedAt, UpdatedAt = @UpdatedAt",
+                updateType: AppointmentStatusUpdate.Completed,
                 configureParameters: command =>
                 {
-                    command.Parameters.AddWithValue("@CompletedAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                    command.AddDateTimeParameter("@CompletedAt", DateTime.Now);
                 });
         }
 
@@ -884,12 +881,11 @@ WHERE AppointmentId = @AppointmentId;";
         {
             UpdateStatus(
                 appointmentId,
-                status: "Cancelled",
-                extraSetSql: "CancelledAt = @CancelledAt, CancellationReason = @CancellationReason, UpdatedAt = @UpdatedAt",
+                updateType: AppointmentStatusUpdate.Cancelled,
                 configureParameters: command =>
                 {
-                    command.Parameters.AddWithValue("@CancelledAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-                    command.Parameters.AddWithValue("@CancellationReason", cancellationReason.Trim());
+                    command.AddDateTimeParameter("@CancelledAt", DateTime.Now);
+                    command.AddTextParameter("@CancellationReason", cancellationReason.Trim());
                 });
         }
 
@@ -922,24 +918,26 @@ WHERE AppointmentId = @AppointmentId;";
 
         private void UpdateStatus(
             int appointmentId,
-            string status,
-            string extraSetSql,
+            AppointmentStatusUpdate updateType,
             Action<SqliteCommand> configureParameters)
         {
+            string status = GetStatusValue(updateType);
+            string extraSetSql = GetStatusSetClause(updateType);
+
             using SqliteConnection connection = DatabaseService.GetConnection();
             connection.Open();
 
             using SqliteCommand command = connection.CreateCommand();
-            command.CommandText = $@"
+            command.CommandText = @"
 UPDATE Appointments
 SET
     Status = @Status,
-    {extraSetSql}
+    " + extraSetSql + @"
 WHERE AppointmentId = @AppointmentId;";
 
-            command.Parameters.AddWithValue("@Status", status);
-            command.Parameters.AddWithValue("@UpdatedAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-            command.Parameters.AddWithValue("@AppointmentId", appointmentId);
+            command.AddTextParameter("@Status", status);
+            command.AddDateTimeParameter("@UpdatedAt", DateTime.Now);
+            command.AddIntParameter("@AppointmentId", appointmentId);
 
             configureParameters(command);
 
@@ -950,6 +948,34 @@ WHERE AppointmentId = @AppointmentId;";
                 "Appointment",
                 $"Changed status of appointment #{appointmentId} to '{status}'");
         }
+
+        private enum AppointmentStatusUpdate
+        {
+            Arrived,
+            NoShow,
+            Completed,
+            Cancelled
+        }
+
+        private static string GetStatusValue(AppointmentStatusUpdate updateType)
+            => updateType switch
+            {
+                AppointmentStatusUpdate.Arrived => "Waiting",
+                AppointmentStatusUpdate.NoShow => "No Show",
+                AppointmentStatusUpdate.Completed => "Completed",
+                AppointmentStatusUpdate.Cancelled => "Cancelled",
+                _ => throw new ArgumentOutOfRangeException(nameof(updateType), updateType, null)
+            };
+
+        private static string GetStatusSetClause(AppointmentStatusUpdate updateType)
+            => updateType switch
+            {
+                AppointmentStatusUpdate.Arrived => "ArrivalTime = @ArrivalTime, UpdatedAt = @UpdatedAt",
+                AppointmentStatusUpdate.NoShow => "UpdatedAt = @UpdatedAt",
+                AppointmentStatusUpdate.Completed => "CompletedAt = @CompletedAt, UpdatedAt = @UpdatedAt",
+                AppointmentStatusUpdate.Cancelled => "CancelledAt = @CancelledAt, CancellationReason = @CancellationReason, UpdatedAt = @UpdatedAt",
+                _ => throw new ArgumentOutOfRangeException(nameof(updateType), updateType, null)
+            };
 
         #endregion
 

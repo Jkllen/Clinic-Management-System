@@ -602,7 +602,7 @@ ORDER BY bt.TransactionDate DESC, bt.BillingId DESC;";
         ORDER BY p.LastName, p.FirstName
         LIMIT 10;";
 
-            command.Parameters.AddWithValue("@Keyword", $"%{keyword.Trim()}%");
+            command.AddLikeParameter("@Keyword", keyword);
 
             using SqliteDataReader reader = command.ExecuteReader();
 

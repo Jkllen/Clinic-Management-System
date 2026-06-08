@@ -91,33 +91,79 @@
                             </Grid.RowDefinitions>
 
                             <StackPanel Grid.Row="0" Grid.Column="0">
-                                <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="#555555" Text="User ID" />
-                                <TextBox Margin="0,6,0,0" IsReadOnly="True" Style="{StaticResource ModernTextBoxStyle}" Text="{Binding SelectedUserDetails.UserCode, Mode=OneWay}" />
+                                <TextBlock 
+                                    FontSize="13" 
+                                    FontWeight="SemiBold" 
+                                    Foreground="#555555" Text="User ID" />
+                                <TextBox 
+                                    Margin="0,6,0,0"
+                                    FontSize="14"
+                                    Height = "42" 
+                                    IsReadOnly="True" 
+                                    Style="{StaticResource ModernTextBoxStyle}" 
+                                    Text="{Binding SelectedUserDetails.UserCode, Mode=OneWay}" />
                             </StackPanel>
 
                             <StackPanel Grid.Row="0" Grid.Column="2">
-                                <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="#555555" Text="Username" />
-                                <TextBox Margin="0,6,0,0" IsReadOnly="True" Style="{StaticResource ModernTextBoxStyle}" Text="{Binding SelectedUserDetails.Username, Mode=OneWay}" />
+                                <TextBlock 
+                                    FontSize="13" 
+                                    FontWeight="SemiBold" 
+                                    Foreground="#555555" 
+                                    Text="Username" />
+                                <TextBox 
+                                    Margin="0,6,0,0" 
+                                    FontSize="14"
+                                    Height = "42"
+                                    IsReadOnly="True" 
+                                    Style="{StaticResource ModernTextBoxStyle}" Text="{Binding SelectedUserDetails.Username, Mode=OneWay}" />
                             </StackPanel>
 
                             <StackPanel Grid.Row="2" Grid.Column="0">
-                                <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="#555555" Text="Full Name" />
-                                <TextBox Margin="0,6,0,0" IsReadOnly="True" Style="{StaticResource ModernTextBoxStyle}" Text="{Binding SelectedUserDetails.FullName, Mode=OneWay}" />
+                                <TextBlock 
+                                    FontSize="13" 
+                                    FontWeight="SemiBold" 
+                                    Foreground="#555555" 
+                                    Text="Full Name" />
+                                <TextBox 
+                                    Margin="0,6,0,0" 
+                                    FontSize="14"
+                                    Height = "42"
+                                    IsReadOnly="True" 
+                                    Style="{StaticResource ModernTextBoxStyle}" 
+                                    Text="{Binding SelectedUserDetails.FullName, Mode=OneWay}" />
                             </StackPanel>
 
                             <StackPanel Grid.Row="2" Grid.Column="2">
                                 <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="#555555" Text="Contact Number" />
-                                <TextBox Margin="0,6,0,0" IsReadOnly="True" Style="{StaticResource ModernTextBoxStyle}" Text="{Binding SelectedUserDetails.ContactNumber, Mode=OneWay}" />
+                                <TextBox 
+                                    Margin="0,6,0,0" 
+                                    FontSize="14"
+                                    Height = "42"
+                                    IsReadOnly="True" 
+                                    Style="{StaticResource ModernTextBoxStyle}" 
+                                    Text="{Binding SelectedUserDetails.ContactNumber, Mode=OneWay}" />
                             </StackPanel>
 
                             <StackPanel Grid.Row="4" Grid.Column="0">
                                 <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="#555555" Text="Role" />
-                                <TextBox Margin="0,6,0,0" IsReadOnly="True" Style="{StaticResource ModernTextBoxStyle}" Text="{Binding SelectedUserDetails.Role, Mode=OneWay}" />
+                                <TextBox 
+                                    Margin="0,6,0,0" 
+                                    FontSize="14"
+                                    Height = "42"
+                                    IsReadOnly="True" 
+                                    Style="{StaticResource ModernTextBoxStyle}" 
+                                    Text="{Binding SelectedUserDetails.RoleDisplay, Mode=OneWay}" />
                             </StackPanel>
 
                             <StackPanel Grid.Row="4" Grid.Column="2">
                                 <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="#555555" Text="Status" />
-                                <TextBox Margin="0,6,0,0" IsReadOnly="True" Style="{StaticResource ModernTextBoxStyle}" Text="{Binding SelectedUserDetails.AccountStatus, Mode=OneWay}" />
+                                <TextBox 
+                                    Margin="0,6,0,0" 
+                                    FontSize="14"
+                                    Height = "42"
+                                    IsReadOnly="True" 
+                                    Style="{StaticResource ModernTextBoxStyle}" 
+                                    Text="{Binding SelectedUserDetails.AccountStatus, Mode=OneWay}" />
                             </StackPanel>
                         </Grid>
 
@@ -143,22 +189,46 @@
 
                             <StackPanel Grid.Row="0" Grid.Column="0">
                                 <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="#555555" Text="Created By" />
-                                <TextBox Margin="0,6,0,0" IsReadOnly="True" Style="{StaticResource ModernTextBoxStyle}" Text="{Binding SelectedUserDetails.CreatedByDisplay, Mode=OneWay}" />
+                                <TextBox 
+                                    Margin="0,6,0,0" 
+                                    FontSize="14"
+                                    Height = "42"
+                                    IsReadOnly="True" 
+                                    Style="{StaticResource ModernTextBoxStyle}" 
+                                    Text="{Binding SelectedUserDetails.CreatedByDisplay, Mode=OneWay}" />
                             </StackPanel>
 
                             <StackPanel Grid.Row="0" Grid.Column="2">
                                 <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="#555555" Text="Date Created" />
-                                <TextBox Margin="0,6,0,0" IsReadOnly="True" Style="{StaticResource ModernTextBoxStyle}" Text="{Binding SelectedUserDetails.CreatedAtDisplay, Mode=OneWay}" />
+                                <TextBox 
+                                    Margin="0,6,0,0" 
+                                    FontSize="14"
+                                    Height = "42"
+                                    IsReadOnly="True" 
+                                    Style="{StaticResource ModernTextBoxStyle}" 
+                                    Text="{Binding SelectedUserDetails.CreatedAtDisplay, Mode=OneWay}" />
                             </StackPanel>
 
                             <StackPanel Grid.Row="2" Grid.Column="0">
                                 <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="#555555" Text="Last Updated" />
-                                <TextBox Margin="0,6,0,0" IsReadOnly="True" Style="{StaticResource ModernTextBoxStyle}" Text="{Binding SelectedUserDetails.UpdatedAtDisplay, Mode=OneWay}" />
+                                <TextBox 
+                                    Margin="0,6,0,0" 
+                                    FontSize="14"
+                                    Height = "42"
+                                    IsReadOnly="True" 
+                                    Style="{StaticResource ModernTextBoxStyle}" 
+                                    Text="{Binding SelectedUserDetails.UpdatedAtDisplay, Mode=OneWay}" />
                             </StackPanel>
 
                             <StackPanel Grid.Row="2" Grid.Column="2">
                                 <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="#555555" Text="Last Login" />
-                                <TextBox Margin="0,6,0,0" IsReadOnly="True" Style="{StaticResource ModernTextBoxStyle}" Text="{Binding SelectedUserDetails.LastLoginAtDisplay, Mode=OneWay}" />
+                                <TextBox 
+                                    Margin="0,6,0,0" 
+                                    FontSize="14"
+                                    Height = "42"
+                                    IsReadOnly="True" 
+                                    Style="{StaticResource ModernTextBoxStyle}" 
+                                    Text="{Binding SelectedUserDetails.LastLoginAtDisplay, Mode=OneWay}" />
                             </StackPanel>
                         </Grid>
 

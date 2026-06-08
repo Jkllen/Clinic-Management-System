@@ -965,7 +965,7 @@
                                 <DataGridTextColumn Header="Details"
                                                     Binding="{Binding Details}"
                                                     Width="1.6*"
-                                                    MinWidth="120"/>
+                                                    MinWidth="190"/>
                             </DataGrid.Columns>
                         </DataGrid>
 

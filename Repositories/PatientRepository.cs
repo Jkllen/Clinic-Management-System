@@ -510,20 +510,14 @@ WHERE PatientId = @PatientId;";
             AND LOWER(TRIM(IFNULL(MiddleName, ''))) = LOWER(TRIM(@MiddleName))
             AND LOWER(TRIM(LastName)) = LOWER(TRIM(@LastName))
             AND BirthDate = @BirthDate
-        ";
+            AND (@ExcludedPatientId IS NULL OR PatientId <> @ExcludedPatientId)
+        LIMIT 1;";
 
-            if (excludedPatientId.HasValue)
-            {
-                command.CommandText += " AND PatientId <> @ExcludedPatientId";
-                command.Parameters.AddWithValue("@ExcludedPatientId", excludedPatientId.Value);
-            }
-
-            command.CommandText += " LIMIT 1;";
-
-            command.Parameters.AddWithValue("@FirstName", firstName.Trim());
-            command.Parameters.AddWithValue("@MiddleName", middleName.Trim());
-            command.Parameters.AddWithValue("@LastName", lastName.Trim());
-            command.Parameters.AddWithValue("@BirthDate", birthDate.ToString("yyyy-MM-dd"));
+            command.AddTextParameter("@FirstName", firstName.Trim());
+            command.AddTextParameter("@MiddleName", middleName.Trim());
+            command.AddTextParameter("@LastName", lastName.Trim());
+            command.AddDateParameter("@BirthDate", birthDate);
+            command.AddNullableParameter("@ExcludedPatientId", excludedPatientId);
 
             using SqliteDataReader reader = command.ExecuteReader();
 

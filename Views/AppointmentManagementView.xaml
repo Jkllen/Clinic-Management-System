@@ -645,12 +645,15 @@
 
                                 <DataGridTemplateColumn
                                     Width="Auto"
-                                    MinWidth="90"
                                     Header="Actions">
+
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
+                                            <StackPanel
+                                                HorizontalAlignment="Left"
+                                                Orientation="Horizontal">
 
+                                                <!-- Always visible primary action -->
                                                 <Button
                                                     Width="65"
                                                     Height="32"
@@ -659,120 +662,71 @@
                                                     Command="{Binding DataContext.ViewAppointmentDetailsCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                     CommandParameter="{Binding}"
                                                     Style="{StaticResource SmallActionButtonStyle}">
-                                                    <TextBlock FontSize="11" FontWeight="Bold" Foreground="White" Text="View" />
-                                                </Button>
 
-                                                <Button
-                                                    Width="80"
-                                                    Height="32"
-                                                    Margin="0,0,6,0"
-                                                    Background="#073C98"
-                                                    Command="{Binding DataContext.MarkArrivedCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                    CommandParameter="{Binding}"
-                                                    Style="{StaticResource SmallActionButtonStyle}"
-                                                    Visibility="{Binding MarkArrivedButtonVisibility}">
                                                     <TextBlock
                                                         FontSize="11"
                                                         FontWeight="Bold"
                                                         Foreground="White"
-                                                        Text="Arrived" />
+                                                        Text="View" />
                                                 </Button>
 
-                                                <Button
-                                                    Width="95"
+                                                <!-- Dropdown actions -->
+                                                <Menu
                                                     Height="32"
-                                                    Margin="0,0,6,0"
-                                                    Background="#073C98"
-                                                    Command="{Binding DataContext.OpenRescheduleOverlayCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                    CommandParameter="{Binding}"
-                                                    Style="{StaticResource SmallActionButtonStyle}"
-                                                    Visibility="{Binding RescheduleButtonVisibility}">
-                                                    <TextBlock
-                                                        FontSize="11"
-                                                        FontWeight="Bold"
-                                                        Foreground="White"
-                                                        Text="Reschedule" />
-                                                </Button>
+                                                    Background="Transparent"
+                                                    BorderThickness="0"
+                                                    Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=DataGrid}}">
 
-                                                <Button
-                                                    Width="80"
-                                                    Height="32"
-                                                    Margin="0,0,6,0"
-                                                    Background="#777777"
-                                                    Command="{Binding DataContext.MarkNoShowCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                    CommandParameter="{Binding}"
-                                                    Style="{StaticResource SmallActionButtonStyle}"
-                                                    Visibility="{Binding NoShowButtonVisibility}">
-                                                    <TextBlock
-                                                        FontSize="11"
-                                                        FontWeight="Bold"
-                                                        Foreground="White"
-                                                        Text="No Show" />
-                                                </Button>
+                                                    <MenuItem
+                                                        Header="More"
+                                                        IsEnabled="{Binding CanUseMoreActions}"
+                                                        Style="{StaticResource ModernMoreMenuHeaderStyle}">
 
-                                                <Button
-                                                    Width="70"
-                                                    Height="32"
-                                                    Margin="0,0,6,0"
-                                                    Background="#22C84A"
-                                                    Command="{Binding DataContext.StartTreatmentCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                    CommandParameter="{Binding}"
-                                                    Style="{StaticResource SmallActionButtonStyle}"
-                                                    Visibility="{Binding StartTreatmentButtonVisibility}">
-                                                    <TextBlock
-                                                        FontSize="11"
-                                                        FontWeight="Bold"
-                                                        Foreground="White"
-                                                        Text="Start" />
-                                                </Button>
+                                                        <MenuItem
+                                                            Header="Arrived"
+                                                            Command="{Binding Tag.MarkArrivedCommand, RelativeSource={RelativeSource AncestorType=Menu}}"
+                                                            CommandParameter="{Binding}"
+                                                            Visibility="{Binding MarkArrivedButtonVisibility}" />
 
-                                                <Button
-                                                    Width="80"
-                                                    Height="32"
-                                                    Margin="0,0,6,0"
-                                                    Background="#00A423"
-                                                    Command="{Binding DataContext.CompleteAppointmentCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                    CommandParameter="{Binding}"
-                                                    Style="{StaticResource SmallActionButtonStyle}"
-                                                    Visibility="{Binding CompleteButtonVisibility}">
-                                                    <TextBlock
-                                                        FontSize="11"
-                                                        FontWeight="Bold"
-                                                        Foreground="White"
-                                                        Text="Complete" />
-                                                </Button>
+                                                        <MenuItem
+                                                            Header="Reschedule"
+                                                            Command="{Binding Tag.OpenRescheduleOverlayCommand, RelativeSource={RelativeSource AncestorType=Menu}}"
+                                                            CommandParameter="{Binding}"
+                                                            Visibility="{Binding RescheduleButtonVisibility}" />
 
-                                                <Button
-                                                    Width="105"
-                                                    Height="32"
-                                                    Margin="0,0,6,0"
-                                                    Background="{Binding UrgentButtonBrush}"
-                                                    Command="{Binding DataContext.ToggleUrgentCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                    CommandParameter="{Binding}"
-                                                    Style="{StaticResource SmallActionButtonStyle}"
-                                                    Visibility="{Binding UrgentButtonVisibility}">
-                                                    <TextBlock
-                                                        FontSize="11"
-                                                        FontWeight="Bold"
-                                                        Foreground="White"
-                                                        Text="{Binding UrgentButtonText}" />
-                                                </Button>
+                                                        <MenuItem
+                                                            Header="No Show"
+                                                            Command="{Binding Tag.MarkNoShowCommand, RelativeSource={RelativeSource AncestorType=Menu}}"
+                                                            CommandParameter="{Binding}"
+                                                            Visibility="{Binding NoShowButtonVisibility}" />
 
-                                                <Button
-                                                    Width="70"
-                                                    Height="32"
-                                                    Background="#E31D1D"
-                                                    Command="{Binding DataContext.CancelAppointmentCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                    CommandParameter="{Binding}"
-                                                    Style="{StaticResource SmallActionButtonStyle}"
-                                                    Visibility="{Binding CancelButtonVisibility}">
-                                                    <TextBlock
-                                                        FontSize="11"
-                                                        FontWeight="Bold"
-                                                        Foreground="White"
-                                                        Text="Cancel" />
-                                                </Button>
+                                                        <MenuItem
+                                                            Header="Start"
+                                                            Command="{Binding Tag.StartTreatmentCommand, RelativeSource={RelativeSource AncestorType=Menu}}"
+                                                            CommandParameter="{Binding}"
+                                                            Visibility="{Binding StartTreatmentButtonVisibility}" />
 
+                                                        <MenuItem
+                                                            Header="Complete"
+                                                            Command="{Binding Tag.CompleteAppointmentCommand, RelativeSource={RelativeSource AncestorType=Menu}}"
+                                                            CommandParameter="{Binding}"
+                                                            Visibility="{Binding CompleteButtonVisibility}" />
+
+                                                        <MenuItem
+                                                            Header="{Binding UrgentButtonText}"
+                                                            Command="{Binding Tag.ToggleUrgentCommand, RelativeSource={RelativeSource AncestorType=Menu}}"
+                                                            CommandParameter="{Binding}"
+                                                            Visibility="{Binding UrgentButtonVisibility}" />
+
+                                                        <Separator />
+
+                                                        <MenuItem
+                                                            Header="Cancel"
+                                                            Command="{Binding Tag.CancelAppointmentCommand, RelativeSource={RelativeSource AncestorType=Menu}}"
+                                                            CommandParameter="{Binding}"
+                                                            Visibility="{Binding CancelButtonVisibility}" />
+                                                    </MenuItem>
+                                                </Menu>
                                             </StackPanel>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>

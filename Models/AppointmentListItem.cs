@@ -193,6 +193,9 @@ namespace CruzNeryClinic.Models
         public Visibility UrgentButtonVisibility =>
             Status == "Waiting" ? Visibility.Visible : Visibility.Collapsed;
 
+        public bool CanUseMoreActions =>
+            Status != "Completed";
+
         public string UrgentButtonText =>
             IsUrgent ? "Remove Urgent" : "Urgent";
 

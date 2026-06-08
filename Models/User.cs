@@ -30,6 +30,15 @@ namespace CruzNeryClinic.Models
         // Example roles: Admin, Dentist, Secretary, Dental Assistant.
         public string Role { get; set; } = string.Empty;
 
+        public bool IsDentistRole { get; set; }
+
+        public bool IsAdmin => Role == "Admin";
+
+        public bool IsDentist => Role == "Dentist" || IsDentistRole;
+
+        public string RoleDisplay =>
+            IsAdmin && IsDentistRole ? "Admin, Dentist" : Role;
+
         // These are foreign keys from the SecurityQuestions table.
         public int SecurityQuestionId1 { get; set; }
         public int SecurityQuestionId2 { get; set; }

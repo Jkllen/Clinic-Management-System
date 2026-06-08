@@ -1098,7 +1098,7 @@ namespace CruzNeryClinic.ViewModels
                 "All Users" => query,
                 "Archived Users" => query.Where(user => !user.IsActive),
                 "Administrators" => query.Where(user => user.IsActive && user.Role == "Admin"),
-                "Dentists" => query.Where(user => user.IsActive && user.Role == "Dentist"),
+                "Dentists" => query.Where(user => user.IsActive && (user.Role == "Dentist" || user.IsDentistRole)),
                 "Secretaries" => query.Where(user => user.IsActive && user.Role == "Secretary"),
                 "Dental Assistants" => query.Where(user => user.IsActive && user.Role == "Dental Assistant"),
                 "Staff Only" => query.Where(user => user.IsActive && user.Role != "Admin"),
@@ -1114,7 +1114,7 @@ namespace CruzNeryClinic.ViewModels
                     user.FirstName.ToLower().Contains(keyword) ||
                     user.LastName.ToLower().Contains(keyword) ||
                     user.ContactNumber.ToLower().Contains(keyword) ||
-                    user.Role.ToLower().Contains(keyword) ||
+                    user.RoleDisplay.ToLower().Contains(keyword) ||
                     user.AccountStatus.ToLower().Contains(keyword));
             }
 
@@ -1136,9 +1136,9 @@ namespace CruzNeryClinic.ViewModels
 
                 "First Name Z-A" => query.OrderByDescending(user => user.FirstName).ThenByDescending(user => user.LastName),
 
-                "Role A-Z" => query.OrderBy(user => user.Role).ThenBy(user => user.LastName),
+                "Role A-Z" => query.OrderBy(user => user.RoleDisplay).ThenBy(user => user.LastName),
 
-                "Role Z-A" => query.OrderByDescending(user => user.Role).ThenBy(user => user.LastName),
+                "Role Z-A" => query.OrderByDescending(user => user.RoleDisplay).ThenBy(user => user.LastName),
 
                 _ => query
                     .OrderBy(user => GetUserCodePrefixRank(user.UserCode))
@@ -1989,6 +1989,7 @@ namespace CruzNeryClinic.ViewModels
                 ContactNumber = user.ContactNumber,
                 Username = user.Username,
                 Role = user.Role,
+                IsDentistRole = user.IsDentistRole,
                 IsActive = user.IsActive,
                 CreatedByUserId = user.CreatedByUserId,
                 CreatedByDisplay = createdByDisplay,
