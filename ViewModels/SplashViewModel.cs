@@ -16,7 +16,7 @@ namespace CruzNeryClinic.ViewModels
         {
             // Small delay so the splash screen is visible to the user.
             // Adjust this if want it to be faster or slower.
-            await Task.Delay(2000);
+            await Task.Delay(3500);
 
             // Notify the main window that splash is finished.
             SplashFinished?.Invoke();

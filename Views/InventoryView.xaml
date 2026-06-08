@@ -257,27 +257,6 @@
                                     Foreground="#111111"
                                     IsHitTestVisible="False"
                                     Text="₱" />
-                                <TextBlock
-                                    Margin="36,0,16,0"
-                                    VerticalAlignment="Center"
-                                    FontSize="{TemplateBinding FontSize}"
-                                    Foreground="#A0A0A0"
-                                    IsHitTestVisible="False"
-                                    Text="{TemplateBinding Tag}">
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Visibility" Value="Collapsed" />
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value="">
-                                                    <Setter Property="Visibility" Value="Visible" />
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Null}">
-                                                    <Setter Property="Visibility" Value="Visible" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
                             </Grid>
                         </Border>
                         <ControlTemplate.Triggers>
@@ -1200,7 +1179,7 @@
                                                     </Button>
                                                 </StackPanel>
 
-                                                <!--  Inactive row – Restore button  -->
+                                                <!--  Archived row – Restore button  -->
                                                 <Button
                                                     Height="30"
                                                     Padding="14,0"
@@ -1712,7 +1691,7 @@
                                             <Style TargetType="Border">
                                                 <Setter Property="Background" Value="#D1FAE5" />
                                                 <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding ViewItemActiveStatus}" Value="Inactive">
+                                                    <DataTrigger Binding="{Binding ViewItemActiveStatus}" Value="Archived">
                                                         <Setter Property="Background" Value="#FEE2E2" />
                                                     </DataTrigger>
                                                 </Style.Triggers>
@@ -1723,7 +1702,7 @@
                                                 <Style TargetType="TextBlock">
                                                     <Setter Property="Foreground" Value="#065F46" />
                                                     <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding ViewItemActiveStatus}" Value="Inactive">
+                                                        <DataTrigger Binding="{Binding ViewItemActiveStatus}" Value="Archived">
                                                             <Setter Property="Foreground" Value="#991B1B" />
                                                         </DataTrigger>
                                                     </Style.Triggers>
@@ -1873,9 +1852,6 @@
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
                                         <TextBox Grid.Column="0" Style="{StaticResource InventoryOverlayTextBoxStyle}" Tag="Enter Item Name" Text="{Binding EditItemName, UpdateSourceTrigger=PropertyChanged}" />
-                                        <Border Grid.Column="1" Width="34" Height="34" Margin="8,0,0,0" VerticalAlignment="Center" Background="#FFF3CD" CornerRadius="17" ToolTip="Editable field">
-                                            <fa:IconBlock Icon="Edit" FontSize="13" Foreground="#E08600" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                        </Border>
                                     </Grid>
                                 </StackPanel>
                                 <StackPanel Grid.Column="2">
@@ -1887,9 +1863,6 @@
                                         </Grid.ColumnDefinitions>
                                         <Border Grid.Column="0" Height="46" Background="#F0F0F0" BorderBrush="#D8D8D8" BorderThickness="1" CornerRadius="14">
                                             <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13" FontWeight="SemiBold" Foreground="#666666" Text="{Binding PreviewItemId}" />
-                                        </Border>
-                                        <Border Grid.Column="1" Width="34" Height="34" Margin="8,0,0,0" VerticalAlignment="Center" Background="#FFF3CD" CornerRadius="17" ToolTip="Auto-generated">
-                                            <fa:IconBlock Icon="Edit" FontSize="13" Foreground="#E08600" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                         </Border>
                                     </Grid>
                                 </StackPanel>
@@ -1921,9 +1894,6 @@
                                                 </Button>
                                             </StackPanel>
                                         </Grid>
-                                        <Border Grid.Column="1" Width="34" Height="34" Margin="8,0,0,0" VerticalAlignment="Center" Background="#FFF3CD" CornerRadius="17" ToolTip="Editable field" Visibility="{Binding EditIsEditMode, Converter={StaticResource BoolToVisibilityConverter}}">
-                                            <fa:IconBlock Icon="Edit" FontSize="13" Foreground="#E08600" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                        </Border>
                                     </Grid>
                                 </StackPanel>
                                 <StackPanel Grid.Column="2">
@@ -1944,9 +1914,6 @@
                                                 </Button>
                                             </StackPanel>
                                         </Grid>
-                                        <Border Grid.Column="1" Width="34" Height="34" Margin="8,0,0,0" VerticalAlignment="Center" Background="#FFF3CD" CornerRadius="17" ToolTip="Editable field" Visibility="{Binding EditIsEditMode, Converter={StaticResource BoolToVisibilityConverter}}">
-                                            <fa:IconBlock Icon="Edit" FontSize="13" Foreground="#E08600" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                        </Border>
                                     </Grid>
                                 </StackPanel>
                                 <StackPanel Grid.Column="3" Margin="12,0,0,0" VerticalAlignment="Bottom" Visibility="{Binding EditIsEditMode, Converter={StaticResource BoolToVisibilityConverter}}">
@@ -2011,7 +1978,7 @@
                                             <Style TargetType="Border">
                                                 <Setter Property="Background" Value="#D1FAE5" />
                                                 <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding EditItemStatusDisplay}" Value="Inactive">
+                                                    <DataTrigger Binding="{Binding EditItemStatusDisplay}" Value="Archived">
                                                         <Setter Property="Background" Value="#FEE2E2" />
                                                     </DataTrigger>
                                                 </Style.Triggers>
@@ -2022,7 +1989,7 @@
                                                 <Style TargetType="TextBlock">
                                                     <Setter Property="Foreground" Value="#065F46" />
                                                     <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding EditItemStatusDisplay}" Value="Inactive">
+                                                        <DataTrigger Binding="{Binding EditItemStatusDisplay}" Value="Archived">
                                                             <Setter Property="Foreground" Value="#991B1B" />
                                                         </DataTrigger>
                                                     </Style.Triggers>
@@ -2102,57 +2069,34 @@
                                 </Border>
                             </StackPanel>
 
-                            <!--  Update modal only: Low Stock Threshold + Notes side by side  -->
-                            <Grid Margin="0,0,0,4" Visibility="{Binding EditIsEditMode, Converter={StaticResource BoolToVisibilityConverter}}">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="20" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
+                            <!--  Update modal only: Low Stock Threshold, then Notes full-width below  -->
+                            <StackPanel Margin="0,0,0,4" Visibility="{Binding EditIsEditMode, Converter={StaticResource BoolToVisibilityConverter}}">
 
-                                <!--  Low Stock Threshold (left)  -->
-                                <StackPanel Grid.Column="0">
+                                <!--  Low Stock Threshold  -->
+                                <StackPanel Margin="0,0,0,12">
                                     <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Low Stock Threshold :" />
                                     <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <Grid Grid.Column="0">
-                                            <TextBox Padding="12,0,40,0" Style="{StaticResource InventoryOverlayTextBoxStyle}" Tag="Enter the minimum stock level for this item" Text="{Binding EditLowStockThreshold, UpdateSourceTrigger=PropertyChanged}" PreviewTextInput="IntegerOnly_PreviewTextInput" />
-                                            <StackPanel Margin="0,0,8,0" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                                <Button Command="{Binding EditThresholdIncrementCommand}" Style="{StaticResource SpinnerButtonStyle}">
-                                                    <fa:IconBlock FontSize="11" Foreground="#223357" Icon="AngleUp" />
-                                                </Button>
-                                                <Button Command="{Binding EditThresholdDecrementCommand}" Style="{StaticResource SpinnerButtonStyle}">
-                                                    <fa:IconBlock FontSize="11" Foreground="#223357" Icon="AngleDown" />
-                                                </Button>
-                                            </StackPanel>
-                                        </Grid>
-                                        <Border Grid.Column="1" Width="34" Height="34" Margin="8,0,0,0" VerticalAlignment="Center" Background="#FFF3CD" CornerRadius="17" ToolTip="Editable field">
-                                            <fa:IconBlock Icon="Edit" FontSize="13" Foreground="#E08600" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                        </Border>
+                                        <TextBox Padding="12,0,40,0" Style="{StaticResource InventoryOverlayTextBoxStyle}" Tag="Enter the minimum stock level for this item" Text="{Binding EditLowStockThreshold, UpdateSourceTrigger=PropertyChanged}" PreviewTextInput="IntegerOnly_PreviewTextInput" />
+                                        <StackPanel Margin="0,0,8,0" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                            <Button Command="{Binding EditThresholdIncrementCommand}" Style="{StaticResource SpinnerButtonStyle}">
+                                                <fa:IconBlock FontSize="11" Foreground="#223357" Icon="AngleUp" />
+                                            </Button>
+                                            <Button Command="{Binding EditThresholdDecrementCommand}" Style="{StaticResource SpinnerButtonStyle}">
+                                                <fa:IconBlock FontSize="11" Foreground="#223357" Icon="AngleDown" />
+                                            </Button>
+                                        </StackPanel>
                                     </Grid>
                                     <TextBlock Margin="4,5,0,0" FontSize="11" Foreground="#7A7A7A" Text="Note: Set the minimum stock level for this item. The system will trigger a Low Stock alert when the available quantity reaches this threshold." TextWrapping="Wrap" />
                                 </StackPanel>
 
-                                <!--  Notes (optional) (right)  -->
-                                <StackPanel Grid.Column="2">
+                                <!--  Notes (optional) — full-width row below  -->
+                                <StackPanel>
                                     <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Notes (optional) :" />
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <Border Grid.Column="0" BorderBrush="#C8DCF0" BorderThickness="1" CornerRadius="10">
-                                            <TextBox Height="90" Padding="12,8" AcceptsReturn="True" Background="#FFFDFD" BorderThickness="0" FontSize="13" Foreground="#111111" Text="{Binding EditNotes, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" />
-                                        </Border>
-                                        <Border Grid.Column="1" Width="34" Height="34" Margin="8,0,0,0" VerticalAlignment="Center" Background="#FFF3CD" CornerRadius="17" ToolTip="Editable field">
-                                            <fa:IconBlock Icon="Edit" FontSize="13" Foreground="#E08600" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                        </Border>
-                                    </Grid>
+                                    <Border Background="#FFFDFD" BorderBrush="#C8DCF0" BorderThickness="1" CornerRadius="10">
+                                        <TextBox Height="90" Padding="12,8" AcceptsReturn="True" Background="Transparent" BorderThickness="0" FontSize="13" Foreground="#111111" Text="{Binding EditNotes, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" />
+                                    </Border>
                                 </StackPanel>
-                            </Grid>
+                            </StackPanel>
 
                         </StackPanel>
                     </ScrollViewer>

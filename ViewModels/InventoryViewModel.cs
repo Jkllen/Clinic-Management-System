@@ -58,7 +58,7 @@ namespace CruzNeryClinic.ViewModels
 
         public ObservableCollection<string> FilterOptions { get; set; } = new()
         {
-            "All", "In Stock", "Low Stock", "Out of Stock", "Inactive"
+            "All", "In Stock", "Low Stock", "Out of Stock", "Archived"
         };
 
         private string _selectedFilterOption = "All";
@@ -588,8 +588,8 @@ namespace CruzNeryClinic.ViewModels
                     i.ItemName.Contains(q, StringComparison.OrdinalIgnoreCase));
             }
 
-            // Filter — active items only unless "Inactive" is selected
-            if (SelectedFilterOption == "Inactive")
+            // Filter — active items only unless "Archived" is selected
+            if (SelectedFilterOption == "Archived")
             {
                 view = _archivedItems.AsEnumerable();
                 if (!string.IsNullOrWhiteSpace(SearchText))
@@ -670,7 +670,7 @@ namespace CruzNeryClinic.ViewModels
                 ? created.ToString("MM/dd/yyyy") : "—";
             EditLastRestockDisplay   = item.LastRestock.HasValue
                 ? item.LastRestock.Value.ToString("MM/dd/yyyy") : "—";
-            EditItemStatusDisplay    = item.IsActive ? "Active" : "Inactive";
+            EditItemStatusDisplay    = item.IsActive ? "Active" : "Archived";
             HasItemOverlayError      = false;
             ItemOverlayErrorMessage  = "";
             IsItemOverlayOpen        = true;
@@ -780,7 +780,7 @@ namespace CruzNeryClinic.ViewModels
                 ? created.ToString("MM/dd/yyyy") : "—";
             ViewItemLastRestock = item.LastRestock.HasValue
                 ? item.LastRestock.Value.ToString("MM/dd/yyyy") : "—";
-            ViewItemActiveStatus = item.IsActive ? "Active" : "Inactive";
+            ViewItemActiveStatus = item.IsActive ? "Active" : "Archived";
             ViewItemThreshold   = item.MinimumStockLevel.ToString();
             ViewItemNotes       = item.Note;
 

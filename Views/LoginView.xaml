@@ -121,11 +121,39 @@
                  VerticalAlignment="Center"
                  Margin="30">
 
-            <!-- 
+            <!--
                 This Grid is the original design canvas for the login card.
                 The Viewbox scales this whole area down if needed.
             -->
-            <Grid Width="560" Height="780">
+            <Grid Width="560" Height="780" Opacity="0">
+
+                <Grid.RenderTransform>
+                    <TranslateTransform x:Name="LoginPanelSlide" Y="24" />
+                </Grid.RenderTransform>
+
+                <Grid.Triggers>
+                    <EventTrigger RoutedEvent="Grid.Loaded">
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <!--  Fade the login panel in  -->
+                                <DoubleAnimation
+                                    Storyboard.TargetProperty="Opacity"
+                                    From="0" To="1"
+                                    Duration="0:0:0.6" />
+                                <!--  Subtle slide up while fading  -->
+                                <DoubleAnimation
+                                    Storyboard.TargetName="LoginPanelSlide"
+                                    Storyboard.TargetProperty="Y"
+                                    From="24" To="0"
+                                    Duration="0:0:0.6">
+                                    <DoubleAnimation.EasingFunction>
+                                        <CubicEase EasingMode="EaseOut" />
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Grid.Triggers>
 
                 <!-- Login card background -->
                 <Border CornerRadius="36"
