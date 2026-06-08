@@ -71,6 +71,9 @@ namespace CruzNeryClinic.ViewModels
             // Lets the Dashboard global search jump to a patient/user record.
             dashboardViewModel.NavigationWithSearchRequested += NavigateToModuleWithSearch;
 
+            // Lets Dashboard "View All" open a specific Reports tab.
+            dashboardViewModel.NavigationToReportRequested += NavigateToReport;
+
             DashboardView dashboardView = new DashboardView
             {
                 DataContext = dashboardViewModel
@@ -174,6 +177,20 @@ namespace CruzNeryClinic.ViewModels
                     NavigateTo(moduleName);
                     break;
             }
+        }
+
+        // Opens the Reports module already switched to the requested report tab.
+        private void NavigateToReport(string reportKey)
+        {
+            if (!SessionService.CanAccessModule("Reports"))
+                return;
+
+            SelectedModule = "Reports";
+
+            ReportsViewModel reportsViewModel = new ReportsViewModel();
+            reportsViewModel.ShowReport(reportKey);
+
+            CurrentModuleView = new ReportsView { DataContext = reportsViewModel };
         }
 
         private void NavigateToPatientsAndOpenAddPatient()

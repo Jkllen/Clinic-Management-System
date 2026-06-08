@@ -165,6 +165,49 @@ namespace CruzNeryClinic.ViewModels
         // Title shown on the preview overlay, reflecting the active report tab.
         public string ReportPrintPreviewTitle => $"{GetActiveReportTitle()} — Print Preview";
 
+        // ── Print scope (chosen in the Print options dialog) ────────────────────
+        private bool _isPrintOptionsOpen;
+        public bool IsPrintOptionsOpen
+        {
+            get => _isPrintOptionsOpen;
+            set => SetProperty(ref _isPrintOptionsOpen, value);
+        }
+
+        public ObservableCollection<string> PrintRowOptions { get; } =
+            new() { "25", "50", "100", "All" };
+
+        private string _selectedPrintRowLimit = "50";
+        public string SelectedPrintRowLimit
+        {
+            get => _selectedPrintRowLimit;
+            set => SetProperty(ref _selectedPrintRowLimit, value);
+        }
+
+        private bool _printIncludeCharts = true;
+        public bool PrintIncludeCharts
+        {
+            get => _printIncludeCharts;
+            set => SetProperty(ref _printIncludeCharts, value);
+        }
+
+        private bool _printIncludeSummary = true;
+        public bool PrintIncludeSummary
+        {
+            get => _printIncludeSummary;
+            set => SetProperty(ref _printIncludeSummary, value);
+        }
+
+        private bool _printIncludeDetailedRecords = true;
+        public bool PrintIncludeDetailedRecords
+        {
+            get => _printIncludeDetailedRecords;
+            set => SetProperty(ref _printIncludeDetailedRecords, value);
+        }
+
+        // Resolves SelectedPrintRowLimit to a row cap (int.MaxValue = no cap).
+        private int PrintRowLimit =>
+            int.TryParse(SelectedPrintRowLimit, out int n) ? n : int.MaxValue;
+
         // ── Chart & table data ─────────────────────────────────────────────────
 
         public ObservableCollection<PatientVisitReportItem> PatientVisitsItems { get; } = new();
@@ -224,6 +267,41 @@ namespace CruzNeryClinic.ViewModels
             private set => SetProperty(ref _activityByModuleInsight, value);
         }
 
+        // ── Chart detail panel (opens when a chart is clicked) ──────────────────
+        public event Action? ChartDetailRequested;
+
+        public string SelectedChartKey { get; private set; } = "";
+
+        private bool _isChartDetailOpen;
+        public bool IsChartDetailOpen
+        {
+            get => _isChartDetailOpen;
+            set => SetProperty(ref _isChartDetailOpen, value);
+        }
+
+        private string _chartDetailTitle = "";
+        public string ChartDetailTitle
+        {
+            get => _chartDetailTitle;
+            private set => SetProperty(ref _chartDetailTitle, value);
+        }
+
+        private string _chartDetailDescription = "";
+        public string ChartDetailDescription
+        {
+            get => _chartDetailDescription;
+            private set => SetProperty(ref _chartDetailDescription, value);
+        }
+
+        private string _chartDetailInsight = "";
+        public string ChartDetailInsight
+        {
+            get => _chartDetailInsight;
+            private set => SetProperty(ref _chartDetailInsight, value);
+        }
+
+        public ObservableCollection<KeyFigure> ChartDetailFigures { get; } = new();
+
         // ── Commands ───────────────────────────────────────────────────────────
 
         public ICommand SelectPatientVisitsCommand { get; }
@@ -233,8 +311,12 @@ namespace CruzNeryClinic.ViewModels
         public ICommand ApplyThisMonthCommand { get; }
         public ICommand ApplyThisYearCommand { get; }
         public ICommand ApplyCustomRangeCommand { get; }
+        public ICommand OpenPrintOptionsCommand { get; }
+        public ICommand ClosePrintOptionsCommand { get; }
         public ICommand PrintReportCommand { get; }
         public ICommand CloseReportPrintPreviewCommand { get; }
+        public ICommand OpenChartDetailCommand { get; }
+        public ICommand CloseChartDetailCommand { get; }
 
         public ReportsViewModel()
         {
@@ -245,13 +327,84 @@ namespace CruzNeryClinic.ViewModels
             ApplyThisMonthCommand = new RelayCommand(ApplyThisMonth);
             ApplyThisYearCommand = new RelayCommand(ApplyThisYear);
             ApplyCustomRangeCommand = new RelayCommand(ApplyCustomRange);
+            OpenPrintOptionsCommand = new RelayCommand(() => IsPrintOptionsOpen = true);
+            ClosePrintOptionsCommand = new RelayCommand(() => IsPrintOptionsOpen = false);
             PrintReportCommand = new RelayCommand(PrintReport);
             CloseReportPrintPreviewCommand = new RelayCommand(() => IsReportPrintPreviewOpen = false);
+            OpenChartDetailCommand = new RelayCommand<string>(OpenChartDetail);
+            CloseChartDetailCommand = new RelayCommand(() => IsChartDetailOpen = false);
 
             ApplyThisMonth();
         }
 
+        // Opens the right-side chart detail panel for the clicked chart.
+        private void OpenChartDetail(string? key)
+        {
+            if (string.IsNullOrEmpty(key)) return;
+
+            ChartDetailFigures.Clear();
+
+            switch (key)
+            {
+                case "patientVisit":
+                    ChartDetailTitle = "Patient Visits Trend";
+                    ChartDetailInsight = PatientVisitInsight;
+                    foreach (var f in ChartInsight.KeyFigures(PatientVisitTrend, "scheduled", "walk-in"))
+                        ChartDetailFigures.Add(f);
+                    break;
+                case "revenue":
+                    ChartDetailTitle = "Revenue Trend";
+                    ChartDetailInsight = RevenueInsight;
+                    foreach (var f in ChartInsight.KeyFigures(RevenueTrend, "₱"))
+                        ChartDetailFigures.Add(f);
+                    break;
+                case "dailyTx":
+                    ChartDetailTitle = "Daily Transactions";
+                    ChartDetailInsight = DailyTransactionsInsight;
+                    foreach (var f in ChartInsight.KeyFigures(DailyTransactionCounts))
+                        ChartDetailFigures.Add(f);
+                    break;
+                case "inventory":
+                    ChartDetailTitle = "Stock Levels vs Threshold";
+                    ChartDetailInsight = InventoryInsight;
+                    foreach (var f in ChartInsight.KeyFigures(InventoryChartData))
+                        ChartDetailFigures.Add(f);
+                    break;
+                case "activityType":
+                    ChartDetailTitle = "Activity Distribution by Type";
+                    ChartDetailInsight = ActivityByTypeInsight;
+                    foreach (var f in ChartInsight.KeyFigures(ActivityByType))
+                        ChartDetailFigures.Add(f);
+                    break;
+                case "activityModule":
+                    ChartDetailTitle = "Activity by Module";
+                    ChartDetailInsight = ActivityByModuleInsight;
+                    foreach (var f in ChartInsight.KeyFigures(ActivityByModule))
+                        ChartDetailFigures.Add(f);
+                    break;
+                default:
+                    return;
+            }
+
+            ChartDetailDescription = ChartInsight.Description(key);
+            SelectedChartKey = key;
+            IsChartDetailOpen = true;
+            ChartDetailRequested?.Invoke();
+        }
+
         // ── Tab switching ──────────────────────────────────────────────────────
+
+        // Opens a specific report tab when navigated to from the Dashboard "View All".
+        public void ShowReport(string reportKey)
+        {
+            switch (reportKey)
+            {
+                case "Transaction": SelectTransactionReports(); break;
+                case "Inventory": SelectInventoryReports(); break;
+                case "UserActivity": SelectUserActivityLog(); break;
+                default: SelectPatientVisits(); break;
+            }
+        }
 
         private void SelectPatientVisits()
         {
@@ -383,6 +536,7 @@ namespace CruzNeryClinic.ViewModels
 
             ReportPrintPreviewUri = new Uri(filePath);
             OnPropertyChanged(nameof(ReportPrintPreviewTitle));
+            IsPrintOptionsOpen = false;
             IsReportPrintPreviewOpen = true;
         }
 
@@ -395,13 +549,17 @@ namespace CruzNeryClinic.ViewModels
             StringBuilder rows = new();
             var summary = new List<(string Label, string Value)>();
 
+            int rowLimit = PrintRowLimit;
+            int totalRows = 0;
+
             if (IsTransactionReportsSelected)
             {
-                charts = BarChartSvg("Revenue Trend", RevenueTrend.Select(p => (p.Label, p.Value)), "#50C878", "₱")
-                       + BarChartSvg("Daily Transactions", DailyTransactionCounts.Select(p => (p.Label, p.Value)), "#2F98D0", "");
+                charts = AreaChartSvg("Revenue Trend", RevenueTrend.Select(p => (p.Label, p.Value)), "#50C878", "₱", RevenueInsight)
+                       + BarChartSvg("Daily Transactions", DailyTransactionCounts.Select(p => (p.Label, p.Value)), "#2F98D0", "", DailyTransactionsInsight);
 
                 headerCells = Th("Transaction ID", "Date", "Patient ID", "Patient Name", "Description", "Amount", "Payment Method");
-                foreach (TransactionReportItem t in TransactionItems)
+                totalRows = TransactionItems.Count;
+                foreach (TransactionReportItem t in TransactionItems.Take(rowLimit))
                     rows.Append(Tr(t.ReceiptNumber, t.Date, t.PatientCode, t.PatientName, t.Service, $"₱ {t.Amount:N2}", t.PaymentMethod));
 
                 decimal totalRevenue = TransactionItems.Sum(t => (decimal)t.Amount);
@@ -419,10 +577,11 @@ namespace CruzNeryClinic.ViewModels
             }
             else if (IsInventoryReportsSelected)
             {
-                charts = BarChartSvg("Stock Levels", InventoryChartData.Select(p => (p.Label, p.Value)), "#FF981D", "");
+                charts = BarChartSvg("Stock Levels", InventoryChartData.Select(p => (p.Label, p.Value)), "#FF981D", "", InventoryInsight);
 
                 headerCells = Th("Item Name", "Quantity on Hand", "Reorder Level", "Last Restocked", "Status");
-                foreach (InventoryReportItem i in InventoryItems)
+                totalRows = InventoryItems.Count;
+                foreach (InventoryReportItem i in InventoryItems.Take(rowLimit))
                     rows.Append(Tr(i.ItemName, i.CurrentStock.ToString("N0"), i.Threshold.ToString("N0"), i.LastRestocked, i.Status));
 
                 int lowStock = InventoryItems.Count(i => i.CurrentStock <= i.Threshold);
@@ -432,11 +591,12 @@ namespace CruzNeryClinic.ViewModels
             }
             else if (IsUserActivityLogSelected)
             {
-                charts = PieChartSvg("Activity by Type", ActivityByType)
-                       + BarChartSvg("Activity by Module", ActivityByModule.Select(p => (p.Label, p.Value)), "#A855F7", "");
+                charts = PieChartSvg("Activity by Type", ActivityByType, ActivityByTypeInsight)
+                       + BarChartSvg("Activity by Module", ActivityByModule.Select(p => (p.Label, p.Value)), "#A855F7", "", ActivityByModuleInsight);
 
                 headerCells = Th("Date / Time", "User", "Role", "Action", "Module", "Details");
-                foreach (ActivityLogReportItem a in ActivityLogItems)
+                totalRows = ActivityLogItems.Count;
+                foreach (ActivityLogReportItem a in ActivityLogItems.Take(rowLimit))
                     rows.Append(Tr(a.Timestamp, a.Name, a.Role, a.Action, a.Module, a.Details));
 
                 string mostActive = ActivityLogItems
@@ -456,14 +616,16 @@ namespace CruzNeryClinic.ViewModels
             }
             else
             {
-                charts = GroupedBarChartSvg(
+                charts = DualLineChartSvg(
                     "Patient Visits Trend",
                     PatientVisitTrend.Select(p => (p.Label, p.Value1, p.Value2)),
                     "Scheduled", "#0EA5E9",
-                    "Walk-in", "#50C878");
+                    "Walk-in", "#50C878",
+                    PatientVisitInsight);
 
                 headerCells = Th("Date", "Patient ID", "Patient Name", "Visit Type", "Service", "Dentist");
-                foreach (PatientVisitReportItem p in PatientVisitsItems)
+                totalRows = PatientVisitsItems.Count;
+                foreach (PatientVisitReportItem p in PatientVisitsItems.Take(rowLimit))
                     rows.Append(Tr(p.Date, p.PatientCode, p.PatientName, p.VisitType, p.Service, p.Dentist));
 
                 double scheduled = PatientVisitTrend.Sum(p => p.Value1);
@@ -486,10 +648,32 @@ namespace CruzNeryClinic.ViewModels
             int columnCount = headerCells.Split("<th").Length - 1;
             if (rows.Length == 0)
                 rows.Append($"<tr><td colspan=\"{columnCount}\" class=\"empty\">No records for the selected period.</td></tr>");
+            else if (totalRows > rowLimit)
+                rows.Append($"<tr><td colspan=\"{columnCount}\" class=\"empty\">Showing first {rowLimit:N0} of {totalRows:N0} records (summarized to save paper).</td></tr>");
 
             StringBuilder cards = new();
             foreach (var (label, value) in summary)
                 cards.Append($@"<li><span class=""sum-lbl"">{HtmlEncode(label)}:</span> <span class=""sum-val"">{HtmlEncode(value)}</span></li>");
+
+            // Sections included per the Print options dialog, in order:
+            // charts → summary → detailed records.
+            string chartsSection = PrintIncludeCharts
+                ? $@"<h2 class=""section"">Overview</h2>
+    <div class=""charts"">{charts}</div>"
+                : string.Empty;
+
+            string summarySection = PrintIncludeSummary
+                ? $@"<h2 class=""section"">Summary</h2>
+    <ul class=""sumlist"">{cards}</ul>"
+                : string.Empty;
+
+            string detailedSection = PrintIncludeDetailedRecords
+                ? $@"<h2 class=""section"">Detailed Records</h2>
+    <table>
+        <thead><tr>{headerCells}</tr></thead>
+        <tbody>{rows}</tbody>
+    </table>"
+                : string.Empty;
 
             string generatedBy = SessionService.GetCurrentUserFullName();
             if (string.IsNullOrWhiteSpace(generatedBy)) generatedBy = "—";
@@ -527,6 +711,7 @@ namespace CruzNeryClinic.ViewModels
     .charts {{ display: flex; flex-wrap: nowrap; gap: 18px; align-items: stretch; }}
     .chart {{ border: 1px solid #e8e8e8; border-radius: 8px; padding: 12px 14px; flex: 1 1 0; min-width: 0; }}
     .chart h2 {{ font-size: 13px; margin: 0 0 8px 0; color: #223357; }}
+    .chart-note {{ font-size: 11px; color: #555; margin: 8px 0 0 0; line-height: 1.4; }}
     .legend {{ font-size: 11px; color: #555; margin-top: 6px; }}
     .legend span {{ display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin: 0 4px 0 12px; vertical-align: middle; }}
     .pie-legend {{ font-size: 11px; color: #555; }}
@@ -550,17 +735,11 @@ namespace CruzNeryClinic.ViewModels
         </div>
     </div>
 
-    <h2 class=""section"">Overview</h2>
-    <div class=""charts"">{charts}</div>
+    {chartsSection}
 
-    <h2 class=""section"">Detailed Records</h2>
-    <table>
-        <thead><tr>{headerCells}</tr></thead>
-        <tbody>{rows}</tbody>
-    </table>
+    {summarySection}
 
-    <h2 class=""section"">Summary</h2>
-    <ul class=""sumlist"">{cards}</ul>
+    {detailedSection}
 
     <div class=""report-footer"">
         <span>Cruz Nery Clinic Management System {appVersion}</span>
@@ -571,12 +750,12 @@ namespace CruzNeryClinic.ViewModels
         }
 
         // Inline SVG bar chart for a single data series.
-        private static string BarChartSvg(string title, IEnumerable<(string Label, double Value)> data, string color, string unitPrefix)
+        private static string BarChartSvg(string title, IEnumerable<(string Label, double Value)> data, string color, string unitPrefix, string interpretation = "")
         {
             var points = data.ToList();
 
             if (points.Count == 0)
-                return $@"<div class=""chart""><h2>{HtmlEncode(title)}</h2><div class=""empty"">No chart data.</div></div>";
+                return $@"<div class=""chart""><h2>{HtmlEncode(title)}</h2><div class=""empty"">No chart data.</div>{NoteHtml(interpretation)}</div>";
 
             double max = points.Max(p => p.Value);
             if (max <= 0) max = 1;
@@ -605,8 +784,87 @@ namespace CruzNeryClinic.ViewModels
 <svg viewBox=""0 0 {width} {height}"" width=""100%"" preserveAspectRatio=""xMidYMid meet"">
 <line x1=""{padLeft}"" y1=""{height - padBottom}"" x2=""{width}"" y2=""{height - padBottom}"" stroke=""#ddd"" />
 {bars}
-</svg></div>";
+</svg>{NoteHtml(interpretation)}</div>";
         }
+
+        // Inline SVG smooth area chart for a single series (matches the on-screen revenue chart).
+        private static string AreaChartSvg(string title, IEnumerable<(string Label, double Value)> data, string color, string unitPrefix, string interpretation = "")
+        {
+            var points = data.ToList();
+
+            if (points.Count == 0)
+                return $@"<div class=""chart""><h2>{HtmlEncode(title)}</h2><div class=""empty"">No chart data.</div>{NoteHtml(interpretation)}</div>";
+
+            double max = points.Max(p => p.Value);
+            if (max <= 0) max = 1;
+
+            const int width = 460, height = 200, padLeft = 8, padRight = 8, padBottom = 34, padTop = 10;
+            int plotH = height - padBottom - padTop;
+            int plotW = width - padLeft - padRight;
+            double baseline = height - padBottom;
+            double step = points.Count > 1 ? (double)plotW / (points.Count - 1) : plotW;
+
+            var pts = new List<(double X, double Y)>();
+            StringBuilder labels = new();
+            for (int i = 0; i < points.Count; i++)
+            {
+                double x = padLeft + i * step;
+                double y = padTop + (plotH - points[i].Value / max * plotH);
+                pts.Add((x, y));
+                labels.Append($@"<text x=""{Inv(x)}"" y=""{height - padBottom + 12}"" font-size=""8"" fill=""#777"" text-anchor=""middle"">{HtmlEncode(ShortLabel(points[i].Label))}</text>");
+            }
+
+            string lineD = SmoothPathData(pts);
+            // Area = drop to baseline, follow the smooth line, drop back to baseline, close.
+            string areaD = $"M {Inv(pts[0].X)},{Inv(baseline)} L{lineD.Substring(1)} L {Inv(pts[pts.Count - 1].X)},{Inv(baseline)} Z";
+
+            return $@"<div class=""chart""><h2>{HtmlEncode(title)}</h2>
+<svg viewBox=""0 0 {width} {height}"" width=""100%"" preserveAspectRatio=""xMidYMid meet"">
+<line x1=""{padLeft}"" y1=""{Inv(baseline)}"" x2=""{width - padRight}"" y2=""{Inv(baseline)}"" stroke=""#ddd"" />
+<path d=""{areaD}"" fill=""{color}"" fill-opacity=""0.18"" />
+<path d=""{lineD}"" fill=""none"" stroke=""{color}"" stroke-width=""2.2"" stroke-linejoin=""round"" stroke-linecap=""round"" />
+{labels}
+</svg>{NoteHtml(interpretation)}</div>";
+        }
+
+        // Builds an SVG path 'd' string through the points using Catmull-Rom → Bézier
+        // smoothing (same curve as the on-screen charts).
+        private static string SmoothPathData(IReadOnlyList<(double X, double Y)> pts)
+        {
+            if (pts.Count == 0) return string.Empty;
+
+            var sb = new StringBuilder();
+            sb.Append($"M {Inv(pts[0].X)},{Inv(pts[0].Y)}");
+
+            if (pts.Count < 3)
+            {
+                for (int i = 1; i < pts.Count; i++)
+                    sb.Append($" L {Inv(pts[i].X)},{Inv(pts[i].Y)}");
+                return sb.ToString();
+            }
+
+            for (int i = 0; i < pts.Count - 1; i++)
+            {
+                var p0 = pts[Math.Max(i - 1, 0)];
+                var p1 = pts[i];
+                var p2 = pts[i + 1];
+                var p3 = pts[Math.Min(i + 2, pts.Count - 1)];
+
+                double c1x = p1.X + (p2.X - p0.X) / 6.0;
+                double c1y = p1.Y + (p2.Y - p0.Y) / 6.0;
+                double c2x = p2.X - (p3.X - p1.X) / 6.0;
+                double c2y = p2.Y - (p3.Y - p1.Y) / 6.0;
+
+                sb.Append($" C {Inv(c1x)},{Inv(c1y)} {Inv(c2x)},{Inv(c2y)} {Inv(p2.X)},{Inv(p2.Y)}");
+            }
+            return sb.ToString();
+        }
+
+        // Renders a chart interpretation paragraph (empty when no text).
+        private static string NoteHtml(string interpretation)
+            => string.IsNullOrWhiteSpace(interpretation)
+                ? string.Empty
+                : $@"<p class=""chart-note"">{HtmlEncode(interpretation)}</p>";
 
         // Inline SVG grouped bar chart for a two-series (e.g. Scheduled vs Walk-in) trend.
         private static string GroupedBarChartSvg(
@@ -651,13 +909,66 @@ namespace CruzNeryClinic.ViewModels
 <div class=""legend""><span style=""background:{color1}""></span>{HtmlEncode(name1)}<span style=""background:{color2}""></span>{HtmlEncode(name2)}</div></div>";
         }
 
+        // Inline SVG two-series line chart (Scheduled vs Walk-in patient visits),
+        // matching the on-screen line graph.
+        private static string DualLineChartSvg(
+            string title,
+            IEnumerable<(string Label, double Value1, double Value2)> data,
+            string name1, string color1,
+            string name2, string color2,
+            string interpretation = "")
+        {
+            var points = data.ToList();
+
+            if (points.Count == 0)
+                return $@"<div class=""chart""><h2>{HtmlEncode(title)}</h2><div class=""empty"">No chart data.</div>{NoteHtml(interpretation)}</div>";
+
+            double max = points.Max(p => Math.Max(p.Value1, p.Value2));
+            if (max <= 0) max = 1;
+
+            const int width = 460, height = 200, padLeft = 8, padRight = 8, padBottom = 34, padTop = 8;
+            int plotH = height - padBottom - padTop;
+            int plotW = width - padLeft - padRight;
+            double step = points.Count > 1 ? (double)plotW / (points.Count - 1) : plotW;
+
+            var pts1 = new List<(double X, double Y)>();
+            var pts2 = new List<(double X, double Y)>();
+            StringBuilder marks = new();
+            StringBuilder labels = new();
+
+            for (int i = 0; i < points.Count; i++)
+            {
+                double x = padLeft + i * step;
+                double y1 = padTop + (plotH - points[i].Value1 / max * plotH);
+                double y2 = padTop + (plotH - points[i].Value2 / max * plotH);
+
+                pts1.Add((x, y1));
+                pts2.Add((x, y2));
+
+                marks.Append($@"<circle cx=""{Inv(x)}"" cy=""{Inv(y1)}"" r=""2.6"" fill=""{color1}"" />");
+                marks.Append($@"<circle cx=""{Inv(x)}"" cy=""{Inv(y2)}"" r=""2.6"" fill=""{color2}"" />");
+
+                labels.Append($@"<text x=""{Inv(x)}"" y=""{height - padBottom + 12}"" font-size=""8"" fill=""#777"" text-anchor=""middle"">{HtmlEncode(ShortLabel(points[i].Label))}</text>");
+            }
+
+            return $@"<div class=""chart""><h2>{HtmlEncode(title)}</h2>
+<svg viewBox=""0 0 {width} {height}"" width=""100%"" preserveAspectRatio=""xMidYMid meet"">
+<line x1=""{padLeft}"" y1=""{height - padBottom}"" x2=""{width - padRight}"" y2=""{height - padBottom}"" stroke=""#ddd"" />
+<path d=""{SmoothPathData(pts1)}"" fill=""none"" stroke=""{color1}"" stroke-width=""2"" stroke-linejoin=""round"" stroke-linecap=""round"" />
+<path d=""{SmoothPathData(pts2)}"" fill=""none"" stroke=""{color2}"" stroke-width=""2"" stroke-linejoin=""round"" stroke-linecap=""round"" />
+{marks}
+{labels}
+</svg>
+<div class=""legend""><span style=""background:{color1}""></span>{HtmlEncode(name1)}<span style=""background:{color2}""></span>{HtmlEncode(name2)}</div>{NoteHtml(interpretation)}</div>";
+        }
+
         // Inline SVG pie chart (used for Activity by Type).
-        private static string PieChartSvg(string title, IEnumerable<PieChartSlice> slices)
+        private static string PieChartSvg(string title, IEnumerable<PieChartSlice> slices, string interpretation = "")
         {
             var data = slices.Where(s => s.Value > 0).ToList();
 
             if (data.Count == 0)
-                return $@"<div class=""chart""><h2>{HtmlEncode(title)}</h2><div class=""empty"">No chart data.</div></div>";
+                return $@"<div class=""chart""><h2>{HtmlEncode(title)}</h2><div class=""empty"">No chart data.</div>{NoteHtml(interpretation)}</div>";
 
             double total = data.Sum(s => s.Value);
             const double cx = 90, cy = 100, r = 80;
@@ -693,7 +1004,7 @@ namespace CruzNeryClinic.ViewModels
 <div style=""display:flex;align-items:center;gap:16px;"">
 <svg viewBox=""0 0 180 200"" width=""150"" height=""166"">{paths}</svg>
 <div class=""pie-legend"">{legend}</div>
-</div></div>";
+</div>{NoteHtml(interpretation)}</div>";
         }
 
         // Trims long axis labels (e.g. dates) so the chart stays readable.
@@ -709,7 +1020,7 @@ namespace CruzNeryClinic.ViewModels
         {
             try
             {
-                string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Images", "logo.png");
+                string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Images", "cruz-nery-logo.png");
                 if (File.Exists(path))
                 {
                     string base64 = Convert.ToBase64String(File.ReadAllBytes(path));

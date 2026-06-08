@@ -141,30 +141,38 @@ namespace CruzNeryClinic.Repositories
 
         public List<ChartDataPoint> GetRevenueTrend(string fromDate, string toDate)
         {
-            var items = new List<ChartDataPoint>();
+            // Revenue is summed from BillingTransactions so the chart matches the
+            // Transaction report's list and Total Revenue. AmountPaid is stored
+            // encrypted, so it must be decrypted and aggregated in C# (SQL SUM()
+            // can't operate on the encrypted text).
+            var totals = new SortedDictionary<string, double>(StringComparer.Ordinal);
+
             using var conn = DatabaseService.GetConnection();
             conn.Open();
             using var cmd = conn.CreateCommand();
             cmd.CommandText = @"
-                SELECT
-                    pr.PaymentDate,
-                    SUM(pr.AmountPaid) AS TotalRevenue
-                FROM PaymentRecords pr
-                WHERE pr.PaymentDate BETWEEN @From AND @To
-                GROUP BY pr.PaymentDate
-                ORDER BY pr.PaymentDate";
+                SELECT TransactionDate, AmountPaid
+                FROM BillingTransactions
+                WHERE TransactionDate BETWEEN @From AND @To
+                ORDER BY TransactionDate";
             cmd.Parameters.AddWithValue("@From", fromDate);
             cmd.Parameters.AddWithValue("@To", toDate);
+
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
                 string date = SafeString(reader, 0);
-                string label = date.Length >= 10 ? date.Substring(5) : date;
-                items.Add(new ChartDataPoint
-                {
-                    Label = label,
-                    Value = reader.IsDBNull(1) ? 0 : reader.GetDouble(1),
-                });
+                if (string.IsNullOrEmpty(date)) continue;
+
+                double amount = (double)SecureDecimal(reader, 1);
+                totals[date] = totals.TryGetValue(date, out double existing) ? existing + amount : amount;
+            }
+
+            var items = new List<ChartDataPoint>();
+            foreach (var kvp in totals)
+            {
+                string label = kvp.Key.Length >= 10 ? kvp.Key.Substring(5) : kvp.Key;
+                items.Add(new ChartDataPoint { Label = label, Value = kvp.Value });
             }
             return items;
         }

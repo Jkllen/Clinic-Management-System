@@ -250,7 +250,7 @@
                     Margin="0,2,0,0"
                     Text="Comprehensive clinic reports and data visualization" />
 
-                <!-- Print Report Button -->
+                <!-- Print Report Button (opens the print options dialog) -->
                 <Button
                     Grid.Row="0"
                     Grid.RowSpan="2"
@@ -258,7 +258,7 @@
                     Height="38"
                     Padding="26,0"
                     VerticalAlignment="Center"
-                    Command="{Binding PrintReportCommand}">
+                    Command="{Binding OpenPrintOptionsCommand}">
                     <Button.Style>
                         <Style TargetType="Button">
                             <Setter Property="Background" Value="#111111" />
@@ -676,10 +676,12 @@
                             x:Name="PatientVisitCanvas"
                             Grid.Row="1"
                             ClipToBounds="True"
+                            Background="Transparent"
+                            Cursor="Hand"
+                            Tag="patientVisit"
+                            ToolTip="Click to view chart details"
+                            MouseLeftButtonUp="Chart_Click"
                             SizeChanged="PatientVisitCanvas_SizeChanged" />
-                        <TextBlock Grid.Row="2" Margin="0,6,0,0" FontSize="11"
-                                   Foreground="#6B7280" TextWrapping="Wrap"
-                                   Text="{Binding PatientVisitInsight}" />
                     </Grid>
                 </Border>
 
@@ -710,10 +712,12 @@
                                 x:Name="RevenueTrendCanvas"
                                 Grid.Row="1"
                                 ClipToBounds="True"
+                                Background="Transparent"
+                                Cursor="Hand"
+                                Tag="revenue"
+                                ToolTip="Click to view chart details"
+                                MouseLeftButtonUp="Chart_Click"
                                 SizeChanged="RevenueTrendCanvas_SizeChanged" />
-                            <TextBlock Grid.Row="2" Margin="0,6,0,0" FontSize="11"
-                                       Foreground="#6B7280" TextWrapping="Wrap"
-                                       Text="{Binding RevenueInsight}" />
                         </Grid>
                     </Border>
 
@@ -734,10 +738,12 @@
                                 x:Name="DailyTransactionsCanvas"
                                 Grid.Row="1"
                                 ClipToBounds="True"
+                                Background="Transparent"
+                                Cursor="Hand"
+                                Tag="dailyTx"
+                                ToolTip="Click to view chart details"
+                                MouseLeftButtonUp="Chart_Click"
                                 SizeChanged="DailyTransactionsCanvas_SizeChanged" />
-                            <TextBlock Grid.Row="2" Margin="0,6,0,0" FontSize="11"
-                                       Foreground="#6B7280" TextWrapping="Wrap"
-                                       Text="{Binding DailyTransactionsInsight}" />
                         </Grid>
                     </Border>
                 </Grid>
@@ -763,10 +769,12 @@
                             x:Name="InventoryBarCanvas"
                             Grid.Row="1"
                             ClipToBounds="True"
+                            Background="Transparent"
+                            Cursor="Hand"
+                            Tag="inventory"
+                            ToolTip="Click to view chart details"
+                            MouseLeftButtonUp="Chart_Click"
                             SizeChanged="InventoryBarCanvas_SizeChanged" />
-                        <TextBlock Grid.Row="2" Margin="0,6,0,0" FontSize="11"
-                                   Foreground="#6B7280" TextWrapping="Wrap"
-                                   Text="{Binding InventoryInsight}" />
                     </Grid>
                 </Border>
 
@@ -797,10 +805,12 @@
                                 x:Name="ActivityPieCanvas"
                                 Grid.Row="1"
                                 ClipToBounds="True"
+                                Background="Transparent"
+                                Cursor="Hand"
+                                Tag="activityType"
+                                ToolTip="Click to view chart details"
+                                MouseLeftButtonUp="Chart_Click"
                                 SizeChanged="ActivityPieCanvas_SizeChanged" />
-                            <TextBlock Grid.Row="2" Margin="0,6,0,0" FontSize="11"
-                                       Foreground="#6B7280" TextWrapping="Wrap"
-                                       Text="{Binding ActivityByTypeInsight}" />
                         </Grid>
                     </Border>
 
@@ -821,10 +831,12 @@
                                 x:Name="ActivityModuleCanvas"
                                 Grid.Row="1"
                                 ClipToBounds="True"
+                                Background="Transparent"
+                                Cursor="Hand"
+                                Tag="activityModule"
+                                ToolTip="Click to view chart details"
+                                MouseLeftButtonUp="Chart_Click"
                                 SizeChanged="ActivityModuleCanvas_SizeChanged" />
-                            <TextBlock Grid.Row="2" Margin="0,6,0,0" FontSize="11"
-                                       Foreground="#6B7280" TextWrapping="Wrap"
-                                       Text="{Binding ActivityByModuleInsight}" />
                         </Grid>
                     </Border>
                 </Grid>
@@ -1001,6 +1013,51 @@
             </Grid>
         </Grid>
 
+        <!--  Print Options Dialog  -->
+        <Grid Background="#66000000" Panel.ZIndex="40"
+              Visibility="{Binding IsPrintOptionsOpen, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Border Width="420" Padding="28" HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Background="White" CornerRadius="16">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="20" Opacity="0.25" ShadowDepth="3" />
+                </Border.Effect>
+                <StackPanel>
+                    <TextBlock Text="Print Options" FontSize="22" FontWeight="Bold" Foreground="#223357" />
+                    <TextBlock Margin="0,6,0,18" FontSize="13" Foreground="#777777" TextWrapping="Wrap"
+                               Text="Choose what to include in the printed report." />
+
+                    <CheckBox Margin="0,0,0,10" FontSize="14" Foreground="#333333"
+                              Content="Include charts" IsChecked="{Binding PrintIncludeCharts, Mode=TwoWay}" />
+                    <CheckBox Margin="0,0,0,10" FontSize="14" Foreground="#333333"
+                              Content="Include summary" IsChecked="{Binding PrintIncludeSummary, Mode=TwoWay}" />
+                    <CheckBox Margin="0,0,0,14" FontSize="14" Foreground="#333333"
+                              Content="Include detailed records" IsChecked="{Binding PrintIncludeDetailedRecords, Mode=TwoWay}" />
+
+                    <StackPanel Orientation="Horizontal" Margin="22,0,0,4"
+                                IsEnabled="{Binding PrintIncludeDetailedRecords}">
+                        <TextBlock Margin="0,0,8,0" VerticalAlignment="Center" FontSize="13"
+                                   FontWeight="SemiBold" Foreground="#444444" Text="Rows to print:" />
+                        <ComboBox Width="80" Height="32" VerticalContentAlignment="Center"
+                                  ItemsSource="{Binding PrintRowOptions}"
+                                  SelectedItem="{Binding SelectedPrintRowLimit, Mode=TwoWay}"
+                                  ToolTip="Maximum number of detail rows to print" />
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,24,0,0">
+                        <Button Width="110" Height="42" Margin="0,0,10,0"
+                                Background="White" BorderBrush="#999999" BorderThickness="1"
+                                Foreground="#333333" Content="Cancel"
+                                Command="{Binding ClosePrintOptionsCommand}"
+                                Style="{StaticResource SecondaryButtonStyle}" />
+                        <Button Width="160" Height="42"
+                                Background="#223357" Foreground="White" Content="Generate Preview"
+                                Command="{Binding PrintReportCommand}"
+                                Style="{StaticResource SecondaryButtonStyle}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+
         <!--  Report Print Preview Overlay  -->
         <Grid Background="#66000000" Visibility="{Binding IsReportPrintPreviewOpen, Converter={StaticResource BoolToVisibilityConverter}}">
 
@@ -1058,6 +1115,78 @@
                             FontWeight="Bold"
                             Foreground="Black"
                             Style="{StaticResource SecondaryButtonStyle}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Chart detail side panel (snaps to the right when a chart is clicked) -->
+        <Grid Panel.ZIndex="50"
+              Visibility="{Binding IsChartDetailOpen, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Border Background="#22000000">
+                <Border.InputBindings>
+                    <MouseBinding MouseAction="LeftClick" Command="{Binding CloseChartDetailCommand}"/>
+                </Border.InputBindings>
+            </Border>
+            <Border HorizontalAlignment="Right"
+                    Width="440"
+                    Background="White"
+                    BorderBrush="#E0E0E0"
+                    BorderThickness="1,0,0,0">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="18" Direction="180" ShadowDepth="2" Opacity="0.18"/>
+                </Border.Effect>
+                <Grid Margin="22,20,22,20">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0" Margin="0,0,0,12">
+                        <TextBlock Text="{Binding ChartDetailTitle}" FontSize="18" FontWeight="Bold"
+                                   VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                        <Button HorizontalAlignment="Right" Width="34" Height="34"
+                                Background="Transparent" BorderThickness="0" Cursor="Hand"
+                                Command="{Binding CloseChartDetailCommand}">
+                            <fa:IconBlock Icon="Times" FontSize="18" Foreground="#666666"/>
+                        </Button>
+                    </Grid>
+
+                    <Border Grid.Row="1" Height="220" Background="#FAFAFA" CornerRadius="8" Padding="6">
+                        <Canvas x:Name="ChartDetailCanvas" ClipToBounds="True" Background="Transparent"
+                                SizeChanged="ChartDetailCanvas_SizeChanged"/>
+                    </Border>
+
+                    <StackPanel Grid.Row="2" Margin="0,14,0,0">
+                        <TextBlock Text="What this shows" FontWeight="SemiBold" FontSize="13" Foreground="#223357"/>
+                        <TextBlock Text="{Binding ChartDetailDescription}" TextWrapping="Wrap"
+                                   FontSize="12" Foreground="#555555" Margin="0,3,0,0"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="3" Margin="0,12,0,0">
+                        <TextBlock Text="Interpretation" FontWeight="SemiBold" FontSize="13" Foreground="#223357"/>
+                        <TextBlock Text="{Binding ChartDetailInsight}" TextWrapping="Wrap"
+                                   FontSize="12" Foreground="#555555" Margin="0,3,0,0"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="4" Margin="0,14,0,0">
+                        <TextBlock Text="Key figures" FontWeight="SemiBold" FontSize="13"
+                                   Foreground="#223357" Margin="0,0,0,4"/>
+                        <ItemsControl ItemsSource="{Binding ChartDetailFigures}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,3">
+                                        <TextBlock Text="{Binding Label}" FontSize="12" Foreground="#666666"
+                                                   HorizontalAlignment="Left"/>
+                                        <TextBlock Text="{Binding Value}" FontSize="12" FontWeight="SemiBold"
+                                                   Foreground="#111111" HorizontalAlignment="Right"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </StackPanel>
                 </Grid>
             </Border>

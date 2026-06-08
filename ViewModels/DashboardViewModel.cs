@@ -41,6 +41,10 @@ namespace CruzNeryClinic.ViewModels
         // that module's own search box.
         public event Action<string, string>? NavigationWithSearchRequested;
 
+        // Raised when a Dashboard "View All" opens a specific Reports tab.
+        // Carries the report key ("PatientVisits" / "Transaction" / "UserActivity").
+        public event Action<string>? NavigationToReportRequested;
+
         public event Action? LogoutRequested;
 
         public DashboardViewModel()
@@ -68,6 +72,12 @@ namespace CruzNeryClinic.ViewModels
             ViewInventoryCommand = new RelayCommand(() => NavigateTo("Inventory"));
             ViewBillingCommand = new RelayCommand(() => NavigateTo("Billing"));
             ViewReportsCommand = new RelayCommand(() => NavigateTo("Reports"));
+            ViewPatientVisitsReportCommand = new RelayCommand(() => NavigateToReport("PatientVisits"));
+            ViewRevenueReportCommand = new RelayCommand(() => NavigateToReport("Transaction"));
+            ViewActivityLogReportCommand = new RelayCommand(() => NavigateToReport("UserActivity"));
+
+            OpenChartDetailCommand = new RelayCommand<string>(OpenChartDetail);
+            CloseChartDetailCommand = new RelayCommand(() => IsChartDetailOpen = false);
 
             SelectDayCommand = new RelayCommand<DashboardDayItem>(SelectDay);
             PreviousWeekCommand = new RelayCommand(() => SelectedCalendarDate = SelectedCalendarDate.AddDays(-7));
@@ -238,6 +248,44 @@ namespace CruzNeryClinic.ViewModels
             private set => SetProperty(ref _revenueInsight, value);
         }
 
+        // ── Chart detail panel (opens when a chart is clicked) ──────────────────
+        public event Action? ChartDetailRequested;
+
+        public string SelectedChartKey { get; private set; } = "";
+
+        private bool _isChartDetailOpen;
+        public bool IsChartDetailOpen
+        {
+            get => _isChartDetailOpen;
+            set => SetProperty(ref _isChartDetailOpen, value);
+        }
+
+        private string _chartDetailTitle = "";
+        public string ChartDetailTitle
+        {
+            get => _chartDetailTitle;
+            private set => SetProperty(ref _chartDetailTitle, value);
+        }
+
+        private string _chartDetailDescription = "";
+        public string ChartDetailDescription
+        {
+            get => _chartDetailDescription;
+            private set => SetProperty(ref _chartDetailDescription, value);
+        }
+
+        private string _chartDetailInsight = "";
+        public string ChartDetailInsight
+        {
+            get => _chartDetailInsight;
+            private set => SetProperty(ref _chartDetailInsight, value);
+        }
+
+        public ObservableCollection<KeyFigure> ChartDetailFigures { get; } = new();
+
+        public ICommand OpenChartDetailCommand { get; }
+        public ICommand CloseChartDetailCommand { get; }
+
         public ICommand RefreshCommand { get; }
 
         public ICommand LogoutCommand { get; }
@@ -245,6 +293,9 @@ namespace CruzNeryClinic.ViewModels
         public ICommand ViewInventoryCommand { get; }
         public ICommand ViewBillingCommand { get; }
         public ICommand ViewReportsCommand { get; }
+        public ICommand ViewPatientVisitsReportCommand { get; }
+        public ICommand ViewRevenueReportCommand { get; }
+        public ICommand ViewActivityLogReportCommand { get; }
 
         public ICommand SelectDayCommand { get; }
         public ICommand PreviousWeekCommand { get; }
@@ -425,6 +476,46 @@ namespace CruzNeryClinic.ViewModels
                 return;
 
             NavigationRequested?.Invoke(moduleName);
+        }
+
+        // Opens the right-side chart detail panel for the clicked chart.
+        private void OpenChartDetail(string? key)
+        {
+            if (string.IsNullOrEmpty(key)) return;
+
+            ChartDetailFigures.Clear();
+
+            switch (key)
+            {
+                case "patientVisit":
+                    ChartDetailTitle = "Patient Visits Trend";
+                    ChartDetailInsight = PatientVisitInsight;
+                    foreach (var f in ChartInsight.KeyFigures(PatientVisitTrend, "scheduled", "walk-in"))
+                        ChartDetailFigures.Add(f);
+                    break;
+                case "revenue":
+                    ChartDetailTitle = "Revenue Trend";
+                    ChartDetailInsight = RevenueInsight;
+                    foreach (var f in ChartInsight.KeyFigures(RevenueTrend, "₱"))
+                        ChartDetailFigures.Add(f);
+                    break;
+                default:
+                    return;
+            }
+
+            ChartDetailDescription = ChartInsight.Description(key);
+            SelectedChartKey = key;
+            IsChartDetailOpen = true;
+            ChartDetailRequested?.Invoke();
+        }
+
+        // Opens the Reports module on a specific report tab.
+        private void NavigateToReport(string reportKey)
+        {
+            if (!SessionService.CanAccessModule("Reports"))
+                return;
+
+            NavigationToReportRequested?.Invoke(reportKey);
         }
 
         private void Logout()

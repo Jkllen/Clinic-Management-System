@@ -554,7 +554,7 @@
                                             FontWeight="SemiBold"
                                             HorizontalAlignment="Left"/>
                                 <Button Content="View All"
-                                        Command="{Binding ViewReportsCommand}"
+                                        Command="{Binding ViewPatientVisitsReportCommand}"
                                         Style="{StaticResource ViewAllButtonStyle}"
                                         HorizontalAlignment="Right"
                                         VerticalAlignment="Center"/>
@@ -563,14 +563,12 @@
                             <Canvas x:Name="DashPatientVisitCanvas"
                                     Grid.Row="1"
                                     ClipToBounds="True"
+                                    Background="Transparent"
+                                    Cursor="Hand"
+                                    Tag="patientVisit"
+                                    ToolTip="Click to view chart details"
+                                    MouseLeftButtonUp="Chart_Click"
                                     SizeChanged="DashPatientVisitCanvas_SizeChanged"/>
-
-                            <TextBlock Grid.Row="2"
-                                       Margin="0,6,0,0"
-                                       FontSize="11"
-                                       Foreground="#6B7280"
-                                       TextWrapping="Wrap"
-                                       Text="{Binding PatientVisitInsight}"/>
                         </Grid>
                     </Border>
 
@@ -591,7 +589,7 @@
                                             FontWeight="SemiBold"
                                             HorizontalAlignment="Left"/>
                                 <Button Content="View All"
-                                        Command="{Binding ViewReportsCommand}"
+                                        Command="{Binding ViewRevenueReportCommand}"
                                         Style="{StaticResource ViewAllButtonStyle}"
                                         HorizontalAlignment="Right"
                                         VerticalAlignment="Center"/>
@@ -600,14 +598,12 @@
                             <Canvas x:Name="DashRevenueCanvas"
                                     Grid.Row="1"
                                     ClipToBounds="True"
+                                    Background="Transparent"
+                                    Cursor="Hand"
+                                    Tag="revenue"
+                                    ToolTip="Click to view chart details"
+                                    MouseLeftButtonUp="Chart_Click"
                                     SizeChanged="DashRevenueCanvas_SizeChanged"/>
-
-                            <TextBlock Grid.Row="2"
-                                       Margin="0,6,0,0"
-                                       FontSize="11"
-                                       Foreground="#6B7280"
-                                       TextWrapping="Wrap"
-                                       Text="{Binding RevenueInsight}"/>
                         </Grid>
                     </Border>
                 </Grid>
@@ -987,7 +983,7 @@
 
                         <Button Grid.Row="2"
                                 Content="View All"
-                                Command="{Binding ViewReportsCommand}"
+                                Command="{Binding ViewActivityLogReportCommand}"
                                 Style="{StaticResource ViewAllButtonStyle}"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Bottom"/>
@@ -1163,6 +1159,78 @@
                     </Grid>
                 </Border>
             </Grid>
+        </Grid>
+
+        <!-- Chart detail side panel (snaps to the right when a chart is clicked) -->
+        <Grid Panel.ZIndex="50"
+              Visibility="{Binding IsChartDetailOpen, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Border Background="#22000000">
+                <Border.InputBindings>
+                    <MouseBinding MouseAction="LeftClick" Command="{Binding CloseChartDetailCommand}"/>
+                </Border.InputBindings>
+            </Border>
+            <Border HorizontalAlignment="Right"
+                    Width="440"
+                    Background="White"
+                    BorderBrush="#E0E0E0"
+                    BorderThickness="1,0,0,0">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="18" Direction="180" ShadowDepth="2" Opacity="0.18"/>
+                </Border.Effect>
+                <Grid Margin="22,20,22,20">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0" Margin="0,0,0,12">
+                        <TextBlock Text="{Binding ChartDetailTitle}" FontSize="18" FontWeight="Bold"
+                                   VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                        <Button HorizontalAlignment="Right" Width="34" Height="34"
+                                Background="Transparent" BorderThickness="0" Cursor="Hand"
+                                Command="{Binding CloseChartDetailCommand}">
+                            <fa:IconBlock Icon="Times" FontSize="18" Foreground="#666666"/>
+                        </Button>
+                    </Grid>
+
+                    <Border Grid.Row="1" Height="220" Background="#FAFAFA" CornerRadius="8" Padding="6">
+                        <Canvas x:Name="ChartDetailCanvas" ClipToBounds="True" Background="Transparent"
+                                SizeChanged="ChartDetailCanvas_SizeChanged"/>
+                    </Border>
+
+                    <StackPanel Grid.Row="2" Margin="0,14,0,0">
+                        <TextBlock Text="What this shows" FontWeight="SemiBold" FontSize="13" Foreground="#223357"/>
+                        <TextBlock Text="{Binding ChartDetailDescription}" TextWrapping="Wrap"
+                                   FontSize="12" Foreground="#555555" Margin="0,3,0,0"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="3" Margin="0,12,0,0">
+                        <TextBlock Text="Interpretation" FontWeight="SemiBold" FontSize="13" Foreground="#223357"/>
+                        <TextBlock Text="{Binding ChartDetailInsight}" TextWrapping="Wrap"
+                                   FontSize="12" Foreground="#555555" Margin="0,3,0,0"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="4" Margin="0,14,0,0">
+                        <TextBlock Text="Key figures" FontWeight="SemiBold" FontSize="13"
+                                   Foreground="#223357" Margin="0,0,0,4"/>
+                        <ItemsControl ItemsSource="{Binding ChartDetailFigures}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,3">
+                                        <TextBlock Text="{Binding Label}" FontSize="12" Foreground="#666666"
+                                                   HorizontalAlignment="Left"/>
+                                        <TextBlock Text="{Binding Value}" FontSize="12" FontWeight="SemiBold"
+                                                   Foreground="#111111" HorizontalAlignment="Right"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Grid>
+            </Border>
         </Grid>
     </Grid>
 </UserControl>
