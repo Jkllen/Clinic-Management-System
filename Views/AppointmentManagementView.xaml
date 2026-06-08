@@ -645,6 +645,7 @@
 
                                 <DataGridTemplateColumn
                                     Width="Auto"
+                                    MinWidth="110"
                                     Header="Actions">
 
                                     <DataGridTemplateColumn.CellTemplate>

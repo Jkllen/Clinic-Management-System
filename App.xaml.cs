@@ -1,4 +1,5 @@
 ﻿using CruzNeryClinic.Data;
+using CruzNeryClinic.Services;
 using System;
 using System.IO;
 using System.Windows;
@@ -20,6 +21,7 @@ namespace CruzNeryClinic
             {
                 // Initialize the database before showing MainWindow.
                 DatabaseInitializer.Initialize();
+                TryRunAutoBackup();
 
                 base.OnStartup(e);
             }
@@ -43,6 +45,18 @@ namespace CruzNeryClinic
                 ShowAndSaveError(ex, "Unhandled Application Error");
         }
 
+        private void TryRunAutoBackup()
+        {
+            try
+            {
+                AutoBackupService.RunDailyStartupBackup();
+            }
+            catch (Exception ex)
+            {
+                SaveNonFatalError(ex, "autobackup-error-log.txt");
+            }
+        }
+
         private void ShowAndSaveError(Exception ex, string title)
         {
             string appFolder = Path.Combine(
@@ -62,6 +76,19 @@ namespace CruzNeryClinic
                 MessageBoxButton.OK,
                 MessageBoxImage.Error
             );
-        } 
+        }
+
+        private void SaveNonFatalError(Exception ex, string fileName)
+        {
+            string appFolder = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "CruzNeryClinic"
+            );
+
+            Directory.CreateDirectory(appFolder);
+
+            string logPath = Path.Combine(appFolder, fileName);
+            File.WriteAllText(logPath, ex.ToString());
+        }
     }
 }

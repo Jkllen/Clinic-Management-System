@@ -36,7 +36,14 @@ namespace CruzNeryClinic.Models
 
         public bool IsActive { get; set; } = true;
 
+        public bool HasDataPrivacyConsent { get; set; }
+
+        public DateTime? DataPrivacyConsentAt { get; set; }
+
         public DateTime CreatedAt { get; set; }
+
+        public string DataPrivacyConsentStatus =>
+            HasDataPrivacyConsent ? "Consented" : "Missing";
 
         public string PwdStatusText =>
             IsPwd || IsSenior ? "YES" : "NO";

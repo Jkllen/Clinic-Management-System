@@ -15,6 +15,48 @@
             </ResourceDictionary.MergedDictionaries>
 
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+
+            <Style x:Key="GeneratedPasswordButtonStyle" TargetType="{x:Type Button}">
+                <Setter Property="Background" Value="#223357" />
+                <Setter Property="Foreground" Value="White" />
+                <Setter Property="BorderBrush" Value="Transparent" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="Padding" Value="16,0" />
+                <Setter Property="FontWeight" Value="Bold" />
+                <Setter Property="FontSize" Value="12" />
+                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type Button}">
+                            <Border
+                                x:Name="ButtonBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="5"
+                                SnapsToDevicePixels="True">
+                                <ContentPresenter
+                                    Margin="{TemplateBinding Padding}"
+                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                    RecognizesAccessKey="True" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.9" />
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.78" />
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.55" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -279,87 +321,28 @@
                                     Margin="0,12,0,0"
                                     Background="#D0D0D0" />
 
-                                <!--  Password  -->
-                                <Grid
+                                <!--  Generate password  -->
+                                <StackPanel
                                     Grid.Row="4"
                                     Grid.Column="0"
+                                    Grid.ColumnSpan="3"
                                     Margin="0,16,0,0">
-
-                                    <PasswordBox
-                                        x:Name="AddUserPasswordBox"
-                                        PasswordChanged="AddUserPasswordBox_PasswordChanged"
-                                        Style="{StaticResource AddUserOverlayPasswordBoxStyle}"
-                                        Visibility="{Binding IsAddUserPasswordHidden, Converter={StaticResource BoolToVisibilityConverter}}" />
-
-                                    <TextBox
-                                        Style="{StaticResource AddUserOverlayTextBoxStyle}"
-                                        Text="{Binding NewUserPassword, UpdateSourceTrigger=PropertyChanged}"
-                                        Visibility="{Binding IsAddUserPasswordVisible, Converter={StaticResource BoolToVisibilityConverter}}" />
-
                                     <TextBlock
-                                        Margin="16,0,0,0"
-                                        VerticalAlignment="Center"
-                                        FontSize="14"
-                                        Foreground="#A0A0A0"
-                                        IsHitTestVisible="False"
-                                        Text="Enter your password"
-                                        Visibility="{Binding IsNewUserPasswordEmpty, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                        FontSize="16"
+                                        Foreground="#777777"
+                                        Text="Generate password" />
 
                                     <Button
-                                        Width="36"
+                                        MinWidth="190"
                                         Height="36"
-                                        Margin="0,0,8,0"
-                                        HorizontalAlignment="Right"
-                                        VerticalAlignment="Center"
-                                        Command="{Binding ToggleAddUserPasswordVisibilityCommand}"
-                                        Style="{StaticResource IconButtonStyle}">
-                                        <fa:IconBlock
-                                            FontSize="18"
-                                            Foreground="#666666"
-                                            Icon="{Binding AddUserPasswordEyeIcon}" />
-                                    </Button>
-                                </Grid>
+                                        Margin="0,8,0,0"
+                                        HorizontalAlignment="Left"
+                                        Background="#223357"
+                                        Command="{Binding GenerateNewUserPasswordCommand}"
+                                        Content="Generate Password"
+                                        Style="{StaticResource GeneratedPasswordButtonStyle}" />
+                                </StackPanel>
 
-                                <!--  Confirm password  -->
-                                <Grid
-                                    Grid.Row="4"
-                                    Grid.Column="2"
-                                    Margin="0,16,0,0">
-
-                                    <PasswordBox
-                                        x:Name="AddUserConfirmPasswordBox"
-                                        PasswordChanged="AddUserConfirmPasswordBox_PasswordChanged"
-                                        Style="{StaticResource AddUserOverlayPasswordBoxStyle}"
-                                        Visibility="{Binding IsAddUserConfirmPasswordHidden, Converter={StaticResource BoolToVisibilityConverter}}" />
-
-                                    <TextBox
-                                        Style="{StaticResource AddUserOverlayTextBoxStyle}"
-                                        Text="{Binding NewUserConfirmPassword, UpdateSourceTrigger=PropertyChanged}"
-                                        Visibility="{Binding IsAddUserConfirmPasswordVisible, Converter={StaticResource BoolToVisibilityConverter}}" />
-
-                                    <TextBlock
-                                        Margin="16,0,0,0"
-                                        VerticalAlignment="Center"
-                                        FontSize="14"
-                                        Foreground="#A0A0A0"
-                                        IsHitTestVisible="False"
-                                        Text="Confirm your password"
-                                        Visibility="{Binding IsNewUserConfirmPasswordEmpty, Converter={StaticResource BoolToVisibilityConverter}}" />
-
-                                    <Button
-                                        Width="36"
-                                        Height="36"
-                                        Margin="0,0,8,0"
-                                        HorizontalAlignment="Right"
-                                        VerticalAlignment="Center"
-                                        Command="{Binding ToggleAddUserConfirmPasswordVisibilityCommand}"
-                                        Style="{StaticResource IconButtonStyle}">
-                                        <fa:IconBlock
-                                            FontSize="18"
-                                            Foreground="#666666"
-                                            Icon="{Binding AddUserConfirmPasswordEyeIcon}" />
-                                    </Button>
-                                </Grid>
                             <!-- #endregion Fields -->
                             </Grid>
                         </Grid>
@@ -767,6 +750,69 @@
                             Visibility="{Binding IsAddUserButtonVisible, Converter={StaticResource BoolToVisibilityConverter}}" />
                     </Grid>
 
+                    <!-- Generated password prompt -->
+                    <Grid
+                        Grid.RowSpan="4"
+                        Panel.ZIndex="18"
+                        Visibility="{Binding IsGeneratedPasswordPromptVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+
+                        <Border
+                            Width="420"
+                            Padding="24"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Background="White"
+                            BorderBrush="#DADADA"
+                            BorderThickness="1"
+                            CornerRadius="8">
+
+                            <StackPanel>
+                                <TextBlock
+                                    FontSize="18"
+                                    FontWeight="SemiBold"
+                                    Foreground="#111111"
+                                    Text="Temporary password generated" />
+
+                                <TextBlock
+                                    Margin="0,8,0,14"
+                                    FontSize="12"
+                                    Foreground="#777777"
+                                    Text="Copy this password. It will also appear in the confirmation step."
+                                    TextWrapping="Wrap" />
+
+                                <Grid>
+                                    <TextBox
+                                        Height="42"
+                                        Padding="12,0,88,0"
+                                        IsReadOnly="True"
+                                        Style="{StaticResource ModernTextBoxStyle}"
+                                        Text="{Binding NewUserPassword, Mode=OneWay}" />
+
+                                    <Button
+                                        Width="76"
+                                        Height="30"
+                                        Margin="0,0,6,0"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Center"
+                                        Background="#223357"
+                                        Command="{Binding CopyGeneratedPasswordCommand}"
+                                        Content="Copy"
+                                        Style="{StaticResource GeneratedPasswordButtonStyle}" />
+                                </Grid>
+
+                                <Button
+                                    Width="90"
+                                    Height="34"
+                                    Margin="0,18,0,0"
+                                    HorizontalAlignment="Right"
+                                    Background="#223357"
+                                    Command="{Binding CloseGeneratedPasswordPromptCommand}"
+                                    Content="Done"
+                                    Style="{StaticResource GeneratedPasswordButtonStyle}" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
                     <!--  Success prompt in Add User Overlay -->
                     <Grid
                         Grid.RowSpan="4"
@@ -865,8 +911,30 @@
                                         FontSize="11"
                                         FontStyle="Italic"
                                         Foreground="#999999"
-                                        Text="You may now close this window or continue managing users."
+                                        Text="Copy this temporary password before closing this prompt."
                                         TextWrapping="Wrap" />
+
+                                    <Grid Margin="32,12,0,0" MaxWidth="300">
+                                        <TextBox
+                                            Height="38"
+                                            Padding="12,0,88,0"
+                                            IsReadOnly="True"
+                                            Style="{StaticResource ModernTextBoxStyle}"
+                                            Text="{Binding CreatedTemporaryPassword, Mode=OneWay}" />
+
+                                        <Button
+                                            Width="76"
+                                            Height="28"
+                                            Margin="0,0,6,0"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Center"
+                                            Background="#223357"
+                                            Command="{Binding CopyCreatedPasswordCommand}"
+                                            Content="Copy"
+                                            FontWeight="Bold"
+                                            Foreground="White"
+                                            Style="{StaticResource PrimaryButtonStyle}" />
+                                    </Grid>
                                 </StackPanel>
                             </Grid>
 

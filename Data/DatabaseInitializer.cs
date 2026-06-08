@@ -11,6 +11,7 @@ namespace CruzNeryClinic.Data
         {
             "Appointments",
             "BillingTransactions",
+            "Patients",
             "TreatmentRecords",
             "Users"
         };
@@ -23,6 +24,7 @@ namespace CruzNeryClinic.Data
             EnableForeignKeys(connection);
             MigrateInventoryTables(connection);
             CreateTables(connection);
+            EnsurePatientConsentSchema(connection);
             EnsureUserSchema(connection);
             // Security questions must be seeded before admin accounts,
             // because Users now store SecurityQuestionId1, 2, and 3.
@@ -34,6 +36,36 @@ namespace CruzNeryClinic.Data
             EnsureUpdatedClinicServices(connection);
             EnsureBillingInvoiceSchema(connection);
             EnsureAppointmentSchema(connection);
+        }
+
+        private static void EnsurePatientConsentSchema(SqliteConnection connection)
+        {
+            if (!ColumnExists(connection, "Patients", "HasDataPrivacyConsent"))
+            {
+                using SqliteCommand command = connection.CreateCommand();
+                command.CommandText = @"
+        ALTER TABLE Patients
+        ADD COLUMN HasDataPrivacyConsent INTEGER NOT NULL DEFAULT 0;";
+                command.ExecuteNonQuery();
+            }
+
+            if (!ColumnExists(connection, "Patients", "DataPrivacyConsentAt"))
+            {
+                using SqliteCommand command = connection.CreateCommand();
+                command.CommandText = @"
+        ALTER TABLE Patients
+        ADD COLUMN DataPrivacyConsentAt TEXT;";
+                command.ExecuteNonQuery();
+            }
+
+            if (!ColumnExists(connection, "Patients", "DataPrivacyConsentVersion"))
+            {
+                using SqliteCommand command = connection.CreateCommand();
+                command.CommandText = @"
+        ALTER TABLE Patients
+        ADD COLUMN DataPrivacyConsentVersion TEXT;";
+                command.ExecuteNonQuery();
+            }
         }
 
         private static void EnsureUserSchema(SqliteConnection connection)
@@ -265,6 +297,10 @@ CREATE TABLE IF NOT EXISTS Patients (
 
     -- Initial service/treatment shown in Patient Management list.
     InitialTreatment TEXT,
+
+    HasDataPrivacyConsent INTEGER NOT NULL DEFAULT 0,
+    DataPrivacyConsentAt TEXT,
+    DataPrivacyConsentVersion TEXT,
 
     IsActive INTEGER NOT NULL DEFAULT 1,
 

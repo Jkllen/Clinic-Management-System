@@ -10,6 +10,14 @@ namespace CruzNeryClinic.Services
 {
     public static class ReceiptPDFService
     {
+        private const string ClinicName = "CRUZ-NERY DENTAL CLINIC";
+        private const string ClinicOwner = "CRISTINA C. NERY - Prop.";
+        private const string ClinicTin = "VAT Reg. TIN: 226-234-039-00000";
+        private const string ClinicAddress = "33 B Rodriguez Highway, San Jose, Rodriguez, Rizal";
+        private const string AuthorityToPrint = "BIR AUTHORITY TO PRINT NO. OCN: 045AU20260000011135";
+        private const string AuthorityDateIssued = "DATE ISSUED: January 21, 2026";
+        private const string ApprovedSeries = "APPROVED SERIES: 0001-1000 * 20Bkts. (50x2)";
+
         public static string GenerateReceiptPdf(BillingReceiptDetail receipt)
         {
             QuestPDF.Settings.License = LicenseType.Community;
@@ -40,30 +48,31 @@ namespace CruzNeryClinic.Services
                             {
                                 row.RelativeItem().Column(left =>
                                 {
-                                    left.Item().Text("CRUZ-NERY DENTAL CLINIC")
+                                    left.Item().Text(ClinicName)
                                         .FontSize(18)
                                         .Bold()
                                         .FontColor("#111111");
 
-                                    left.Item().PaddingTop(2).Text("Registered Name: Cruz-Nery Dental Clinic")
+                                    left.Item().PaddingTop(2).Text(ClinicOwner)
                                         .FontSize(9)
                                         .FontColor("#333333");
 
-                                    left.Item().Text("Address: Rodriguez, Rizal")
+                                    left.Item().Text(ClinicTin)
                                         .FontSize(9)
                                         .FontColor("#333333");
 
-                                    left.Item().Text("TIN: Not configured")
-                                        .FontSize(9)
-                                        .FontColor("#333333");
-
-                                    left.Item().Text("Registration Type: Non-VAT / VAT status not configured")
+                                    left.Item().Text(ClinicAddress)
                                         .FontSize(9)
                                         .FontColor("#333333");
                                 });
 
                                 row.ConstantItem(190).AlignRight().Column(right =>
                                 {
+                                    right.Item().AlignRight().Text("SERVICE")
+                                        .FontSize(12)
+                                        .Bold()
+                                        .FontColor("#111111");
+
                                     right.Item().AlignRight().Text("INVOICE")
                                         .FontSize(24)
                                         .Bold()
@@ -78,11 +87,11 @@ namespace CruzNeryClinic.Services
                                         .FontSize(10)
                                         .FontColor("#333333");
 
-                                    right.Item().PaddingTop(4).Text("☑ CASH SALES")
+                                    right.Item().PaddingTop(4).Text("[x] Cash Sales")
                                         .FontSize(9)
                                         .FontColor("#333333");
 
-                                    right.Item().Text("☐ CHARGE SALES")
+                                    right.Item().Text("[ ] Charge Sales")
                                         .FontSize(9)
                                         .FontColor("#333333");
                                 });
@@ -278,27 +287,26 @@ namespace CruzNeryClinic.Services
                                     .Bold()
                                     .FontColor("#333333");
 
-                                left.Item().Text("Permit to Use / ATP No.: Not configured")
+                                left.Item().Text(AuthorityToPrint)
                                     .FontSize(7)
                                     .FontColor("#555555");
 
-                                left.Item().Text("BIR Permit No.: Not configured")
+                                left.Item().Text(AuthorityDateIssued)
                                     .FontSize(7)
                                     .FontColor("#555555");
 
-                                left.Item().Text("Approved Series: Not configured")
+                                left.Item().Text(ApprovedSeries)
                                     .FontSize(7)
                                     .FontColor("#555555");
                             });
 
                             row.RelativeItem().AlignRight().Column(right =>
                             {
-                                right.Item().Text("“THIS DOCUMENT IS NOT VALID FOR CLAIM OF INPUT TAX.”")
+                                right.Item().Text("This invoice was generated by Dental Clinic Management System.")
                                     .FontSize(7)
-                                    .Bold()
-                                    .FontColor("#333333");
+                                    .FontColor("#777777");
 
-                                right.Item().PaddingTop(4).Text("This invoice was generated by Dental Clinic Management System.")
+                                right.Item().PaddingTop(4).Text("Verify ATP and BIR details before production use.")
                                     .FontSize(7)
                                     .FontColor("#777777");
                             });

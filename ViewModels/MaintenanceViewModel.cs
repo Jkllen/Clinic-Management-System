@@ -76,7 +76,14 @@ namespace CruzNeryClinic.ViewModels
         public string SelectedRetentionOption
         {
             get => selectedRetentionOption;
-            set => SetProperty(ref selectedRetentionOption, value);
+            set
+            {
+                if (SetProperty(ref selectedRetentionOption, value))
+                {
+                    ApplyBackupRetentionPolicy();
+                    RefreshBackupHistory();
+                }
+            }
         }
 
         public string LastBackupTime
@@ -254,7 +261,8 @@ namespace CruzNeryClinic.ViewModels
 
                 string backupFilePath = backupPackageService.CreateEncryptedBackup(
                     PrimaryBackupLocation,
-                    backupPassword
+                    backupPassword,
+                    "Manual"
                 );
 
                 CopyToSecondaryBackupLocationIfAvailable(backupFilePath);
@@ -313,7 +321,9 @@ namespace CruzNeryClinic.ViewModels
                 if (confirmResult != DialogResult.Yes)
                     return;
 
-                string backupPassword = PromptForBackupPassword();
+                string backupPassword = AutoBackupService.IsAutoBackupFile(backupFilePath)
+                    ? AutoBackupService.GetOrCreateAutoBackupPassword()
+                    : PromptForBackupPassword();
 
                 if (string.IsNullOrWhiteSpace(backupPassword))
                 {
@@ -394,7 +404,7 @@ namespace CruzNeryClinic.ViewModels
                 BackupHistoryItems.Add(new BackupHistoryItem
                 {
                     CreatedAt = file.CreationTime,
-                    BackupType = "Manual",
+                    BackupType = AutoBackupService.IsAutoBackupFile(file.FullName) ? "Auto" : "Manual",
                     FileLocation = file.FullName,
                     SizeDisplay = FormatFileSize(file.Length),
                     Status = "Success"
@@ -424,25 +434,10 @@ namespace CruzNeryClinic.ViewModels
                 return;
             }
 
-            int? keepCount = SelectedRetentionOption switch
-            {
-                "Keep last 7 backups" => 7,
-                "Keep last 14 backups" => 14,
-                "Keep last 30 backups" => 30,
-                "Keep all backups" => null,
-                _ => 14
-            };
+            int? keepCount = BackupRetentionService.GetKeepCount(SelectedRetentionOption);
 
-            if (keepCount == null)
-                return;
-
-            FileInfo[] backupFiles = new DirectoryInfo(PrimaryBackupLocation)
-                .GetFiles("*.cnbak")
-                .OrderByDescending(file => file.CreationTime)
-                .ToArray();
-
-            foreach (FileInfo oldBackup in backupFiles.Skip(keepCount.Value))
-                oldBackup.Delete();
+            BackupRetentionService.Apply(PrimaryBackupLocation, keepCount);
+            BackupRetentionService.Apply(SecondaryBackupLocation, keepCount);
         }
 
         private void OpenBackupLocation(BackupHistoryItem? item)

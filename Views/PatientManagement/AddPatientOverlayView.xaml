@@ -199,6 +199,51 @@
                     Margin="0,28,0,12"
                     FontSize="18"
                     FontWeight="Bold"
+                    Text="Data Privacy Consent" />
+
+                <Border
+                    Padding="18"
+                    Background="#F8FAFC"
+                    BorderBrush="#E2E8F0"
+                    BorderThickness="1"
+                    CornerRadius="10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <CheckBox
+                                Content="Patient has reviewed and agreed to the Data Privacy Consent Form *"
+                                FontSize="15"
+                                FontWeight="SemiBold"
+                                IsChecked="{Binding FormHasDataPrivacyConsent}" />
+
+                            <TextBlock
+                                Margin="28,6,0,0"
+                                FontSize="13"
+                                Foreground="#64748B"
+                                Text="{Binding DataPrivacyConsentStatusDisplay}" />
+                        </StackPanel>
+
+                        <Button
+                            Grid.Column="1"
+                            Width="160"
+                            Height="40"
+                            Margin="18,0,0,0"
+                            Background="#223357"
+                            Command="{Binding OpenDataPrivacyConsentCommand}"
+                            Content="View Form"
+                            Foreground="White"
+                            Style="{StaticResource SecondaryButtonStyle}" />
+                    </Grid>
+                </Border>
+
+                <TextBlock
+                    Margin="0,28,0,12"
+                    FontSize="18"
+                    FontWeight="Bold"
                     Text="Medical Background" />
 
                 <StackPanel Margin="0,0,0,14">
@@ -371,6 +416,79 @@
                         Foreground="White"
                         Style="{StaticResource SecondaryButtonStyle}" />
                 </StackPanel>
+            </Border>
+        </Grid>
+
+        <Grid
+            Width="920"
+            MaxHeight="780"
+            Background="#66000000"
+            Visibility="{Binding IsDataPrivacyConsentOverlayOpen, Converter={StaticResource BoolToVisibilityConverter}}">
+
+            <Border
+                Width="560"
+                Padding="26"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Background="White"
+                CornerRadius="12">
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="18" />
+                        <RowDefinition Height="320" />
+                        <RowDefinition Height="22" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock
+                        FontSize="20"
+                        FontWeight="Bold"
+                        Foreground="#111111"
+                        Text="Data Privacy Consent Form" />
+
+                    <Border
+                        Grid.Row="2"
+                        Padding="16"
+                        Background="#FFFFFF"
+                        BorderBrush="#D8D8D8"
+                        BorderThickness="1"
+                        CornerRadius="8">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <TextBlock
+                                FontSize="14"
+                                Foreground="#333333"
+                                Text="{Binding DataPrivacyConsentText}"
+                                TextWrapping="Wrap" />
+                        </ScrollViewer>
+                    </Border>
+
+                    <StackPanel
+                        Grid.Row="4"
+                        HorizontalAlignment="Right"
+                        Orientation="Horizontal">
+
+                        <Button
+                            Width="110"
+                            Height="40"
+                            Margin="0,0,12,0"
+                            Background="#777777"
+                            Command="{Binding CloseDataPrivacyConsentCommand}"
+                            Content="Close"
+                            Foreground="White"
+                            Style="{StaticResource SecondaryButtonStyle}" />
+
+                        <Button
+                            Width="150"
+                            Height="40"
+                            Background="#073C98"
+                            Command="{Binding AcceptDataPrivacyConsentCommand}"
+                            Content="Accept Consent"
+                            Foreground="White"
+                            Style="{StaticResource SecondaryButtonStyle}" />
+                    </StackPanel>
+                </Grid>
             </Border>
         </Grid>
     </Grid>
