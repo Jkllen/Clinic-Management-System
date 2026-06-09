@@ -156,7 +156,7 @@
                             <RowDefinition Height="25"/>
 
                             <!-- 8: Login button -->
-                            <RowDefinition Height="70"/>
+                            <RowDefinition Height="78"/>
 
                             <!-- Extra bottom spacing -->
                             <RowDefinition Height="*"/>
@@ -176,7 +176,7 @@
                         <TextBlock Grid.Row="1"
                                    Text="Login"
                                    FontFamily="{StaticResource AppFont}"
-                                   FontSize="34"
+                                   FontSize="26"
                                    FontWeight="Bold"
                                    Foreground="#111111"
                                    Margin="0,0,0,12"/>
@@ -313,6 +313,7 @@
                                 Foreground="White"
                                 FontFamily="{StaticResource AppFont}"
                                 FontSize="28"
+                                Margin="0,5,0,5"
                                 FontWeight="Bold"
                                 Style="{StaticResource PrimaryButtonStyle}"/>
                     </Grid>

@@ -66,8 +66,8 @@
             <StackPanel Margin="0,0,16,0">
                 <TextBlock
                     Margin="0,0,0,12"
-                    FontSize="18"
-                    FontWeight="Bold"
+                    FontSize="16"
+                    FontWeight="SemiBold"
                     Text="Personal Information" />
 
                 <Grid>
@@ -90,7 +90,10 @@
                     <StackPanel Grid.Row="0" Grid.Column="0">
                         <TextBlock
                             Style="{StaticResource PatientOverlayFieldLabelStyle}"
-                            Text="First Name *" />
+                            >
+                                <Run Text="First Name" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
 
                         <TextBox
                             Style="{StaticResource PatientOverlayTextBoxStyle}"
@@ -112,7 +115,10 @@
                     <StackPanel Grid.Row="2" Grid.Column="0">
                         <TextBlock
                             Style="{StaticResource PatientOverlayFieldLabelStyle}"
-                            Text="Last Name *" />
+                            >
+                                <Run Text="Last Name" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
 
                         <TextBox
                             Style="{StaticResource PatientOverlayTextBoxStyle}"
@@ -123,7 +129,10 @@
                     <StackPanel Grid.Row="2" Grid.Column="2">
                         <TextBlock
                             Style="{StaticResource PatientOverlayFieldLabelStyle}"
-                            Text="Contact Number *" />
+                            >
+                                <Run Text="Contact Number" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
 
                         <TextBox
                             MaxLength="11"
@@ -135,7 +144,10 @@
                     <StackPanel Grid.Row="4" Grid.Column="0">
                         <TextBlock
                             Style="{StaticResource PatientOverlayFieldLabelStyle}"
-                            Text="Date of Birth *" />
+                            >
+                                <Run Text="Date of Birth" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
 
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -172,7 +184,10 @@
                     <StackPanel Grid.Row="4" Grid.Column="2">
                         <TextBlock
                             Style="{StaticResource PatientOverlayFieldLabelStyle}"
-                            Text="Gender *" />
+                            >
+                                <Run Text="Gender" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
 
                         <ComboBox
                             ItemsSource="{Binding GenderOptions}"
@@ -224,8 +239,8 @@
 
                 <TextBlock
                     Margin="0,28,0,12"
-                    FontSize="18"
-                    FontWeight="Bold"
+                    FontSize="16"
+                    FontWeight="SemiBold"
                     Text="Data Privacy Consent" />
 
                 <Border
@@ -269,8 +284,8 @@
 
                 <TextBlock
                     Margin="0,28,0,12"
-                    FontSize="18"
-                    FontWeight="Bold"
+                    FontSize="16"
+                    FontWeight="SemiBold"
                     Text="Medical Background" />
 
                 <StackPanel Margin="0,0,0,14">
@@ -334,7 +349,10 @@
                 <StackPanel>
                     <TextBlock
                         Style="{StaticResource PatientOverlayFieldLabelStyle}"
-                        Text="Initial Treatment / Service *" />
+                        >
+                                <Run Text="Initial Treatment / Service" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
 
                     <ComboBox
                         ItemsSource="{Binding ServiceOptions}"
@@ -350,7 +368,10 @@
 
                     <TextBlock
                         Style="{StaticResource PatientOverlayFieldLabelStyle}"
-                        Text="Other Treatment / Service *" />
+                        >
+                                <Run Text="Other Treatment / Service" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
 
                     <TextBox
                         Style="{StaticResource PatientOverlayTextBoxStyle}"
@@ -382,7 +403,7 @@
                         Command="{Binding CancelAddPatientCommand}"
                         Content="Cancel"
                         Foreground="White"
-                        Style="{StaticResource SecondaryButtonStyle}" />
+                        Style="{StaticResource OutlineActionButtonStyle}" />
 
                     <Button
                         Width="150"
@@ -390,7 +411,7 @@
                         Background="#073C98"
                         Command="{Binding SaveNewPatientCommand}"
                         Foreground="White"
-                        Style="{StaticResource SecondaryButtonStyle}">
+                        Style="{StaticResource SmallActionButtonStyle}">
 
                         <StackPanel Orientation="Horizontal">
                             <TextBlock

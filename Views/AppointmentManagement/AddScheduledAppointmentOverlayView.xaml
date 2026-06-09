@@ -76,7 +76,10 @@
                 <StackPanel Margin="0,0,0,18">
                     <TextBlock
                         Style="{StaticResource AppointmentOverlayFieldLabelStyle}"
-                        Text="Search Patient ID or Name *" />
+                        >
+                                <Run Text="Search Patient ID or Name" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
 
                     <Grid>
                         <TextBox
@@ -264,14 +267,20 @@
                     </StackPanel>
 
                     <StackPanel Grid.Row="2" Grid.Column="0">
-                        <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Appointment Date *" />
+                        <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" >
+                                <Run Text="Appointment Date" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
                         <DatePicker
                             SelectedDate="{Binding FormAppointmentDate, Mode=TwoWay}"
                             Style="{StaticResource AppointmentDatePickerStyle}" />
                     </StackPanel>
 
                     <StackPanel Grid.Row="2" Grid.Column="2">
-                        <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Appointment Time *" />
+                        <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" >
+                                <Run Text="Appointment Time" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
                         <ComboBox
                             Height="42"
                             ItemsSource="{Binding AppointmentTimeOptions}"
@@ -281,7 +290,10 @@
                     </StackPanel>
 
                     <StackPanel Grid.Row="4" Grid.Column="0">
-                        <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Services / Treatments *" />
+                        <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" >
+                                <Run Text="Services / Treatments" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
 
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -355,7 +367,10 @@
                     </StackPanel>
 
                     <StackPanel Grid.Row="4" Grid.Column="2">
-                        <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Dentist *" />
+                        <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" >
+                                <Run Text="Dentist" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
                         <ComboBox
                             Height="42"
                             ItemsSource="{Binding DentistOptions}"
@@ -405,7 +420,10 @@
                         </Grid.RowDefinitions>
 
                         <StackPanel Grid.Row="0" Grid.Column="0" Visibility="{Binding RequiresTreatmentStage, Converter={StaticResource BoolToVisibilityConverter}}">
-                            <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Treatment Step *" />
+                            <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" >
+                                <Run Text="Treatment Step" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
                             <ComboBox
                                 Height="42"
                                 ItemsSource="{Binding TreatmentStageOptions}"
@@ -415,7 +433,10 @@
                         </StackPanel>
 
                         <StackPanel Grid.Row="0" Grid.Column="2" Visibility="{Binding RequiresFollowUpDate, Converter={StaticResource BoolToVisibilityConverter}}">
-                            <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Return Date / Next Step *" />
+                            <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" >
+                                <Run Text="Return Date / Next Step" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
                             <DatePicker
                                 SelectedDate="{Binding FormFollowUpDate, Mode=TwoWay}"
                                 Style="{StaticResource AppointmentDatePickerStyle}" />
@@ -480,12 +501,18 @@
                         </StackPanel>
 
                         <StackPanel Grid.Row="4" Grid.Column="0" Visibility="{Binding HasExtractionService, Converter={StaticResource BoolToVisibilityConverter}}">
-                            <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Medication / Prescription *" />
+                            <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" >
+                                <Run Text="Medication / Prescription" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
                             <TextBox Style="{StaticResource AppointmentOverlayTextBoxStyle}" Text="{Binding FormPrescription, UpdateSourceTrigger=PropertyChanged}" />
                         </StackPanel>
 
                         <StackPanel Grid.Row="4" Grid.Column="2" Visibility="{Binding HasProphylaxisService, Converter={StaticResource BoolToVisibilityConverter}}">
-                            <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Prophylaxis Severity *" />
+                            <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" >
+                                <Run Text="Prophylaxis Severity" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
                             <ComboBox
                                 Height="42"
                                 ItemsSource="{Binding ProphylaxisSeverityOptions}"
@@ -503,12 +530,18 @@
                                 </Grid.ColumnDefinitions>
 
                                 <StackPanel Grid.Column="0">
-                                    <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Surface *" />
+                                    <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" >
+                                <Run Text="Surface" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
                                     <TextBox Style="{StaticResource AppointmentOverlayTextBoxStyle}" Text="{Binding FormRestorationSurface, UpdateSourceTrigger=PropertyChanged}" />
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="2">
-                                    <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Depth *" />
+                                    <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" >
+                                <Run Text="Depth" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
                                     <ComboBox
                                         Height="42"
                                         ItemsSource="{Binding RestorationDepthOptions}"
@@ -616,8 +649,18 @@
                         Style="{StaticResource SecondaryButtonStyle}">
 
                         <StackPanel Orientation="Horizontal">
-                            <fa:IconBlock Margin="0,0,8,0" Icon="CalendarPlus" Foreground="White" />
-                            <TextBlock FontWeight="Bold" Text="Save Schedule" />
+                            <fa:IconBlock 
+                                Margin="0,0,8,0"
+                                VerticalAlignment="Center"
+                                FontSize="18" 
+                                Icon="CalendarPlus" 
+                                Foreground="White" />
+                            <TextBlock 
+                                VerticalAlignment="Center"
+                                FontSize="14"
+                                FontWeight="SemiBold"
+                                Foreground="White"
+                                Text="Save Schedule" />
                         </StackPanel>
                     </Button>
                 </StackPanel>

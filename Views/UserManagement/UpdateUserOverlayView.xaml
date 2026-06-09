@@ -872,7 +872,10 @@
                                 Margin="0,20,0,6"
                                 FontSize="14"
                                 Foreground="#777777"
-                                Text="Admin Password *" />
+                                >
+                                <Run Text="Admin Password" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
 
                             <Grid>
                                 <PasswordBox
