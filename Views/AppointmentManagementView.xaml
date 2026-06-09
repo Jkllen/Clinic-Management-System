@@ -884,7 +884,12 @@
                                 <Run Text="Appointment Time" />
                                 <Run Foreground="#E53935" Text=" *" />
                             </TextBlock>
-                                <TextBox Style="{StaticResource AppointmentOverlayTextBoxStyle}" Text="{Binding RescheduleTimeText, UpdateSourceTrigger=PropertyChanged}" />
+                                <ComboBox
+                                    Height="42"
+                                    ItemsSource="{Binding AppointmentTimeOptions}"
+                                    SelectedItem="{Binding RescheduleTimeText, Mode=TwoWay}"
+                                    Style="{StaticResource ExactStyleComboBox}"
+                                    Tag="Select appointment time" />
                             </StackPanel>
 
                             <StackPanel Grid.Row="2" Grid.Column="0">
