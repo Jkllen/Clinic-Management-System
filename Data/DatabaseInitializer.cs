@@ -88,6 +88,33 @@ namespace CruzNeryClinic.Data
                 command.ExecuteNonQuery();
             }
 
+            if (!ColumnExists(connection, "Users", "HasEmployeePrivacyAcknowledgement"))
+            {
+                using SqliteCommand command = connection.CreateCommand();
+                command.CommandText = @"
+        ALTER TABLE Users
+        ADD COLUMN HasEmployeePrivacyAcknowledgement INTEGER NOT NULL DEFAULT 0;";
+                command.ExecuteNonQuery();
+            }
+
+            if (!ColumnExists(connection, "Users", "EmployeePrivacyAcknowledgedAt"))
+            {
+                using SqliteCommand command = connection.CreateCommand();
+                command.CommandText = @"
+        ALTER TABLE Users
+        ADD COLUMN EmployeePrivacyAcknowledgedAt TEXT;";
+                command.ExecuteNonQuery();
+            }
+
+            if (!ColumnExists(connection, "Users", "EmployeePrivacyAcknowledgementVersion"))
+            {
+                using SqliteCommand command = connection.CreateCommand();
+                command.CommandText = @"
+        ALTER TABLE Users
+        ADD COLUMN EmployeePrivacyAcknowledgementVersion TEXT;";
+                command.ExecuteNonQuery();
+            }
+
             MergeCruzNeryAdminDentistAccount(connection);
         }
 
@@ -258,6 +285,9 @@ CREATE TABLE IF NOT EXISTS Users (
     CreatedAt TEXT NOT NULL,
     UpdatedAt TEXT,
     LastLoginAt TEXT,
+    HasEmployeePrivacyAcknowledgement INTEGER NOT NULL DEFAULT 0,
+    EmployeePrivacyAcknowledgedAt TEXT,
+    EmployeePrivacyAcknowledgementVersion TEXT,
 
     FOREIGN KEY (SecurityQuestionId1) REFERENCES SecurityQuestions(SecurityQuestionId),
     FOREIGN KEY (SecurityQuestionId2) REFERENCES SecurityQuestions(SecurityQuestionId),

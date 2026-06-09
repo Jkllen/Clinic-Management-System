@@ -282,9 +282,9 @@
                                 Grid.Row="0" 
                                 Grid.Column="0">
                             <TextBlock
-                                FontSize="16"
+                                FontSize="14"
                                 Margin="0,8,0,0"
-                                FontWeight="Bold"
+                                FontWeight="SemiBold"
                                 Foreground="#111111"
                                 Text="Invoice Number" />
 
@@ -300,9 +300,9 @@
                         <!-- Patient ID -->
                         <StackPanel Grid.Row="0" Grid.Column="2">
                             <TextBlock
-                                FontSize="16"
+                                FontSize="14"
                                 Margin="0,8,0,0"
-                                FontWeight="Bold"
+                                FontWeight="SemiBold"
                                 Foreground="#111111"
                                 Text="Patient ID" />
 
@@ -318,8 +318,8 @@
                         <!-- Patient Name -->
                         <StackPanel Grid.Row="2" Grid.Column="0">
                             <TextBlock
-                                FontSize="16"
-                                FontWeight="Bold"
+                                FontSize="14"
+                                FontWeight="SemiBold"
                                 Foreground="#111111"
                                 Text="Patient Name" />
 
@@ -335,8 +335,8 @@
                         <!-- Category -->
                         <StackPanel Grid.Row="2" Grid.Column="2">
                             <TextBlock
-                                FontSize="16"
-                                FontWeight="Bold"
+                                FontSize="14"
+                                FontWeight="SemiBold"
                                 Foreground="#111111"
                                 Text="Category" />
 
@@ -352,10 +352,12 @@
                         <!-- Service / Treatment -->
                         <StackPanel Grid.Row="4" Grid.Column="0">
                             <TextBlock
-                                FontSize="16"
-                                FontWeight="Bold"
-                                Foreground="#111111"
-                                Text="Service / Treatment *" />
+                                FontSize="14"
+                                FontWeight="SemiBold"
+                                Foreground="#111111">
+                                <Run Text="Service / Treatment" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
 
                             <ComboBox
                                 Height="46"
@@ -370,10 +372,12 @@
                         <!-- Total Amount -->
                         <StackPanel Grid.Row="4" Grid.Column="2">
                             <TextBlock
-                                FontSize="16"
-                                FontWeight="Bold"
-                                Foreground="#111111"
-                                Text="Total Amount *" />
+                                FontSize="14"
+                                FontWeight="SemiBold"
+                                Foreground="#111111">
+                                <Run Text="Total Amount" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
 
                             <TextBox
                                 Height="46"
@@ -385,8 +389,8 @@
                         <!-- Description -->
                         <StackPanel Grid.Row="6" Grid.Column="0">
                             <TextBlock
-                                FontSize="16"
-                                FontWeight="Bold"
+                                FontSize="14"
+                                FontWeight="SemiBold"
                                 Foreground="#111111"
                                 Text="Description" />
 
@@ -401,10 +405,12 @@
                         <!-- Payment Amount -->
                         <StackPanel Grid.Row="6" Grid.Column="2">
                             <TextBlock
-                                FontSize="16"
-                                FontWeight="Bold"
-                                Foreground="#111111"
-                                Text="Cash Received *" />
+                                FontSize="14"
+                                FontWeight="SemiBold"
+                                Foreground="#111111">
+                                <Run Text="Cash Received" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
 
                             <TextBox
                                 Height="46"
@@ -420,18 +426,18 @@
                             Grid.ColumnSpan="3">
 
                             <TextBlock
-                                FontSize="16"
-                                FontWeight="Bold"
+                                FontSize="14"
+                                FontWeight="SemiBold"
                                 Foreground="#111111"
                                 Text="Notes" />
 
                             <TextBox
-                                Height="140"
+                                Height="130"
                                 Margin="0,8,0,0"
                                 AcceptsReturn="True"
                                 BorderBrush="#BFBFBF"
                                 BorderThickness="1"
-                                Style="{StaticResource ModernTextBoxStyle}"
+                                Style="{StaticResource ModernTextAreaStyle}"
                                 Text="{Binding ManualNotes, UpdateSourceTrigger=PropertyChanged}"
                                 TextWrapping="Wrap"
                                 VerticalScrollBarVisibility="Auto" />
@@ -458,7 +464,7 @@
                                 <StackPanel>
                                     <TextBlock
                                         Margin="0,0,0,18"
-                                        FontSize="16"
+                                        FontSize="14"
                                         FontWeight="Bold"
                                         Foreground="#223357"
                                         Text="Payment Summary" />
@@ -471,13 +477,13 @@
 
                                         <TextBlock
                                             Grid.Column="0"
-                                            FontSize="14"
+                                            FontSize="12"
                                             Foreground="#223357"
                                             Text="Total Amount:" />
 
                                         <TextBlock
                                             Grid.Column="1"
-                                            FontSize="14"
+                                            FontSize="12"
                                             FontWeight="Bold"
                                             Foreground="#223357"
                                             Text="{Binding ManualTotalAmountDisplay, Mode=OneWay}" />
@@ -524,13 +530,13 @@
 
                                         <TextBlock
                                             Grid.Column="0"
-                                            FontSize="14"
+                                            FontSize="12"
                                             Foreground="#223357"
                                             Text="Discount:" />
 
                                         <TextBlock
                                             Grid.Column="1"
-                                            FontSize="14"
+                                            FontSize="12"
                                             FontWeight="Bold"
                                             Foreground="#00A423"
                                             Text="{Binding ManualDiscountAmountDisplay, Mode=OneWay}" />
@@ -544,13 +550,13 @@
 
                                         <TextBlock
                                             Grid.Column="0"
-                                            FontSize="14"
+                                            FontSize="12"
                                             Foreground="#223357"
                                             Text="Billable Amount:" />
 
                                         <TextBlock
                                             Grid.Column="1"
-                                            FontSize="14"
+                                            FontSize="12"
                                             FontWeight="Bold"
                                             Foreground="#223357"
                                             Text="{Binding ManualSubtotalDisplay, Mode=OneWay}" />
@@ -564,13 +570,13 @@
 
                                         <TextBlock
                                             Grid.Column="0"
-                                            FontSize="14"
+                                            FontSize="12"
                                             Foreground="#223357"
                                             Text="Cash Received:" />
 
                                         <TextBlock
                                             Grid.Column="1"
-                                            FontSize="14"
+                                            FontSize="12"
                                             FontWeight="Bold"
                                             Foreground="#223357"
                                             Text="{Binding ManualPaymentAmountDisplay, Mode=OneWay}" />
@@ -609,14 +615,14 @@
 
                                         <TextBlock
                                             Grid.Column="0"
-                                            FontSize="15"
+                                            FontSize="14"
                                             FontWeight="Bold"
                                             Foreground="#223357"
                                             Text="Balance:" />
 
                                         <TextBlock
                                             Grid.Column="1"
-                                            FontSize="15"
+                                            FontSize="14"
                                             FontWeight="Bold"
                                             Foreground="#00A423"
                                             Text="{Binding ManualBalanceDisplay, Mode=OneWay}" />
@@ -640,8 +646,8 @@
                                     Style="{StaticResource SecondaryButtonStyle}">
 
                                     <TextBlock
-                                        FontSize="14"
-                                        FontWeight="Bold"
+                                        FontSize="12"
+                                        FontWeight="SemiBold"
                                         Text="₱ Process Transaction" />
                                 </Button>
 

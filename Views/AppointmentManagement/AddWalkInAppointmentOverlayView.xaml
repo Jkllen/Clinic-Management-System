@@ -76,7 +76,10 @@
                 <StackPanel Margin="0,0,0,18">
                     <TextBlock
                         Style="{StaticResource AppointmentOverlayFieldLabelStyle}"
-                        Text="Search Patient ID or Name *" />
+                        >
+                                <Run Text="Search Patient ID or Name" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
 
                     <Grid>
                         <TextBox
@@ -93,56 +96,19 @@
                             StaysOpen="False">
 
                             <Border
-                                MaxHeight="220"
-                                Background="White"
-                                BorderBrush="#D8D8D8"
-                                BorderThickness="1"
-                                CornerRadius="10">
+                                Style="{StaticResource PatientLookupPopupBorderStyle}">
 
                                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                                     <ListBox
-                                        BorderThickness="0"
-                                        ItemsSource="{Binding PatientSearchResults}">
-
-                                        <ListBox.ItemContainerStyle>
-                                            <Style TargetType="ListBoxItem">
-                                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                                                <Setter Property="Padding" Value="0" />
-                                                <Setter Property="Cursor" Value="Hand" />
-                                            </Style>
-                                        </ListBox.ItemContainerStyle>
+                                        ItemContainerStyle="{StaticResource PatientLookupListBoxItemStyle}"
+                                        ItemsSource="{Binding PatientSearchResults}"
+                                        Style="{StaticResource PatientLookupListBoxStyle}">
                                             <ListBox.ItemTemplate>
                                                 <DataTemplate>
                                                     <Button
-                                                        HorizontalAlignment="Stretch"
-                                                        HorizontalContentAlignment="Stretch"
-                                                        Background="Transparent"
-                                                        BorderThickness="0"
-                                                        Cursor="Hand"
                                                         Command="{Binding DataContext.SelectPatientCommand, Source={x:Reference Root}}"
-                                                        CommandParameter="{Binding}">
-
-                                                        <Button.Template>
-                                                            <ControlTemplate TargetType="Button">
-                                                                <Border
-                                                                    x:Name="ButtonBorder"
-                                                                    Background="{TemplateBinding Background}">
-                                                                    <ContentPresenter
-                                                                        HorizontalAlignment="Stretch"
-                                                                        VerticalAlignment="Center" />
-                                                                </Border>
-
-                                                                <ControlTemplate.Triggers>
-                                                                    <Trigger Property="IsMouseOver" Value="True">
-                                                                        <Setter TargetName="ButtonBorder" Property="Background" Value="#EEF6FF" />
-                                                                    </Trigger>
-
-                                                                    <Trigger Property="IsPressed" Value="True">
-                                                                        <Setter TargetName="ButtonBorder" Property="Background" Value="#DDEEFF" />
-                                                                    </Trigger>
-                                                                </ControlTemplate.Triggers>
-                                                            </ControlTemplate>
-                                                        </Button.Template>
+                                                        CommandParameter="{Binding}"
+                                                        Style="{StaticResource PatientLookupItemButtonStyle}">
 
                                                         <Border
                                                             Padding="12,8"
@@ -302,17 +268,19 @@
 
                     <StackPanel Grid.Row="2" Grid.Column="0">
                         <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Date" />
-                        <DatePicker Height="46" IsEnabled="False" SelectedDate="{Binding FormAppointmentDate}" />
+                        <DatePicker
+                            IsEnabled="False"
+                            SelectedDate="{Binding FormAppointmentDate}"
+                            Style="{StaticResource AppointmentDatePickerStyle}" />
                     </StackPanel>
 
                     <StackPanel Grid.Row="2" Grid.Column="2">
-                        <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Arrival Time *" />
+                        <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" >
+                                <Run Text="Arrival Time" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
                         <Border
-                            Height="42"
-                            Background="White"
-                            BorderBrush="#D8D8D8"
-                            BorderThickness="1"
-                            CornerRadius="5">
+                            Style="{StaticResource AppointmentTimePickerContainerStyle}">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -323,10 +291,7 @@
                                 <TextBox
                                     Grid.Column="0"
                                     MaxLength="2"
-                                    HorizontalContentAlignment="Center"
-                                    VerticalContentAlignment="Center"
-                                    BorderThickness="0"
-                                    FontSize="14"
+                                    Style="{StaticResource AppointmentTimeSegmentTextBoxStyle}"
                                     Text="{Binding WalkInArrivalHourText, UpdateSourceTrigger=PropertyChanged}" />
 
                                 <Border
@@ -335,27 +300,24 @@
                                     BorderThickness="1,0,1,0">
                                     <TextBox
                                         MaxLength="2"
-                                        HorizontalContentAlignment="Center"
-                                        VerticalContentAlignment="Center"
-                                        BorderThickness="0"
-                                        FontSize="14"
+                                        Style="{StaticResource AppointmentTimeSegmentTextBoxStyle}"
                                         Text="{Binding WalkInArrivalMinuteText, UpdateSourceTrigger=PropertyChanged}" />
                                 </Border>
 
                                 <ComboBox
                                     Grid.Column="2"
-                                    HorizontalContentAlignment="Center"
-                                    VerticalContentAlignment="Center"
-                                    BorderThickness="0"
-                                    FontSize="14"
                                     ItemsSource="{Binding TimePeriodOptions}"
-                                    SelectedItem="{Binding WalkInArrivalPeriod, Mode=TwoWay}" />
+                                    SelectedItem="{Binding WalkInArrivalPeriod, Mode=TwoWay}"
+                                    Style="{StaticResource AppointmentTimePeriodComboBoxStyle}" />
                             </Grid>
                         </Border>
                     </StackPanel>
 
                     <StackPanel Grid.Row="4" Grid.Column="0">
-                        <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Services / Treatments *" />
+                        <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" >
+                                <Run Text="Services / Treatments" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
 
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -429,7 +391,10 @@
                     </StackPanel>
 
                     <StackPanel Grid.Row="4" Grid.Column="2">
-                        <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Dentist *" />
+                        <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" >
+                                <Run Text="Dentist" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
                         <ComboBox
                             Height="42"
                             ItemsSource="{Binding DentistOptions}"
@@ -479,7 +444,10 @@
                         </Grid.RowDefinitions>
 
                         <StackPanel Grid.Row="0" Grid.Column="0" Visibility="{Binding RequiresTreatmentStage, Converter={StaticResource BoolToVisibilityConverter}}">
-                            <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Treatment Step *" />
+                            <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" >
+                                <Run Text="Treatment Step" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
                             <ComboBox
                                 Height="42"
                                 ItemsSource="{Binding TreatmentStageOptions}"
@@ -489,8 +457,13 @@
                         </StackPanel>
 
                         <StackPanel Grid.Row="0" Grid.Column="2" Visibility="{Binding RequiresFollowUpDate, Converter={StaticResource BoolToVisibilityConverter}}">
-                            <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Return Date / Next Step *" />
-                            <DatePicker Height="46" SelectedDate="{Binding FormFollowUpDate, Mode=TwoWay}" />
+                            <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" >
+                                <Run Text="Return Date / Next Step" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
+                            <DatePicker
+                                SelectedDate="{Binding FormFollowUpDate, Mode=TwoWay}"
+                                Style="{StaticResource AppointmentDatePickerStyle}" />
                         </StackPanel>
 
                         <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Visibility="{Binding HasToothSelection, Converter={StaticResource BoolToVisibilityConverter}}">
@@ -552,12 +525,18 @@
                         </StackPanel>
 
                         <StackPanel Grid.Row="4" Grid.Column="0" Visibility="{Binding HasExtractionService, Converter={StaticResource BoolToVisibilityConverter}}">
-                            <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Medication / Prescription *" />
+                            <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" >
+                                <Run Text="Medication / Prescription" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
                             <TextBox Style="{StaticResource AppointmentOverlayTextBoxStyle}" Text="{Binding FormPrescription, UpdateSourceTrigger=PropertyChanged}" />
                         </StackPanel>
 
                         <StackPanel Grid.Row="4" Grid.Column="2" Visibility="{Binding HasProphylaxisService, Converter={StaticResource BoolToVisibilityConverter}}">
-                            <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Prophylaxis Severity *" />
+                            <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" >
+                                <Run Text="Prophylaxis Severity" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
                             <ComboBox
                                 Height="42"
                                 ItemsSource="{Binding ProphylaxisSeverityOptions}"
@@ -575,12 +554,18 @@
                                 </Grid.ColumnDefinitions>
 
                                 <StackPanel Grid.Column="0">
-                                    <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Surface *" />
+                                    <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" >
+                                <Run Text="Surface" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
                                     <TextBox Style="{StaticResource AppointmentOverlayTextBoxStyle}" Text="{Binding FormRestorationSurface, UpdateSourceTrigger=PropertyChanged}" />
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="2">
-                                    <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Depth *" />
+                                    <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" >
+                                <Run Text="Depth" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
                                     <ComboBox
                                         Height="42"
                                         ItemsSource="{Binding RestorationDepthOptions}"

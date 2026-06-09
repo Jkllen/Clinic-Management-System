@@ -21,15 +21,25 @@
             <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
         </Style>
 
-        <!--  Default Modern Pink Shade TextBox Style  -->
+        <!--#region TextBox and TextArea Styles-->
+        <SolidColorBrush x:Key="FieldSurfaceBrush" Color="#FFFFFF" />
+        <SolidColorBrush x:Key="FieldSurfaceReadonlyBrush" Color="#F7F9FC" />
+        <SolidColorBrush x:Key="FieldBorderBrush" Color="#CBD5E1" />
+        <SolidColorBrush x:Key="FieldBorderHoverBrush" Color="#94A3B8" />
+        <SolidColorBrush x:Key="FieldAccentBrush" Color="#2F98D0" />
+        <SolidColorBrush x:Key="FieldTextBrush" Color="#111827" />
+        <SolidColorBrush x:Key="FieldPlaceholderBrush" Color="#8B95A5" />
+
+        <!--  Central single-line TextBox field style used across the system.  -->
         <Style x:Key="ModernTextBoxStyle" TargetType="{x:Type TextBox}">
-            <Setter Property="Background" Value="#FFFFFF" />
-            <Setter Property="BorderBrush" Value="#E2D5EB" />
+            <Setter Property="Height" Value="42" />
+            <Setter Property="Background" Value="{StaticResource FieldSurfaceBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource FieldBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Foreground" Value="#333333" />
-            <Setter Property="Padding" Value="8,0,14,0" />
+            <Setter Property="Foreground" Value="{StaticResource FieldTextBrush}" />
+            <Setter Property="Padding" Value="10,2,14,2" />
             <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
-            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontSize" Value="14" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="HorizontalContentAlignment" Value="Left" />
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
@@ -38,35 +48,49 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type TextBox}">
-                        <Border
-                            x:Name="border"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="10"
-                            SnapsToDevicePixels="True">
+                        <Grid SnapsToDevicePixels="True">
+                            <Border
+                                x:Name="FieldBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="7">
+                                <Grid Margin="{TemplateBinding Padding}">
+                                    <ScrollViewer
+                                        x:Name="PART_ContentHost"
+                                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                        Focusable="False"
+                                        HorizontalScrollBarVisibility="Hidden"
+                                        VerticalScrollBarVisibility="Hidden" />
 
-                            <Grid>
-                                <ScrollViewer
-                                    x:Name="PART_ContentHost"
-                                    Margin="{TemplateBinding Padding}"
-                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                    Focusable="False"
-                                    HorizontalScrollBarVisibility="Hidden"
-                                    VerticalScrollBarVisibility="Hidden" />
+                                    <TextBlock
+                                        x:Name="PlaceholderText"
+                                        Margin="12,2,14,2"
+                                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                        FontFamily="{TemplateBinding FontFamily}"
+                                        FontSize="{TemplateBinding FontSize}"
+                                        FontStretch="{TemplateBinding FontStretch}"
+                                        FontStyle="{TemplateBinding FontStyle}"
+                                        FontWeight="{TemplateBinding FontWeight}"
+                                        Foreground="{StaticResource FieldPlaceholderBrush}"
+                                        IsHitTestVisible="False"
+                                        Text="{TemplateBinding Tag}"
+                                        Visibility="Collapsed" />
+                                </Grid>
+                            </Border>
 
-                                <TextBlock
-                                    x:Name="PlaceholderText"
-                                    Margin="{TemplateBinding Padding}"
-                                    Padding="10,0,14,0"
-                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                    Foreground="#A3A3A3"
-                                    IsHitTestVisible="False"
-                                    Text="{TemplateBinding Tag}"
-                                    Visibility="Collapsed" />
-                            </Grid>
-                        </Border>
+                            <Border
+                                x:Name="FocusBar"
+                                Height="2"
+                                Margin="1,0,1,1"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Bottom"
+                                Background="{StaticResource FieldAccentBrush}"
+                                CornerRadius="0,0,7,7"
+                                Opacity="0" />
+
+                        </Grid>
 
                         <ControlTemplate.Triggers>
                             <Trigger Property="Text" Value="">
@@ -74,22 +98,22 @@
                             </Trigger>
 
                             <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                                <Setter TargetName="border" Property="BorderBrush" Value="#A855F7" />
-                                <Setter TargetName="border" Property="BorderThickness" Value="1.2" />
+                                <Setter TargetName="FieldBorder" Property="BorderBrush" Value="{StaticResource FieldAccentBrush}" />
+                                <Setter TargetName="FocusBar" Property="Opacity" Value="1" />
                             </Trigger>
 
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="BorderBrush" Value="#D4C2E3" />
+                                <Setter TargetName="FieldBorder" Property="BorderBrush" Value="{StaticResource FieldBorderHoverBrush}" />
                             </Trigger>
 
                             <Trigger Property="IsReadOnly" Value="True">
-                                <Setter Property="Background" Value="#F8F8F8" />
-                                <Setter Property="Foreground" Value="#333333" />
+                                <Setter Property="Background" Value="{StaticResource FieldSurfaceReadonlyBrush}" />
+                                <Setter Property="Foreground" Value="#4B5563" />
                             </Trigger>
 
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter Property="Opacity" Value="0.56" />
-                                <Setter TargetName="border" Property="Background" Value="#F5F5F5" />
+                                <Setter TargetName="FieldBorder" Property="Background" Value="#F5F5F5" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -97,6 +121,656 @@
             </Setter>
         </Style>
 
+        <!--  Central multiline TextBox style for notes, descriptions, and text areas.  -->
+        <Style
+            x:Key="ModernTextAreaStyle"
+            BasedOn="{StaticResource ModernTextBoxStyle}"
+            TargetType="{x:Type TextBox}">
+            <Setter Property="Height" Value="96" />
+            <Setter Property="MinHeight" Value="82" />
+            <Setter Property="AcceptsReturn" Value="True" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
+            <Setter Property="Padding" Value="12,10,14,10" />
+            <Setter Property="VerticalContentAlignment" Value="Top" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TextBox}">
+                        <Grid SnapsToDevicePixels="True">
+                            <Border
+                                x:Name="FieldBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="7">
+                                <Grid Margin="{TemplateBinding Padding}">
+                                    <ScrollViewer
+                                        x:Name="PART_ContentHost"
+                                        Focusable="False"
+                                        HorizontalScrollBarVisibility="Disabled"
+                                        VerticalScrollBarVisibility="{TemplateBinding VerticalScrollBarVisibility}" />
+
+                                    <TextBlock
+                                        x:Name="PlaceholderText"
+                                        Margin="12,2,14,2"
+                                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                        VerticalAlignment="Top"
+                                        FontFamily="{TemplateBinding FontFamily}"
+                                        FontSize="{TemplateBinding FontSize}"
+                                        FontStretch="{TemplateBinding FontStretch}"
+                                        FontStyle="{TemplateBinding FontStyle}"
+                                        FontWeight="{TemplateBinding FontWeight}"
+                                        Foreground="{StaticResource FieldPlaceholderBrush}"
+                                        IsHitTestVisible="False"
+                                        Text="{TemplateBinding Tag}"
+                                        TextWrapping="Wrap"
+                                        Visibility="Collapsed" />
+                                </Grid>
+                            </Border>
+
+                            <Border
+                                x:Name="FocusBar"
+                                Height="2"
+                                Margin="1,0,1,1"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Bottom"
+                                Background="{StaticResource FieldAccentBrush}"
+                                CornerRadius="0,0,7,7"
+                                Opacity="0" />
+
+                        </Grid>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="Text" Value="">
+                                <Setter TargetName="PlaceholderText" Property="Visibility" Value="Visible" />
+                            </Trigger>
+
+                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                <Setter TargetName="FieldBorder" Property="BorderBrush" Value="{StaticResource FieldAccentBrush}" />
+                                <Setter TargetName="FocusBar" Property="Opacity" Value="1" />
+                            </Trigger>
+
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="FieldBorder" Property="BorderBrush" Value="{StaticResource FieldBorderHoverBrush}" />
+                            </Trigger>
+
+                            <Trigger Property="IsReadOnly" Value="True">
+                                <Setter Property="Background" Value="{StaticResource FieldSurfaceReadonlyBrush}" />
+                                <Setter Property="Foreground" Value="#4B5563" />
+                            </Trigger>
+
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.56" />
+                                <Setter TargetName="FieldBorder" Property="Background" Value="#F5F5F5" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!--  Centralized user overlay editable TextBox style  -->
+        <Style
+            x:Key="UserOverlayTextBoxStyle"
+            BasedOn="{StaticResource ModernTextBoxStyle}"
+            TargetType="{x:Type TextBox}">
+            <Setter Property="Height" Value="46" />
+        </Style>
+
+        <!--  Central single-line TextBox variant for fields with a leading icon.  -->
+        <Style
+            x:Key="ModernIconTextBoxStyle"
+            BasedOn="{StaticResource ModernTextBoxStyle}"
+            TargetType="{x:Type TextBox}">
+            <Setter Property="Height" Value="52" />
+            <Setter Property="FontSize" Value="22" />
+            <Setter Property="Padding" Value="48,2,18,2" />
+        </Style>
+
+        <!--  Central single-line TextBox variant for fields with leading and trailing icons.  -->
+        <Style
+            x:Key="ModernIconActionTextBoxStyle"
+            BasedOn="{StaticResource ModernTextBoxStyle}"
+            TargetType="{x:Type TextBox}">
+            <Setter Property="Height" Value="52" />
+            <Setter Property="FontSize" Value="22" />
+            <Setter Property="Padding" Value="48,2,46,2" />
+        </Style>
+
+        <!--  Auth TextBox style for login/reset fields with a leading icon.  -->
+        <Style x:Key="AuthIconTextBoxStyle" TargetType="{x:Type TextBox}">
+            <Setter Property="Height" Value="52" />
+            <Setter Property="Background" Value="{StaticResource FieldSurfaceBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource FieldBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="{StaticResource FieldTextBrush}" />
+            <Setter Property="Padding" Value="25,2,14,2" />
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="SnapsToDevicePixels" Value="True" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TextBox}">
+                        <Grid SnapsToDevicePixels="True">
+                            <Border
+                                x:Name="FieldBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="7">
+                                <Grid Margin="{TemplateBinding Padding}">
+                                    <ScrollViewer
+                                        x:Name="PART_ContentHost"
+                                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                        Focusable="False"
+                                        HorizontalScrollBarVisibility="Hidden"
+                                        VerticalScrollBarVisibility="Hidden" />
+
+                                    <TextBlock
+                                        x:Name="PlaceholderText"
+                                        Margin="26,2,14,2"
+                                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                        FontFamily="{TemplateBinding FontFamily}"
+                                        FontSize="{TemplateBinding FontSize}"
+                                        FontStretch="{TemplateBinding FontStretch}"
+                                        FontStyle="{TemplateBinding FontStyle}"
+                                        FontWeight="{TemplateBinding FontWeight}"
+                                        Foreground="{StaticResource FieldPlaceholderBrush}"
+                                        IsHitTestVisible="False"
+                                        Text="{TemplateBinding Tag}"
+                                        Visibility="Collapsed" />
+                                </Grid>
+                            </Border>
+
+                            <Border
+                                x:Name="FocusBar"
+                                Height="2"
+                                Margin="1,0,1,1"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Bottom"
+                                Background="{StaticResource FieldAccentBrush}"
+                                CornerRadius="0,0,7,7"
+                                Opacity="0" />
+                        </Grid>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="Text" Value="">
+                                <Setter TargetName="PlaceholderText" Property="Visibility" Value="Visible" />
+                            </Trigger>
+
+                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                <Setter TargetName="FieldBorder" Property="BorderBrush" Value="{StaticResource FieldAccentBrush}" />
+                                <Setter TargetName="FocusBar" Property="Opacity" Value="1" />
+                            </Trigger>
+
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="FieldBorder" Property="BorderBrush" Value="{StaticResource FieldBorderHoverBrush}" />
+                            </Trigger>
+
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.56" />
+                                <Setter TargetName="FieldBorder" Property="Background" Value="#F5F5F5" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!--  Auth TextBox style for login/reset fields with leading and trailing icons.  -->
+        <Style
+            x:Key="AuthIconActionTextBoxStyle"
+            BasedOn="{StaticResource AuthIconTextBoxStyle}"
+            TargetType="{x:Type TextBox}">
+            <Setter Property="Padding" Value="48,2,46,2" />
+        </Style>
+
+        <!--  Auth visible-password TextBox style for password reveal states.  -->
+        <Style
+            x:Key="AuthVisiblePasswordTextBoxStyle"
+            BasedOn="{StaticResource AuthIconActionTextBoxStyle}"
+            TargetType="{x:Type TextBox}">
+            <Setter Property="Padding" Value="25,2,14,2" />
+        </Style>
+
+        <!--  Centralized user overlay read-only TextBox style  -->
+        <Style
+            x:Key="UserOverlayReadOnlyTextBoxStyle"
+            BasedOn="{StaticResource UserOverlayTextBoxStyle}"
+            TargetType="{x:Type TextBox}">
+            <Setter Property="IsReadOnly" Value="True" />
+            <Setter Property="Foreground" Value="#8A8A8A" />
+            <Setter Property="Background" Value="#FFF9FD" />
+        </Style>
+
+        <!--  Central visible-password TextBox style used by password reveal states.  -->
+        <Style
+            x:Key="ModernVisiblePasswordTextBoxStyle"
+            BasedOn="{StaticResource ModernIconActionTextBoxStyle}"
+            TargetType="TextBox">
+        </Style>
+
+        <Style
+            x:Key="VisiblePasswordTextBoxStyle"
+            BasedOn="{StaticResource ModernVisiblePasswordTextBoxStyle}"
+            TargetType="TextBox">
+        </Style>
+
+        <!--  Centralized user overlay TextBox style for visible password mode  -->
+        <Style
+            x:Key="UserOverlayVisiblePasswordTextBoxStyle"
+            BasedOn="{StaticResource UserOverlayTextBoxStyle}"
+            TargetType="TextBox">
+            <Setter Property="Padding" Value="10,2,46,2" />
+        </Style>
+
+        <!--  Shared search textbox style used in dashboard and module screens  -->
+        <Style
+            x:Key="SearchTextBoxStyle"
+            BasedOn="{StaticResource ModernTextBoxStyle}"
+            TargetType="TextBox">
+            <Setter Property="Height" Value="42" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Padding" Value="24,0,18,0" />
+        </Style>
+        <!--#endregion TextBox and TextArea Styles-->
+
+        <!--#region DatePicker, Time Picker, and ListBox Styles-->
+        <Style x:Key="ModernDatePickerTextBoxStyle" TargetType="DatePickerTextBox">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="{StaticResource FieldTextBrush}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DatePickerTextBox">
+                        <Grid>
+                            <ContentControl
+                                x:Name="PART_Watermark"
+                                Focusable="False"
+                                Foreground="{StaticResource FieldPlaceholderBrush}"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Visibility="Hidden" />
+                            <ScrollViewer
+                                x:Name="PART_ContentHost"
+                                Background="Transparent"
+                                Focusable="False"
+                                HorizontalScrollBarVisibility="Hidden"
+                                VerticalAlignment="Center"
+                                VerticalScrollBarVisibility="Hidden" />
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="AppointmentCalendarDayButtonStyle" TargetType="{x:Type CalendarDayButton}">
+            <Setter Property="Width" Value="30" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="Margin" Value="1" />
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="#2F2B38" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type CalendarDayButton}">
+                        <Border
+                            x:Name="DayBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="16">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="DayBorder" Property="Background" Value="#E4DDF0" />
+                                <Setter Property="Foreground" Value="#4C3A83" />
+                            </Trigger>
+
+                            <Trigger Property="IsToday" Value="True">
+                                <Setter TargetName="DayBorder" Property="BorderBrush" Value="#8A70C8" />
+                            </Trigger>
+
+                            <Trigger Property="IsInactive" Value="True">
+                                <Setter Property="Foreground" Value="#A9A1B7" />
+                            </Trigger>
+
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="DayBorder" Property="Background" Value="#7760B9" />
+                                <Setter TargetName="DayBorder" Property="BorderBrush" Value="#7760B9" />
+                                <Setter Property="Foreground" Value="White" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="AppointmentCalendarButtonStyle" TargetType="{x:Type CalendarButton}">
+            <Setter Property="MinWidth" Value="52" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Margin" Value="2" />
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="#2F2B38" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type CalendarButton}">
+                        <Border
+                            x:Name="ButtonBorder"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="7">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#E4DDF0" />
+                            </Trigger>
+
+                            <Trigger Property="IsInactive" Value="True">
+                                <Setter Property="Foreground" Value="#A9A1B7" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="AppointmentCalendarStyle" TargetType="{x:Type Calendar}">
+            <Setter Property="Background" Value="#F8FAFC" />
+            <Setter Property="BorderBrush" Value="{StaticResource FieldBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CalendarDayButtonStyle" Value="{StaticResource AppointmentCalendarDayButtonStyle}" />
+            <Setter Property="CalendarButtonStyle" Value="{StaticResource AppointmentCalendarButtonStyle}" />
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+        </Style>
+
+        <Style x:Key="AppointmentDatePickerStyle" TargetType="DatePicker">
+            <Setter Property="Height" Value="46" />
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Foreground" Value="{StaticResource FieldTextBrush}" />
+            <Setter Property="Background" Value="{StaticResource FieldSurfaceBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource FieldBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CalendarStyle" Value="{StaticResource AppointmentCalendarStyle}" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DatePicker">
+                        <Grid SnapsToDevicePixels="True">
+                            <Border
+                                x:Name="DatePickerBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="7">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="42" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <DatePickerTextBox
+                                        x:Name="PART_TextBox"
+                                        Grid.Column="0"
+                                        Margin="12,0,2,0"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Focusable="True"
+                                        FontFamily="{TemplateBinding FontFamily}"
+                                        FontSize="{TemplateBinding FontSize}"
+                                        Foreground="{TemplateBinding Foreground}"
+                                        Style="{StaticResource ModernDatePickerTextBoxStyle}"
+                                        VerticalAlignment="Center" />
+
+                                    <Button
+                                        x:Name="PART_Button"
+                                        Grid.Column="1"
+                                        Margin="0,0,4,0"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Cursor="Hand"
+                                        Focusable="False"
+                                        VerticalAlignment="Center">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border
+                                                    x:Name="ButtonBorder"
+                                                    Padding="6"
+                                                    Background="Transparent"
+                                                    CornerRadius="6">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="ButtonBorder" Property="Background" Value="#EAF5FF" />
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                        <fa:IconBlock
+                                            FontSize="15"
+                                            Foreground="{StaticResource FieldAccentBrush}"
+                                            Icon="CalendarAlt" />
+                                    </Button>
+
+                                    <Popup
+                                        x:Name="PART_Popup"
+                                        AllowsTransparency="True"
+                                        Placement="Bottom"
+                                        StaysOpen="False" />
+                                </Grid>
+                            </Border>
+
+                            <Border
+                                x:Name="FocusBar"
+                                Height="2"
+                                Margin="1,0,1,1"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Bottom"
+                                Background="{StaticResource FieldAccentBrush}"
+                                CornerRadius="0,0,7,7"
+                                Opacity="0" />
+                        </Grid>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                <Setter TargetName="DatePickerBorder" Property="BorderBrush" Value="{StaticResource FieldAccentBrush}" />
+                                <Setter TargetName="FocusBar" Property="Opacity" Value="1" />
+                            </Trigger>
+
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="DatePickerBorder" Property="BorderBrush" Value="{StaticResource FieldBorderHoverBrush}" />
+                            </Trigger>
+
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.62" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style
+            x:Key="DateOfBirthDatePickerStyle"
+            BasedOn="{StaticResource AppointmentDatePickerStyle}"
+            TargetType="DatePicker">
+            <Setter Property="Height" Value="46" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="BorderBrush" Value="#64748B" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DatePicker">
+                        <Border
+                            x:Name="DatePickerBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="30" />
+                                </Grid.ColumnDefinitions>
+
+                                <DatePickerTextBox
+                                    x:Name="PART_TextBox"
+                                    Grid.Column="0"
+                                    Margin="8,0,2,0"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Focusable="True"
+                                    FontFamily="{TemplateBinding FontFamily}"
+                                    FontSize="{TemplateBinding FontSize}"
+                                    Foreground="{TemplateBinding Foreground}"
+                                    Style="{StaticResource ModernDatePickerTextBoxStyle}"
+                                    VerticalAlignment="Center" />
+
+                                <Button
+                                    x:Name="PART_Button"
+                                    Grid.Column="1"
+                                    Width="24"
+                                    Height="24"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Cursor="Hand"
+                                    Focusable="False">
+                                    <fa:IconBlock
+                                        FontSize="13"
+                                        Foreground="#475569"
+                                        Icon="CalendarAlt" />
+                                </Button>
+
+                                <Popup
+                                    x:Name="PART_Popup"
+                                    AllowsTransparency="True"
+                                    Placement="Bottom"
+                                    StaysOpen="False" />
+                            </Grid>
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                <Setter TargetName="DatePickerBorder" Property="BorderBrush" Value="{StaticResource FieldAccentBrush}" />
+                            </Trigger>
+
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="DatePickerBorder" Property="BorderBrush" Value="{StaticResource FieldBorderHoverBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="AppointmentTimePickerContainerStyle" TargetType="Border">
+            <Setter Property="Height" Value="46" />
+            <Setter Property="Background" Value="{StaticResource FieldSurfaceBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource FieldBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="7" />
+        </Style>
+
+        <Style x:Key="AppointmentTimeSegmentTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Foreground" Value="{StaticResource FieldTextBrush}" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        </Style>
+
+        <Style x:Key="AppointmentTimePeriodComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Background" Value="#F8FAFC" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Foreground" Value="{StaticResource FieldTextBrush}" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+
+        <Style x:Key="PatientLookupPopupBorderStyle" TargetType="Border">
+            <Setter Property="MaxHeight" Value="220" />
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderBrush" Value="{StaticResource FieldBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="0,0,7,7" />
+        </Style>
+
+        <Style x:Key="PatientLookupListBoxStyle" TargetType="ListBox">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+        </Style>
+
+        <Style x:Key="PatientLookupListBoxItemStyle" TargetType="ListBoxItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border
+                            x:Name="ItemBorder"
+                            Background="Transparent"
+                            BorderBrush="#EEF2F7"
+                            BorderThickness="0,0,0,1">
+                            <ContentPresenter />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="#F3F8FF" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="#EAF5FF" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="PatientLookupItemButtonStyle" TargetType="Button">
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="Transparent">
+                            <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <!--#endregion DatePicker, Time Picker, and ListBox Styles-->
+
+        <!--#region Button and ScrollBar Styles-->
         <!--  Default Modern Filled Action Button Style  -->
         <Style x:Key="SmallActionButtonStyle" TargetType="Button">
             <Setter Property="Foreground" Value="White" />
@@ -187,9 +861,15 @@
                                         <Thumb.Template>
                                             <ControlTemplate TargetType="Thumb">
                                                 <Border
-                                                    Margin="2,0"
+                                                    x:Name="ThumbBorder"
+                                                    Margin="7,0,2,0"
                                                     Background="#223357"
                                                     CornerRadius="4" />
+                                                <ControlTemplate.Triggers>
+                                                    <DataTrigger Binding="{Binding Orientation, RelativeSource={RelativeSource AncestorType=ScrollBar}}" Value="Horizontal">
+                                                    <Setter TargetName="ThumbBorder" Property="Margin" Value="0,2,0,2" />
+                                                    </DataTrigger>
+                                                </ControlTemplate.Triggers>
                                             </ControlTemplate>
                                         </Thumb.Template>
                                     </Thumb>
@@ -208,10 +888,11 @@
             <Style.Triggers>
                 <Trigger Property="Orientation" Value="Horizontal">
                     <Setter Property="Width" Value="Auto" />
-                    <Setter Property="Height" Value="5" />
+                    <Setter Property="Height" Value="3" />
                 </Trigger>
             </Style.Triggers>
         </Style>
+        <!--#endregion Button and ScrollBar Styles-->
 
         <!--#region Default Dropdown Combobox Style-->
         <SolidColorBrush x:Key="HeaderBackground" Color="#FFFFFF" />
@@ -424,6 +1105,21 @@
 
         <!--#endregion Default Dropdown Combobox Style-->
 
+        <!--#region Date of Birth Dropdown Styles-->
+        <Style
+            x:Key="DateOfBirthSegmentComboBoxStyle"
+            BasedOn="{StaticResource ExactStyleComboBox}"
+            TargetType="{x:Type ComboBox}">
+            <Setter Property="Height" Value="38" />
+            <Setter Property="MinWidth" Value="82" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Padding" Value="12,0,28,0" />
+            <Setter Property="Background" Value="#F8FAFC" />
+            <Setter Property="BorderBrush" Value="{StaticResource FieldBorderBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource FieldTextBrush}" />
+        </Style>
+        <!--#endregion Date of Birth Dropdown Styles-->
+
         <!--#region Modern Dropdown MenuItem Style-->
         <Style x:Key="ModernMoreDropdownMenuItemStyle" TargetType="{x:Type MenuItem}">
             <Setter Property="Height" Value="38" />
@@ -570,11 +1266,7 @@
         </Style>
         <!--#endregion Modern Dropdown Menu Style-->
 
-        <!--  Default PasswordBox font  -->
-        <Style TargetType="PasswordBox">
-            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
-        </Style>
-
+        <!--#region Button Defaults and Primary Styles-->
         <!--  Default Button font  -->
         <Style TargetType="Button">
             <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
@@ -655,44 +1347,180 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <!--#endregion Button Defaults and Primary Styles-->
 
 
-        <!--  Rounded password box style for login password input & Used for same style create new password  -->
-        <Style x:Key="LoginPasswordBoxStyle" TargetType="PasswordBox">
+        <!--#region PasswordBox Styles-->
+        <!--  Default PasswordBox font  -->
+        <Style TargetType="PasswordBox">
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+        </Style>
+
+        <!--  Central PasswordBox style used across login, reset, and user management screens.  -->
+        <Style x:Key="ModernPasswordBoxStyle" TargetType="PasswordBox">
             <Setter Property="Height" Value="52" />
-            <Setter Property="FontSize" Value="22" />
-            <Setter Property="Foreground" Value="#111111" />
-            <Setter Property="Background" Value="White" />
-            <Setter Property="BorderBrush" Value="#9A9A9A" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Foreground" Value="{StaticResource FieldTextBrush}" />
+            <Setter Property="Background" Value="{StaticResource FieldSurfaceBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource FieldBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Padding" Value="28,0,20,0" />
+            <Setter Property="Padding" Value="10,2,14,2" />
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="local:PasswordBoxAssist.MonitorPassword" Value="True" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="PasswordBox">
-                        <Border
-                            x:Name="PasswordBoxBorder"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="8"
-                            SnapsToDevicePixels="True">
-                            <Grid>
-                                <ScrollViewer
-                                    x:Name="PART_ContentHost"
-                                    Margin="{TemplateBinding Padding}"
-                                    VerticalAlignment="Center" />
-                            </Grid>
-                        </Border>
+                        <Grid SnapsToDevicePixels="True">
+                            <Border
+                                x:Name="PasswordBoxBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="7">
+                                <Grid Margin="{TemplateBinding Padding}">
+                                    <ScrollViewer
+                                        x:Name="PART_ContentHost"
+                                        VerticalAlignment="Center" />
+
+                                    <TextBlock
+                                        x:Name="PlaceholderText"
+                                        Margin="12,2,14,2"
+                                        VerticalAlignment="Center"
+                                        FontFamily="{TemplateBinding FontFamily}"
+                                        FontSize="{TemplateBinding FontSize}"
+                                        FontStretch="{TemplateBinding FontStretch}"
+                                        FontStyle="{TemplateBinding FontStyle}"
+                                        FontWeight="{TemplateBinding FontWeight}"
+                                        Foreground="{StaticResource FieldPlaceholderBrush}"
+                                        IsHitTestVisible="False"
+                                        Text="{TemplateBinding Tag}"
+                                        Visibility="Collapsed" />
+                                </Grid>
+                            </Border>
+
+                            <Border
+                                x:Name="FocusBar"
+                                Height="2"
+                                Margin="1,0,1,1"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Bottom"
+                                Background="{StaticResource FieldAccentBrush}"
+                                CornerRadius="0,0,7,7"
+                                Opacity="0" />
+                        </Grid>
 
                         <ControlTemplate.Triggers>
+                            <Trigger Property="local:PasswordBoxAssist.IsPasswordEmpty" Value="True">
+                                <Setter TargetName="PlaceholderText" Property="Visibility" Value="Visible" />
+                            </Trigger>
+
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="PasswordBoxBorder" Property="BorderBrush" Value="#223357" />
+                                <Setter TargetName="PasswordBoxBorder" Property="BorderBrush" Value="{StaticResource FieldBorderHoverBrush}" />
                             </Trigger>
 
                             <Trigger Property="IsKeyboardFocused" Value="True">
-                                <Setter TargetName="PasswordBoxBorder" Property="BorderBrush" Value="#223357" />
-                                <Setter TargetName="PasswordBoxBorder" Property="BorderThickness" Value="2" />
+                                <Setter TargetName="PasswordBoxBorder" Property="BorderBrush" Value="{StaticResource FieldAccentBrush}" />
+                                <Setter TargetName="FocusBar" Property="Opacity" Value="1" />
+                            </Trigger>
+
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.56" />
+                                <Setter TargetName="PasswordBoxBorder" Property="Background" Value="#F5F5F5" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style
+            x:Key="LoginPasswordBoxStyle"
+            BasedOn="{StaticResource ModernPasswordBoxStyle}"
+            TargetType="PasswordBox">
+            <Setter Property="FontSize" Value="22" />
+            <Setter Property="Padding" Value="48,2,46,2" />
+        </Style>
+
+        <Style
+            x:Key="ModernIconPasswordBoxStyle"
+            BasedOn="{StaticResource ModernPasswordBoxStyle}"
+            TargetType="PasswordBox">
+            <Setter Property="Height" Value="52" />
+            <Setter Property="FontSize" Value="22" />
+            <Setter Property="Padding" Value="48,2,46,2" />
+        </Style>
+
+        <!--  Auth PasswordBox style for login/reset fields with lock and eye icons.  -->
+        <Style x:Key="AuthIconPasswordBoxStyle" TargetType="PasswordBox">
+            <Setter Property="Height" Value="52" />
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="Foreground" Value="{StaticResource FieldTextBrush}" />
+            <Setter Property="Background" Value="{StaticResource FieldSurfaceBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource FieldBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="25,2,14,2" />
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="local:PasswordBoxAssist.MonitorPassword" Value="True" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="PasswordBox">
+                        <Grid SnapsToDevicePixels="True">
+                            <Border
+                                x:Name="PasswordBoxBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="7">
+                                <Grid Margin="{TemplateBinding Padding}">
+                                    <ScrollViewer
+                                        x:Name="PART_ContentHost"
+                                        VerticalAlignment="Center" />
+
+                                    <TextBlock
+                                        x:Name="PlaceholderText"
+                                        Margin="26,2,14,2"
+                                        VerticalAlignment="Center"
+                                        FontFamily="{TemplateBinding FontFamily}"
+                                        FontSize="{TemplateBinding FontSize}"
+                                        FontStretch="{TemplateBinding FontStretch}"
+                                        FontStyle="{TemplateBinding FontStyle}"
+                                        FontWeight="{TemplateBinding FontWeight}"
+                                        Foreground="{StaticResource FieldPlaceholderBrush}"
+                                        IsHitTestVisible="False"
+                                        Text="{TemplateBinding Tag}"
+                                        Visibility="Collapsed" />
+                                </Grid>
+                            </Border>
+
+                            <Border
+                                x:Name="FocusBar"
+                                Height="2"
+                                Margin="1,0,1,1"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Bottom"
+                                Background="{StaticResource FieldAccentBrush}"
+                                CornerRadius="0,0,7,7"
+                                Opacity="0" />
+                        </Grid>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="local:PasswordBoxAssist.IsPasswordEmpty" Value="True">
+                                <Setter TargetName="PlaceholderText" Property="Visibility" Value="Visible" />
+                            </Trigger>
+
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="PasswordBoxBorder" Property="BorderBrush" Value="{StaticResource FieldBorderHoverBrush}" />
+                            </Trigger>
+
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="PasswordBoxBorder" Property="BorderBrush" Value="{StaticResource FieldAccentBrush}" />
+                                <Setter TargetName="FocusBar" Property="Opacity" Value="1" />
+                            </Trigger>
+
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.56" />
+                                <Setter TargetName="PasswordBoxBorder" Property="Background" Value="#F5F5F5" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -700,6 +1528,15 @@
             </Setter>
         </Style>
 
+        <Style
+            x:Key="UserOverlayPasswordBoxStyle"
+            BasedOn="{StaticResource ModernPasswordBoxStyle}"
+            TargetType="PasswordBox">
+            <Setter Property="Height" Value="46" />
+        </Style>
+        <!--#endregion PasswordBox Styles-->
+
+        <!--#region Icon Button Styles-->
         <!--
             Transparent icon button style.
             Used for the eye/eye-slash password toggle.
@@ -733,51 +1570,9 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <!--#endregion Icon Button Styles-->
 
-        <!--  Rounded textbox style used when password visibility is turned on.  -->
-        <Style x:Key="VisiblePasswordTextBoxStyle" TargetType="TextBox">
-            <Setter Property="Height" Value="52" />
-            <Setter Property="FontSize" Value="22" />
-            <Setter Property="Foreground" Value="#111111" />
-            <Setter Property="Background" Value="White" />
-            <Setter Property="BorderBrush" Value="#9A9A9A" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Padding" Value="28,0,48,0" />
-            <Setter Property="VerticalContentAlignment" Value="Center" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="TextBox">
-                        <Border
-                            x:Name="TextBoxBorder"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="8"
-                            SnapsToDevicePixels="True">
-                            <Grid>
-                                <ScrollViewer
-                                    x:Name="PART_ContentHost"
-                                    Margin="{TemplateBinding Padding}"
-                                    VerticalAlignment="Center" />
-                            </Grid>
-                        </Border>
-
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="TextBoxBorder" Property="BorderBrush" Value="#223357" />
-                            </Trigger>
-
-                            <Trigger Property="IsKeyboardFocused" Value="True">
-                                <Setter TargetName="TextBoxBorder" Property="BorderBrush" Value="#223357" />
-                                <Setter TargetName="TextBoxBorder" Property="BorderThickness" Value="2" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!--#region Main dark blue used by the sidebar and primary buttons-->
+        <!--#region Shared Brushes-->
         <SolidColorBrush x:Key="SidebarBrush" Color="#223357" />
         <SolidColorBrush x:Key="SelectedMenuBrush" Color="#33FFFFFF" />
         <SolidColorBrush x:Key="AccentBlueBrush" Color="#2F98D0" />
@@ -785,8 +1580,9 @@
         <SolidColorBrush x:Key="DangerRedBrush" Color="#E53935" />
         <SolidColorBrush x:Key="CardBorderBrush" Color="#D8D8D8" />
         <SolidColorBrush x:Key="ScreenBackgroundBrush" Color="#F4F6F6" />
-        <!--#endregion-->
+        <!--#endregion Shared Brushes-->
 
+        <!--#region Layout, Sidebar, and Table Styles-->
         <!--  Shared White Dashboard/module Card Style  -->
         <Style x:Key="DashboardCardStyle" TargetType="Border">
             <Setter Property="Background" Value="White" />
@@ -858,47 +1654,6 @@
             <Setter Property="Foreground" Value="White" />
         </Style>
 
-        <!--  Shared search textbox style used in dashboard and module screens  -->
-        <Style x:Key="SearchTextBoxStyle" TargetType="TextBox">
-            <Setter Property="Height" Value="42" />
-            <Setter Property="FontSize" Value="14" />
-            <Setter Property="Foreground" Value="#111111" />
-            <Setter Property="Background" Value="White" />
-            <Setter Property="BorderBrush" Value="#D8D8D8" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Padding" Value="24,0,18,0" />
-            <Setter Property="VerticalContentAlignment" Value="Center" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="TextBox">
-                        <Border
-                            x:Name="TextBoxBorder"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="16"
-                            SnapsToDevicePixels="True">
-                            <ScrollViewer
-                                x:Name="PART_ContentHost"
-                                Margin="{TemplateBinding Padding}"
-                                VerticalAlignment="Center" />
-                        </Border>
-
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="TextBoxBorder" Property="BorderBrush" Value="#223357" />
-                            </Trigger>
-
-                            <Trigger Property="IsKeyboardFocused" Value="True">
-                                <Setter TargetName="TextBoxBorder" Property="BorderBrush" Value="#223357" />
-                                <Setter TargetName="TextBoxBorder" Property="BorderThickness" Value="2" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
         <!--  Shared table style used by Dashboard, Patients, Appointments, Billing, and Users  -->
         <Style x:Key="DashboardDataGridStyle" TargetType="DataGrid">
             <Setter Property="AutoGenerateColumns" Value="False" />
@@ -957,48 +1712,8 @@
             </Setter>
         </Style>
 
-        <!--  Shared scrollbar style for DataGrid tables  -->
-        <Style TargetType="{x:Type ScrollBar}">
-            <Setter Property="Width" Value="8" />
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type ScrollBar}">
-                        <Grid Background="Transparent">
-                            <Track
-                                x:Name="PART_Track"
-                                IsDirectionReversed="True"
-                                Orientation="{TemplateBinding Orientation}">
-                                <Track.Thumb>
-                                    <Thumb>
-                                        <Thumb.Template>
-                                            <ControlTemplate TargetType="{x:Type Thumb}">
-                                                <Border
-                                                    Margin="2,0"
-                                                    Background="#445577"
-                                                    CornerRadius="4"
-                                                    Opacity="0.6" />
-                                            </ControlTemplate>
-                                        </Thumb.Template>
-                                    </Thumb>
-                                </Track.Thumb>
-                            </Track>
-                        </Grid>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="Orientation" Value="Horizontal">
-                                <Setter TargetName="PART_Track" Property="IsDirectionReversed" Value="False" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            <Style.Triggers>
-                <Trigger Property="Orientation" Value="Horizontal">
-                    <Setter Property="Width" Value="Auto" />
-                    <Setter Property="Height" Value="8" />
-                </Trigger>
-            </Style.Triggers>
-        </Style>
+        <!--  Global scrollbar fallback: all unscoped ScrollViewer scrollbars use the app blue style.  -->
+        <Style BasedOn="{StaticResource BlueDataGridScrollBarStyle}" TargetType="{x:Type ScrollBar}" />
 
         <Style x:Key="ViewAllButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent" />
@@ -1018,50 +1733,8 @@
             </Setter>
         </Style>
 
-        <!--  Scrollbar style for main module screens only, not the sidebar  -->
-        <Style x:Key="MainScreenScrollBarStyle" TargetType="{x:Type ScrollBar}">
-
-            <Setter Property="Width" Value="10" />
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type ScrollBar}">
-                        <Grid Background="Transparent">
-                            <Track
-                                x:Name="PART_Track"
-                                IsDirectionReversed="True"
-                                Orientation="{TemplateBinding Orientation}">
-                                <Track.Thumb>
-                                    <Thumb>
-                                        <Thumb.Template>
-                                            <ControlTemplate TargetType="{x:Type Thumb}">
-                                                <Border
-                                                    x:Name="ThumbBorder"
-                                                    Margin="2,0"
-                                                    Background="#445577"
-                                                    CornerRadius="4"
-                                                    Opacity="0.6" />
-                                            </ControlTemplate>
-                                        </Thumb.Template>
-                                    </Thumb>
-                                </Track.Thumb>
-                            </Track>
-                        </Grid>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="Orientation" Value="Horizontal">
-                                <Setter TargetName="PART_Track" Property="IsDirectionReversed" Value="False" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            <Style.Triggers>
-                <Trigger Property="Orientation" Value="Horizontal">
-                    <Setter Property="Width" Value="Auto" />
-                    <Setter Property="Height" Value="8" />
-                </Trigger>
-            </Style.Triggers>
-        </Style>
+        <Style x:Key="MainScreenScrollBarStyle" BasedOn="{StaticResource BlueDataGridScrollBarStyle}" TargetType="{x:Type ScrollBar}" />
+        <!--#endregion Layout, Sidebar, and Table Styles-->
 
     </Application.Resources>
 </Application>

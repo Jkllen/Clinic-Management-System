@@ -183,6 +183,41 @@ WHERE UserId = @UserId;";
             command.ExecuteNonQuery();
         }
 
+        public void RecordEmployeePrivacyAcknowledgement(User user, string acknowledgementVersion)
+        {
+            DateTime acknowledgedAt = DateTime.Now;
+
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+UPDATE Users
+SET HasEmployeePrivacyAcknowledgement = 1,
+    EmployeePrivacyAcknowledgedAt = @EmployeePrivacyAcknowledgedAt,
+    EmployeePrivacyAcknowledgementVersion = @EmployeePrivacyAcknowledgementVersion
+WHERE UserId = @UserId;";
+
+            command.Parameters.AddWithValue("@EmployeePrivacyAcknowledgedAt", acknowledgedAt.ToString("yyyy-MM-dd HH:mm:ss"));
+            command.Parameters.AddWithValue("@EmployeePrivacyAcknowledgementVersion", acknowledgementVersion);
+            command.Parameters.AddWithValue("@UserId", user.UserId);
+
+            command.ExecuteNonQuery();
+
+            user.HasEmployeePrivacyAcknowledgement = true;
+            user.EmployeePrivacyAcknowledgedAt = acknowledgedAt;
+            user.EmployeePrivacyAcknowledgementVersion = acknowledgementVersion;
+
+            AddActivityLog(
+                user.UserId,
+                user.UserCode,
+                user.Username,
+                "Acknowledge",
+                "Security",
+                $"{user.FullName} acknowledged the employee privacy notice."
+            );
+        }
+
         #endregion
 
         #region Password Recovery
@@ -1233,7 +1268,13 @@ VALUES (
 
                 LastLoginAt = string.IsNullOrWhiteSpace(reader["LastLoginAt"].ToString())
                     ? null
-                    : DateTime.Parse(reader["LastLoginAt"].ToString()!)
+                    : DateTime.Parse(reader["LastLoginAt"].ToString()!),
+
+                HasEmployeePrivacyAcknowledgement = SafeGetNullableInt(reader, "HasEmployeePrivacyAcknowledgement") == 1,
+                EmployeePrivacyAcknowledgedAt = string.IsNullOrWhiteSpace(reader["EmployeePrivacyAcknowledgedAt"].ToString())
+                    ? null
+                    : DateTime.Parse(reader["EmployeePrivacyAcknowledgedAt"].ToString()!),
+                EmployeePrivacyAcknowledgementVersion = reader["EmployeePrivacyAcknowledgementVersion"].ToString() ?? string.Empty
             };
         }
 

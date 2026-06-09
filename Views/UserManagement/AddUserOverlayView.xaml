@@ -251,7 +251,7 @@
                                     </TextBlock>
                                     <TextBox
                                         Margin="0,8,0,0"
-                                        Style="{StaticResource AddUserOverlayTextBoxStyle}"
+                                        Style="{StaticResource UserOverlayTextBoxStyle}"
                                         Tag="Enter your first name"
                                         Text="{Binding NewUserFirstName, UpdateSourceTrigger=PropertyChanged}" />
                                 </StackPanel>
@@ -278,7 +278,7 @@
                                     </TextBlock>
                                     <TextBox
                                         Margin="0,8,0,0"
-                                        Style="{StaticResource AddUserOverlayTextBoxStyle}"
+                                        Style="{StaticResource UserOverlayTextBoxStyle}"
                                         Tag="Enter your last name"
                                         Text="{Binding NewUserLastName, UpdateSourceTrigger=PropertyChanged}" />
                                 </StackPanel>
@@ -291,7 +291,7 @@
                                     </TextBlock>
                                     <TextBox
                                         Margin="0,8,0,0"
-                                        Style="{StaticResource AddUserOverlayTextBoxStyle}"
+                                        Style="{StaticResource UserOverlayTextBoxStyle}"
                                         Tag="Enter your contact number"
                                         Text="{Binding NewUserContactNumber, UpdateSourceTrigger=PropertyChanged}" />
                                 </StackPanel>
@@ -307,7 +307,7 @@
                                         Text="Middle name" />
                                     <TextBox
                                         Margin="0,8,0,0"
-                                        Style="{StaticResource AddUserOverlayTextBoxStyle}"
+                                        Style="{StaticResource UserOverlayTextBoxStyle}"
                                         Tag="Enter your middle name"
                                         Text="{Binding NewUserMiddleName, UpdateSourceTrigger=PropertyChanged}" />
                                 </StackPanel>
@@ -415,97 +415,148 @@
                                 </Grid.ColumnDefinitions>
 
                                 <!--  Q1  -->
-                                <StackPanel Grid.Row="0" Grid.Column="0">
-                                    <TextBlock FontSize="16" Foreground="#777777">
+                                <Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="1.45*" />
+                                        <ColumnDefinition Width="32" />
+                                        <ColumnDefinition Width="1*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Row="0" Grid.Column="0" FontSize="16" Foreground="#777777">
                                         <Run Text="Security question 1:" />
                                         <Run Foreground="#E53935" Text=" *" />
                                     </TextBlock>
                                     <TextBlock
+                                        Grid.Row="1"
+                                        Grid.Column="0"
                                         Margin="0,4,0,6"
                                         FontSize="12"
                                         FontStyle="Italic"
                                         Foreground="#777777"
                                         Text="Choose a question:" />
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        Grid.Column="2"
+                                        Margin="0,4,0,6"
+                                        FontSize="12"
+                                        Foreground="#777777"
+                                        Text="Answer" />
                                     <ComboBox
+                                        Grid.Row="2"
+                                        Grid.Column="0"
                                         DisplayMemberPath="QuestionText"
                                         ItemsSource="{Binding SecurityQuestions}"
                                         SelectedItem="{Binding SelectedSecurityQuestion1, Mode=TwoWay}"
                                         Style="{StaticResource ExactStyleComboBox}"
                                         Tag="Choose a security question" />
-                                </StackPanel>
-
-                                <StackPanel
-                                    Grid.Row="0"
-                                    Grid.Column="2">
-                                    <TextBlock FontSize="16" Text=" " />
-                                    <TextBlock Margin="0,0,0,6" FontSize="12" Foreground="#777777" Text="Answer" />
                                     <TextBox
-                                        Style="{StaticResource AddUserOverlayTextBoxStyle}"
+                                        Grid.Row="2"
+                                        Grid.Column="2"
+                                        Style="{StaticResource UserOverlayTextBoxStyle}"
                                         Tag="Enter your answer"
                                         Text="{Binding SecurityAnswer1, UpdateSourceTrigger=PropertyChanged}" />
-                                </StackPanel>
+                                </Grid>
 
                                 <!--  Q2  -->
-                                <StackPanel Grid.Row="1" Grid.Column="0">
-                                    <TextBlock FontSize="16" Foreground="#777777">
+                                <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="1.45*" />
+                                        <ColumnDefinition Width="32" />
+                                        <ColumnDefinition Width="1*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Row="0" Grid.Column="0" FontSize="16" Foreground="#777777">
                                         <Run Text="Security question 2:" />
                                         <Run Foreground="#E53935" Text=" *" />
                                     </TextBlock>
                                     <TextBlock
+                                        Grid.Row="1"
+                                        Grid.Column="0"
                                         Margin="0,4,0,6"
                                         FontSize="12"
                                         FontStyle="Italic"
                                         Foreground="#777777"
                                         Text="Choose a question:" />
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        Grid.Column="2"
+                                        Margin="0,4,0,6"
+                                        FontSize="12"
+                                        Foreground="#777777"
+                                        Text="Answer" />
                                     <ComboBox
+                                        Grid.Row="2"
+                                        Grid.Column="0"
                                         DisplayMemberPath="QuestionText"
                                         ItemsSource="{Binding SecurityQuestions}"
                                         SelectedItem="{Binding SelectedSecurityQuestion2, Mode=TwoWay}"
                                         Style="{StaticResource ExactStyleComboBox}"
                                         Tag="Choose a security question" />
-                                </StackPanel>
-
-                                <StackPanel
-                                    Grid.Row="1"
-                                    Grid.Column="2">
-                                    <TextBlock FontSize="16" Text=" " />
-                                    <TextBlock Margin="0,0,0,6" FontSize="12" Foreground="#777777" Text="Answer" />
                                     <TextBox
-                                        Style="{StaticResource AddUserOverlayTextBoxStyle}"
+                                        Grid.Row="2"
+                                        Grid.Column="2"
+                                        Style="{StaticResource UserOverlayTextBoxStyle}"
                                         Tag="Enter your answer"
                                         Text="{Binding SecurityAnswer2, UpdateSourceTrigger=PropertyChanged}" />
-                                </StackPanel>
+                                </Grid>
 
                                 <!--  Q3  -->
-                                <StackPanel Grid.Row="2" Grid.Column="0">
-                                    <TextBlock FontSize="16" Foreground="#777777">
+                                <Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="1.45*" />
+                                        <ColumnDefinition Width="32" />
+                                        <ColumnDefinition Width="1*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Row="0" Grid.Column="0" FontSize="16" Foreground="#777777">
                                         <Run Text="Security question 3:" />
                                         <Run Foreground="#E53935" Text=" *" />
                                     </TextBlock>
                                     <TextBlock
+                                        Grid.Row="1"
+                                        Grid.Column="0"
                                         Margin="0,4,0,6"
                                         FontSize="12"
                                         FontStyle="Italic"
                                         Foreground="#777777"
                                         Text="Choose a question:" />
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        Grid.Column="2"
+                                        Margin="0,4,0,6"
+                                        FontSize="12"
+                                        Foreground="#777777"
+                                        Text="Answer" />
                                     <ComboBox
+                                        Grid.Row="2"
+                                        Grid.Column="0"
                                         DisplayMemberPath="QuestionText"
                                         ItemsSource="{Binding SecurityQuestions}"
                                         SelectedItem="{Binding SelectedSecurityQuestion3, Mode=TwoWay}"
                                         Style="{StaticResource ExactStyleComboBox}"
                                         Tag="Choose a security question" />
-                                </StackPanel>
-
-                                <StackPanel
-                                    Grid.Row="2"
-                                    Grid.Column="2">
-                                    <TextBlock FontSize="16" Text=" " />
-                                    <TextBlock Margin="0,0,0,6" FontSize="12" Foreground="#777777" Text="Answer" />
                                     <TextBox
-                                        Style="{StaticResource AddUserOverlayTextBoxStyle}"
+                                        Grid.Row="2"
+                                        Grid.Column="2"
+                                        Style="{StaticResource UserOverlayTextBoxStyle}"
                                         Tag="Enter your answer"
                                         Text="{Binding SecurityAnswer3, UpdateSourceTrigger=PropertyChanged}" />
-                                </StackPanel>
+                                </Grid>
                             </Grid>
                         </Grid>
 
@@ -582,38 +633,38 @@
                                     <UniformGrid Columns="2" Rows="4">
                                         <StackPanel Margin="0,0,10,14">
                                             <TextBlock Text="First name" />
-                                            <TextBox Style="{StaticResource ReadOnlyConfirmationBoxStyle}" Text="{Binding NewUserFirstName, Mode=OneWay}" />
+                                            <TextBox Style="{StaticResource UserOverlayReadOnlyTextBoxStyle}" Text="{Binding NewUserFirstName, Mode=OneWay}" />
                                         </StackPanel>
 
                                         <StackPanel Margin="0,0,0,14">
                                             <TextBlock Text="Role" />
-                                            <TextBox Style="{StaticResource ReadOnlyConfirmationBoxStyle}" Text="{Binding NewUserRole, Mode=OneWay}" />
+                                            <TextBox Style="{StaticResource UserOverlayReadOnlyTextBoxStyle}" Text="{Binding NewUserRole, Mode=OneWay}" />
                                         </StackPanel>
 
                                         <StackPanel Margin="0,0,10,14">
                                             <TextBlock Text="Last name" />
-                                            <TextBox Style="{StaticResource ReadOnlyConfirmationBoxStyle}" Text="{Binding NewUserLastName, Mode=OneWay}" />
+                                            <TextBox Style="{StaticResource UserOverlayReadOnlyTextBoxStyle}" Text="{Binding NewUserLastName, Mode=OneWay}" />
                                         </StackPanel>
 
                                         <StackPanel Margin="0,0,0,14">
                                             <TextBlock Text="Contact number" />
-                                            <TextBox Style="{StaticResource ReadOnlyConfirmationBoxStyle}" Text="{Binding NewUserContactNumber, Mode=OneWay}" />
+                                            <TextBox Style="{StaticResource UserOverlayReadOnlyTextBoxStyle}" Text="{Binding NewUserContactNumber, Mode=OneWay}" />
                                         </StackPanel>
 
                                         <StackPanel Margin="0,0,10,14">
                                             <TextBlock Text="Middle name" />
-                                            <TextBox Style="{StaticResource ReadOnlyConfirmationBoxStyle}" Text="{Binding NewUserMiddleName, Mode=OneWay}" />
+                                            <TextBox Style="{StaticResource UserOverlayReadOnlyTextBoxStyle}" Text="{Binding NewUserMiddleName, Mode=OneWay}" />
                                         </StackPanel>
 
                                         <StackPanel Margin="0,0,0,14">
                                             <TextBlock Text="Username" />
-                                            <TextBox Style="{StaticResource ReadOnlyConfirmationBoxStyle}" Text="{Binding GeneratedUsername, Mode=OneWay}" />
+                                            <TextBox Style="{StaticResource UserOverlayReadOnlyTextBoxStyle}" Text="{Binding GeneratedUsername, Mode=OneWay}" />
                                         </StackPanel>
 
                                         <StackPanel Margin="0,0,10,14">
                                             <TextBlock Text="Password" />
                                             <Grid>
-                                                <TextBox Style="{StaticResource ReadOnlyConfirmationBoxStyle}" Text="{Binding ConfirmationPasswordDisplay, Mode=OneWay}" />
+                                                <TextBox Style="{StaticResource UserOverlayReadOnlyTextBoxStyle}" Text="{Binding ConfirmationPasswordDisplay, Mode=OneWay}" />
 
                                                 <Button
                                                     Width="32"
@@ -649,7 +700,7 @@
                                         Width="190"
                                         Margin="16,6,0,36"
                                         HorizontalAlignment="Left"
-                                        Style="{StaticResource ReadOnlyConfirmationBoxStyle}"
+                                        Style="{StaticResource UserOverlayReadOnlyTextBoxStyle}"
                                         Text="{Binding SecurityAnswer1}" />
 
                                     <TextBlock
@@ -660,7 +711,7 @@
                                         Width="190"
                                         Margin="16,6,0,36"
                                         HorizontalAlignment="Left"
-                                        Style="{StaticResource ReadOnlyConfirmationBoxStyle}"
+                                        Style="{StaticResource UserOverlayReadOnlyTextBoxStyle}"
                                         Text="{Binding SecurityAnswer2}" />
 
                                     <TextBlock
@@ -671,7 +722,7 @@
                                         Width="190"
                                         Margin="16,6,0,0"
                                         HorizontalAlignment="Left"
-                                        Style="{StaticResource ReadOnlyConfirmationBoxStyle}"
+                                        Style="{StaticResource UserOverlayReadOnlyTextBoxStyle}"
                                         Text="{Binding SecurityAnswer3}" />
                                 </StackPanel>
                             </Grid>
@@ -773,7 +824,7 @@
                                         Height="42"
                                         Padding="12,0,88,0"
                                         IsReadOnly="True"
-                                        Style="{StaticResource ModernTextBoxStyle}"
+                                        Style="{StaticResource UserOverlayTextBoxStyle}"
                                         Text="{Binding NewUserPassword, Mode=OneWay}" />
 
                                     <Button
@@ -907,7 +958,7 @@
                                             Height="38"
                                             Padding="12,0,88,0"
                                             IsReadOnly="True"
-                                            Style="{StaticResource ModernTextBoxStyle}"
+                                            Style="{StaticResource UserOverlayTextBoxStyle}"
                                             Text="{Binding CreatedTemporaryPassword, Mode=OneWay}" />
 
                                         <Button
@@ -961,3 +1012,4 @@
             </Border>
         </Grid>
 </UserControl>
+

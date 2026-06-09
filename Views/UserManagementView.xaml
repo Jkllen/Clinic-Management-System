@@ -299,7 +299,7 @@
                     <TextBlock
                         Margin="51,0,0,0"
                         VerticalAlignment="Center"
-                        FontSize="20"
+                        FontSize="18"
                         Foreground="#8A8A8A"
                         IsHitTestVisible="False"
                         Text="Search User">
@@ -374,8 +374,8 @@
 
                         <TextBlock
                             VerticalAlignment="Center"
-                            FontSize="16"
-                            FontWeight="Bold"
+                            FontSize="14"
+                            FontWeight="SemiBold"
                             Foreground="White"
                             Text="Add New User" />
                     </StackPanel>

@@ -19,95 +19,22 @@
         <Setter Property="Margin" Value="2,0,0,6"/>
     </Style>
 
-    <!-- TextBox style for Add/Update Patient overlay fields -->
-    <Style x:Key="PatientOverlayTextBoxStyle" TargetType="TextBox">
+    <!-- TextBox style for Add/Update Patient overlay fields. Core field design lives in App.xaml. -->
+    <Style
+        x:Key="PatientOverlayTextBoxStyle"
+        BasedOn="{StaticResource ModernTextBoxStyle}"
+        TargetType="TextBox">
         <Setter Property="Height" Value="46"/>
         <Setter Property="FontSize" Value="15"/>
-        <Setter Property="Foreground" Value="#111111"/>
-        <Setter Property="Background" Value="White"/>
-        <Setter Property="BorderBrush" Value="#D8D8D8"/>
-        <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="Padding" Value="16,0,16,0"/>
-        <Setter Property="VerticalContentAlignment" Value="Center"/>
-        <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
-
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="TextBox">
-                    <Border
-                        x:Name="TextBoxBorder"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="10">
-
-                        <Grid>
-                            <ScrollViewer
-                                x:Name="PART_ContentHost"
-                                Margin="{TemplateBinding Padding}"
-                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-
-                            <TextBlock
-                                Margin="16,0,16,0"
-                                VerticalAlignment="Center"
-                                Foreground="#8A8A8A"
-                                IsHitTestVisible="False"
-                                Text="{TemplateBinding Tag}">
-
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-
-                                        <Style.Triggers>
-                                            <!-- Show placeholder only when empty -->
-                                            <DataTrigger
-                                                Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}"
-                                                Value="">
-                                                <Setter Property="Visibility" Value="Visible"/>
-                                            </DataTrigger>
-
-                                            <DataTrigger
-                                                Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}"
-                                                Value="{x:Null}">
-                                                <Setter Property="Visibility" Value="Visible"/>
-                                            </DataTrigger>
-
-                                            <!-- Hide placeholder when field is focused -->
-                                            <DataTrigger
-                                                Binding="{Binding IsKeyboardFocused, RelativeSource={RelativeSource TemplatedParent}}"
-                                                Value="True">
-                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
-                        </Grid>
-                    </Border>
-
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="TextBoxBorder" Property="BorderBrush" Value="#223357"/>
-                        </Trigger>
-
-                        <Trigger Property="IsKeyboardFocused" Value="True">
-                            <Setter TargetName="TextBoxBorder" Property="BorderBrush" Value="#223357"/>
-                            <Setter TargetName="TextBoxBorder" Property="BorderThickness" Value="2"/>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
     </Style>
 
     <!-- Text area style for patient history fields -->
-    <Style x:Key="PatientOverlayTextAreaStyle" TargetType="TextBox" BasedOn="{StaticResource PatientOverlayTextBoxStyle}">
+    <Style
+        x:Key="PatientOverlayTextAreaStyle"
+        TargetType="TextBox"
+        BasedOn="{StaticResource ModernTextAreaStyle}">
         <Setter Property="Height" Value="90"/>
-        <Setter Property="AcceptsReturn" Value="True"/>
-        <Setter Property="TextWrapping" Value="Wrap"/>
-        <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
-        <Setter Property="VerticalContentAlignment" Value="Top"/>
-        <Setter Property="Padding" Value="16,12,16,12"/>
+        <Setter Property="FontSize" Value="15"/>
     </Style>
 
     <!-- ComboBox style for Add/Update Patient overlay fields -->
@@ -211,6 +138,10 @@
                                 CornerRadius="10">
 
                                 <ScrollViewer>
+                                    <ScrollViewer.Resources>
+                                        <Style BasedOn="{StaticResource BlueDataGridScrollBarStyle}" TargetType="{x:Type ScrollBar}" />
+                                    </ScrollViewer.Resources>
+
                                     <ItemsPresenter/>
                                 </ScrollViewer>
                             </Border>

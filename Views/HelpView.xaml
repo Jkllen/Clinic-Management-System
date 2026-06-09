@@ -338,9 +338,12 @@
                             <!-- #region Topics List -->
                             <ScrollViewer
                                 Grid.Row="1"
-                                Style="{x:Null}"
                                 HorizontalScrollBarVisibility="Disabled"
                                 VerticalScrollBarVisibility="Auto">
+                                <ScrollViewer.Resources>
+                                    <Style BasedOn="{StaticResource BlueDataGridScrollBarStyle}" TargetType="{x:Type ScrollBar}" />
+                                </ScrollViewer.Resources>
+
                                 <ItemsControl ItemsSource="{Binding FilteredManualTopics}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
@@ -468,9 +471,12 @@
                             <!-- #region FAQ Accordion -->
                             <ScrollViewer
                                 Grid.Row="1"
-                                Style="{x:Null}"
                                 HorizontalScrollBarVisibility="Disabled"
                                 VerticalScrollBarVisibility="Auto">
+                                <ScrollViewer.Resources>
+                                    <Style BasedOn="{StaticResource BlueDataGridScrollBarStyle}" TargetType="{x:Type ScrollBar}" />
+                                </ScrollViewer.Resources>
+
                                 <ItemsControl ItemsSource="{Binding FilteredFaqs}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>

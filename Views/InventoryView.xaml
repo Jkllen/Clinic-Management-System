@@ -130,96 +130,14 @@
             </Setter>
         </Style>
 
-        <!--  Blue scrollbar style for DataGrid  -->
-        <Style x:Key="BlueDataGridScrollBarStyle" TargetType="{x:Type ScrollBar}">
-            <Setter Property="Background" Value="#ffffff" />
-            <Setter Property="Width" Value="Auto" />
-            <Setter Property="Height" Value="Auto" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type ScrollBar}">
-                        <Grid Background="{TemplateBinding Background}">
-                            <Track x:Name="PART_Track" IsDirectionReversed="True">
-                                <Track.Thumb>
-                                    <Thumb>
-                                        <Thumb.Template>
-                                            <ControlTemplate TargetType="Thumb">
-                                                <Border
-                                                    Margin="2"
-                                                    Background="#223357"
-                                                    CornerRadius="6" />
-                                            </ControlTemplate>
-                                        </Thumb.Template>
-                                    </Thumb>
-                                </Track.Thumb>
-                            </Track>
-                        </Grid>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="Orientation" Value="Horizontal">
-                                <Setter TargetName="PART_Track" Property="IsDirectionReversed" Value="False" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
         <!--  Overlay TextBox style (Add/Edit Item modal)  -->
-        <Style x:Key="InventoryOverlayTextBoxStyle" TargetType="TextBox">
+        <Style
+            x:Key="InventoryOverlayTextBoxStyle"
+            BasedOn="{StaticResource ModernTextBoxStyle}"
+            TargetType="TextBox">
             <Setter Property="Height" Value="46" />
             <Setter Property="FontSize" Value="14" />
-            <Setter Property="Foreground" Value="#111111" />
-            <Setter Property="Background" Value="#FFFDFD" />
-            <Setter Property="BorderBrush" Value="#C8DCF0" />
-            <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Padding" Value="7.5,0,16,0" />
-            <Setter Property="VerticalContentAlignment" Value="Center" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="TextBox">
-                        <Border
-                            x:Name="TextBoxBorder"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="14">
-                            <Grid>
-                                <ScrollViewer
-                                    x:Name="PART_ContentHost"
-                                    Margin="{TemplateBinding Padding}"
-                                    VerticalAlignment="Center" />
-                                <TextBlock
-                                    Margin="16,0,16,0"
-                                    VerticalAlignment="Center"
-                                    FontSize="{TemplateBinding FontSize}"
-                                    Foreground="#A0A0A0"
-                                    IsHitTestVisible="False"
-                                    Text="{TemplateBinding Tag}">
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Visibility" Value="Collapsed" />
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value="">
-                                                    <Setter Property="Visibility" Value="Visible" />
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Null}">
-                                                    <Setter Property="Visibility" Value="Visible" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
-                            </Grid>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsKeyboardFocused" Value="True">
-                                <Setter TargetName="TextBoxBorder" Property="BorderBrush" Value="#223357" />
-                                <Setter TargetName="TextBoxBorder" Property="BorderThickness" Value="2" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
         </Style>
 
         <!--  Overlay TextBox style with ₱ prefix (Unit Price field)  -->
@@ -2020,53 +1938,12 @@
                             <!--  Notes (optional)  -->
                             <StackPanel Margin="0,0,0,4" Visibility="{Binding EditIsAddMode, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Notes (optional) :" />
-                                <Border BorderBrush="#C8DCF0" BorderThickness="1" CornerRadius="10">
-                                    <TextBox
-                                        Height="90"
-                                        Padding="12,8"
-                                        AcceptsReturn="True"
-                                        Background="#FFFDFD"
-                                        BorderThickness="0"
-                                        FontSize="13"
-                                        Foreground="#111111"
-                                        Tag="Add any additional notes here..."
-                                        Text="{Binding EditNotes, UpdateSourceTrigger=PropertyChanged}"
-                                        TextWrapping="Wrap"
-                                        VerticalScrollBarVisibility="Auto">
-                                        <TextBox.Style>
-                                            <Style TargetType="TextBox">
-                                                <Setter Property="Template">
-                                                    <Setter.Value>
-                                                        <ControlTemplate TargetType="TextBox">
-                                                            <Border x:Name="NotesBorder" Background="{TemplateBinding Background}" BorderBrush="Transparent" BorderThickness="0" CornerRadius="10">
-                                                                <Grid>
-                                                                    <ScrollViewer x:Name="PART_ContentHost" Margin="12,8,12,8" />
-                                                                    <TextBlock Margin="12,8,12,8" VerticalAlignment="Top" FontSize="{TemplateBinding FontSize}" Foreground="#A0A0A0" IsHitTestVisible="False" Text="{TemplateBinding Tag}" TextWrapping="Wrap">
-                                                                        <TextBlock.Style>
-                                                                            <Style TargetType="TextBlock">
-                                                                                <Setter Property="Visibility" Value="Collapsed" />
-                                                                                <Style.Triggers>
-                                                                                    <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value=""><Setter Property="Visibility" Value="Visible" /></DataTrigger>
-                                                                                    <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Null}"><Setter Property="Visibility" Value="Visible" /></DataTrigger>
-                                                                                </Style.Triggers>
-                                                                            </Style>
-                                                                        </TextBlock.Style>
-                                                                    </TextBlock>
-                                                                </Grid>
-                                                            </Border>
-                                                            <ControlTemplate.Triggers>
-                                                                <Trigger Property="IsKeyboardFocused" Value="True">
-                                                                    <Setter TargetName="NotesBorder" Property="BorderBrush" Value="#223357" />
-                                                                    <Setter TargetName="NotesBorder" Property="BorderThickness" Value="2" />
-                                                                </Trigger>
-                                                            </ControlTemplate.Triggers>
-                                                        </ControlTemplate>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </Style>
-                                        </TextBox.Style>
-                                    </TextBox>
-                                </Border>
+                                <TextBox
+                                    Height="90"
+                                    FontSize="13"
+                                    Style="{StaticResource ModernTextAreaStyle}"
+                                    Tag="Add any additional notes here..."
+                                    Text="{Binding EditNotes, UpdateSourceTrigger=PropertyChanged}" />
                             </StackPanel>
 
                             <!--  Update modal only: Low Stock Threshold, then Notes full-width below  -->
@@ -2092,9 +1969,12 @@
                                 <!--  Notes (optional) — full-width row below  -->
                                 <StackPanel>
                                     <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Notes (optional) :" />
-                                    <Border Background="#FFFDFD" BorderBrush="#C8DCF0" BorderThickness="1" CornerRadius="10">
-                                        <TextBox Height="90" Padding="12,8" AcceptsReturn="True" Background="Transparent" BorderThickness="0" FontSize="13" Foreground="#111111" Text="{Binding EditNotes, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" />
-                                    </Border>
+                                    <TextBox
+                                        Height="90"
+                                        FontSize="13"
+                                        Style="{StaticResource ModernTextAreaStyle}"
+                                        Tag="Add any additional notes here..."
+                                        Text="{Binding EditNotes, UpdateSourceTrigger=PropertyChanged}" />
                                 </StackPanel>
                             </StackPanel>
 
@@ -2393,53 +2273,12 @@
                             <!--  Notes (optional)  -->
                             <StackPanel Margin="0,0,0,4">
                                 <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Notes (optional) :" />
-                                <Border BorderBrush="#C8DCF0" BorderThickness="1" CornerRadius="10">
-                                    <TextBox
-                                        Height="100"
-                                        Padding="12,8"
-                                        AcceptsReturn="True"
-                                        Background="#FFFDFD"
-                                        BorderThickness="0"
-                                        FontSize="13"
-                                        Foreground="#111111"
-                                        Tag="Add additional notes..."
-                                        Text="{Binding RestockNotes, UpdateSourceTrigger=PropertyChanged}"
-                                        TextWrapping="Wrap"
-                                        VerticalScrollBarVisibility="Auto">
-                                        <TextBox.Style>
-                                            <Style TargetType="TextBox">
-                                                <Setter Property="Template">
-                                                    <Setter.Value>
-                                                        <ControlTemplate TargetType="TextBox">
-                                                            <Border x:Name="NotesBorder" Background="{TemplateBinding Background}" BorderBrush="Transparent" BorderThickness="0" CornerRadius="10">
-                                                                <Grid>
-                                                                    <ScrollViewer x:Name="PART_ContentHost" Margin="12,8,12,8" />
-                                                                    <TextBlock Margin="24,16,12,12" VerticalAlignment="Top" FontSize="{TemplateBinding FontSize}" Foreground="#A0A0A0" IsHitTestVisible="False" Text="{TemplateBinding Tag}" TextWrapping="Wrap">
-                                                                        <TextBlock.Style>
-                                                                            <Style TargetType="TextBlock">
-                                                                                <Setter Property="Visibility" Value="Collapsed" />
-                                                                                <Style.Triggers>
-                                                                                    <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value=""><Setter Property="Visibility" Value="Visible" /></DataTrigger>
-                                                                                    <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Null}"><Setter Property="Visibility" Value="Visible" /></DataTrigger>
-                                                                                </Style.Triggers>
-                                                                            </Style>
-                                                                        </TextBlock.Style>
-                                                                    </TextBlock>
-                                                                </Grid>
-                                                            </Border>
-                                                            <ControlTemplate.Triggers>
-                                                                <Trigger Property="IsKeyboardFocused" Value="True">
-                                                                    <Setter TargetName="NotesBorder" Property="BorderBrush" Value="#223357" />
-                                                                    <Setter TargetName="NotesBorder" Property="BorderThickness" Value="2" />
-                                                                </Trigger>
-                                                            </ControlTemplate.Triggers>
-                                                        </ControlTemplate>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </Style>
-                                        </TextBox.Style>
-                                    </TextBox>
-                                </Border>
+                                <TextBox
+                                    Height="100"
+                                    FontSize="13"
+                                    Style="{StaticResource ModernTextAreaStyle}"
+                                    Tag="Add additional notes..."
+                                    Text="{Binding RestockNotes, UpdateSourceTrigger=PropertyChanged}" />
                             </StackPanel>
 
                         </StackPanel>
@@ -2668,53 +2507,12 @@
                             <!--  Notes (optional)  -->
                             <StackPanel Margin="0,0,0,4">
                                 <TextBlock Margin="4,0,0,5" FontSize="13" FontWeight="SemiBold" Text="Notes (optional) :" />
-                                <Border BorderBrush="#C8DCF0" BorderThickness="1" CornerRadius="10">
-                                    <TextBox
-                                        Height="100"
-                                        Padding="12,8"
-                                        AcceptsReturn="True"
-                                        Background="#FFFDFD"
-                                        BorderThickness="0"
-                                        FontSize="13"
-                                        Foreground="#111111"
-                                        Tag="Add additional notes..."
-                                        Text="{Binding UsageNotes, UpdateSourceTrigger=PropertyChanged}"
-                                        TextWrapping="Wrap"
-                                        VerticalScrollBarVisibility="Auto">
-                                        <TextBox.Style>
-                                            <Style TargetType="TextBox">
-                                                <Setter Property="Template">
-                                                    <Setter.Value>
-                                                        <ControlTemplate TargetType="TextBox">
-                                                            <Border x:Name="NotesBorder" Background="{TemplateBinding Background}" BorderBrush="Transparent" BorderThickness="0" CornerRadius="10">
-                                                                <Grid>
-                                                                    <ScrollViewer x:Name="PART_ContentHost" Margin="12,8,12,8" />
-                                                                    <TextBlock Margin="24,16,12,12" VerticalAlignment="Top" FontSize="{TemplateBinding FontSize}" Foreground="#A0A0A0" IsHitTestVisible="False" Text="{TemplateBinding Tag}" TextWrapping="Wrap">
-                                                                        <TextBlock.Style>
-                                                                            <Style TargetType="TextBlock">
-                                                                                <Setter Property="Visibility" Value="Collapsed" />
-                                                                                <Style.Triggers>
-                                                                                    <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value=""><Setter Property="Visibility" Value="Visible" /></DataTrigger>
-                                                                                    <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Null}"><Setter Property="Visibility" Value="Visible" /></DataTrigger>
-                                                                                </Style.Triggers>
-                                                                            </Style>
-                                                                        </TextBlock.Style>
-                                                                    </TextBlock>
-                                                                </Grid>
-                                                            </Border>
-                                                            <ControlTemplate.Triggers>
-                                                                <Trigger Property="IsKeyboardFocused" Value="True">
-                                                                    <Setter TargetName="NotesBorder" Property="BorderBrush" Value="#223357" />
-                                                                    <Setter TargetName="NotesBorder" Property="BorderThickness" Value="2" />
-                                                                </Trigger>
-                                                            </ControlTemplate.Triggers>
-                                                        </ControlTemplate>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </Style>
-                                        </TextBox.Style>
-                                    </TextBox>
-                                </Border>
+                                <TextBox
+                                    Height="100"
+                                    FontSize="13"
+                                    Style="{StaticResource ModernTextAreaStyle}"
+                                    Tag="Add additional notes..."
+                                    Text="{Binding UsageNotes, UpdateSourceTrigger=PropertyChanged}" />
                             </StackPanel>
 
                         </StackPanel>

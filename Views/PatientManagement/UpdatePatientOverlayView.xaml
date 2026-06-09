@@ -72,8 +72,8 @@
                 <!-- Personal Information -->
                 <TextBlock
                     Margin="0,0,0,12"
-                    FontSize="18"
-                    FontWeight="Bold"
+                    FontSize="16"
+                    FontWeight="SemiBold"
                     Text="Personal Information" />
 
                 <Grid>
@@ -97,7 +97,10 @@
                     <StackPanel Grid.Row="0" Grid.Column="0">
                         <TextBlock
                             Style="{StaticResource PatientOverlayFieldLabelStyle}"
-                            Text="First Name *" />
+                            >
+                                <Run Text="First Name" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
 
                         <TextBox
                             Style="{StaticResource PatientOverlayTextBoxStyle}"
@@ -121,7 +124,10 @@
                     <StackPanel Grid.Row="2" Grid.Column="0">
                         <TextBlock
                             Style="{StaticResource PatientOverlayFieldLabelStyle}"
-                            Text="Last Name *" />
+                            >
+                                <Run Text="Last Name" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
 
                         <TextBox
                             Style="{StaticResource PatientOverlayTextBoxStyle}"
@@ -133,7 +139,10 @@
                     <StackPanel Grid.Row="2" Grid.Column="2">
                         <TextBlock
                             Style="{StaticResource PatientOverlayFieldLabelStyle}"
-                            Text="Contact Number *" />
+                            >
+                                <Run Text="Contact Number" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
 
                         <TextBox
                             MaxLength="11"
@@ -146,18 +155,51 @@
                     <StackPanel Grid.Row="4" Grid.Column="0">
                         <TextBlock
                             Style="{StaticResource PatientOverlayFieldLabelStyle}"
-                            Text="Date of Birth *" />
+                            >
+                                <Run Text="Date of Birth" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
 
-                        <DatePicker
-                            Height="46"
-                            SelectedDate="{Binding FormDateOfBirth, Mode=TwoWay}" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="0.72*" />
+                                <ColumnDefinition Width="10" />
+                                <ColumnDefinition Width="1.35*" />
+                                <ColumnDefinition Width="10" />
+                                <ColumnDefinition Width="0.92*" />
+                            </Grid.ColumnDefinitions>
+
+                            <ComboBox
+                                Grid.Column="0"
+                                ItemsSource="{Binding BirthDayOptions}"
+                                SelectedItem="{Binding SelectedBirthDay, Mode=TwoWay}"
+                                Style="{StaticResource DateOfBirthSegmentComboBoxStyle}"
+                                Tag="Day" />
+
+                            <ComboBox
+                                Grid.Column="2"
+                                ItemsSource="{Binding BirthMonthOptions}"
+                                SelectedItem="{Binding SelectedBirthMonth, Mode=TwoWay}"
+                                Style="{StaticResource DateOfBirthSegmentComboBoxStyle}"
+                                Tag="Month" />
+
+                            <ComboBox
+                                Grid.Column="4"
+                                ItemsSource="{Binding BirthYearOptions}"
+                                SelectedItem="{Binding SelectedBirthYear, Mode=TwoWay}"
+                                Style="{StaticResource DateOfBirthSegmentComboBoxStyle}"
+                                Tag="Year" />
+                        </Grid>
                     </StackPanel>
 
                     <!-- Gender -->
                     <StackPanel Grid.Row="4" Grid.Column="2">
                         <TextBlock
                             Style="{StaticResource PatientOverlayFieldLabelStyle}"
-                            Text="Gender *" />
+                            >
+                                <Run Text="Gender" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
 
                         <ComboBox
                             ItemsSource="{Binding GenderOptions}"
@@ -210,8 +252,8 @@
 
                 <TextBlock
                     Margin="0,28,0,12"
-                    FontSize="18"
-                    FontWeight="Bold"
+                    FontSize="16"
+                    FontWeight="SemiBold"
                     Text="Data Privacy Consent" />
 
                 <Border
@@ -228,10 +270,13 @@
 
                         <StackPanel Grid.Column="0">
                             <CheckBox
-                                Content="Patient has reviewed and agreed to the Data Privacy Consent Form *"
                                 FontSize="15"
-                                FontWeight="SemiBold"
-                                IsChecked="{Binding FormHasDataPrivacyConsent}" />
+                                IsChecked="{Binding FormHasDataPrivacyConsent}">
+                                <TextBlock FontWeight="SemiBold">
+                                    <Run Text="Staff confirmed data privacy consent or authorization was recorded" />
+                                    <Run Foreground="#E53935" Text=" *" />
+                                </TextBlock>
+                            </CheckBox>
 
                             <TextBlock
                                 Margin="28,6,0,0"
@@ -256,8 +301,8 @@
                 <!-- Medical Background -->
                 <TextBlock
                     Margin="0,28,0,12"
-                    FontSize="18"
-                    FontWeight="Bold"
+                    FontSize="16"
+                    FontWeight="SemiBold"
                     Text="Medical Background" />
 
                 <StackPanel Margin="0,0,0,14">
@@ -321,8 +366,8 @@
                 <!-- Initial Visit -->
                 <TextBlock
                     Margin="0,28,0,12"
-                    FontSize="18"
-                    FontWeight="Bold"
+                    FontSize="16"
+                    FontWeight="SemiBold"
                     Text="Initial Visit Summary" />
 
                 <TextBlock
@@ -360,7 +405,10 @@
 
                     <TextBlock
                         Style="{StaticResource PatientOverlayFieldLabelStyle}"
-                        Text="Other Treatment / Service *" />
+                        >
+                                <Run Text="Other Treatment / Service" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
 
                     <TextBox
                         Style="{StaticResource PatientOverlayTextBoxStyle}"
@@ -382,7 +430,7 @@
                         Command="{Binding CancelUpdatePatientCommand}"
                         Content="Cancel"
                         Foreground="White"
-                        Style="{StaticResource SecondaryButtonStyle}" />
+                        Style="{StaticResource OutlineActionButtonStyle}" />
 
                     <Button
                         Width="160"
@@ -390,11 +438,12 @@
                         Background="#073C98"
                         Command="{Binding SaveUpdatedPatientCommand}"
                         Foreground="White"
-                        Style="{StaticResource SecondaryButtonStyle}">
+                        Style="{StaticResource SmallActionButtonStyle}">
 
                         <StackPanel Orientation="Horizontal">
                             <fa:IconBlock
                                 Margin="0,0,8,0"
+                                FontSize="20"
                                 VerticalAlignment="Center"
                                 Foreground="White"
                                 Icon="Save" />
@@ -479,7 +528,7 @@
                         FontSize="20"
                         FontWeight="Bold"
                         Foreground="#111111"
-                        Text="Data Privacy Consent Form" />
+                        Text="Data Privacy Consent Record" />
 
                     <Border
                         Grid.Row="2"
@@ -489,6 +538,10 @@
                         BorderThickness="1"
                         CornerRadius="8">
                         <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <ScrollViewer.Resources>
+                                <Style BasedOn="{StaticResource BlueDataGridScrollBarStyle}" TargetType="{x:Type ScrollBar}" />
+                            </ScrollViewer.Resources>
+
                             <TextBlock
                                 FontSize="14"
                                 Foreground="#333333"
@@ -517,7 +570,7 @@
                             Height="40"
                             Background="#073C98"
                             Command="{Binding AcceptDataPrivacyConsentCommand}"
-                            Content="Accept Consent"
+                            Content="Record Consent"
                             Foreground="White"
                             Style="{StaticResource SecondaryButtonStyle}" />
                     </StackPanel>

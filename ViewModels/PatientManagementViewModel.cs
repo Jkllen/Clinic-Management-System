@@ -4,6 +4,7 @@ using CruzNeryClinic.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -48,6 +49,10 @@ namespace CruzNeryClinic.ViewModels
         private string formLastName = string.Empty;
         private string formPhoneNumber = string.Empty;
         private DateTime? formDateOfBirth = DateTime.Today;
+        private int? selectedBirthDay;
+        private string selectedBirthMonth = string.Empty;
+        private int? selectedBirthYear;
+        private bool isSyncingDateOfBirthParts;
         private string formGender = string.Empty;
         private bool formIsPwd;
         private bool formIsSeniorCitizen;
@@ -86,13 +91,15 @@ namespace CruzNeryClinic.ViewModels
         private int historyTreatmentCurrentPage = 1;
         private int historyTreatmentTotalPages = 1;
         private const int HistoryTreatmentPageSize = 3;
-        private const string DataPrivacyConsentVersion = "CNDC-DPA-2026-01";
+        private const string DataPrivacyConsentVersion = "CNDC-DPA-2026-02";
         private const string DataPrivacyConsentBody =
-            "CRUZ-NERY DENTAL CLINIC DATA PRIVACY CONSENT FORM\n\n" +
-            "By signing or agreeing to this consent, the patient or authorized representative allows Cruz-Nery Dental Clinic to collect, use, store, and process personal information, contact details, dental and medical history, treatment records, appointment records, billing records, and related documents for legitimate clinic purposes.\n\n" +
+            "CRUZ-NERY DENTAL CLINIC DATA PRIVACY NOTICE AND CONSENT RECORD\n\n" +
+            "This record is completed by authorized clinic staff because the system is for internal clinic use only. Patients do not directly access this application.\n\n" +
+            "By giving consent through the clinic's registration or update process, the patient or authorized representative allows Cruz-Nery Dental Clinic to collect, use, store, and process personal information, contact details, dental and medical history, treatment records, appointment records, billing records, and related documents for legitimate clinic purposes.\n\n" +
             "The clinic may use this information to provide dental care, manage appointments, document treatments, prepare invoices and receipts, contact the patient for follow-ups, comply with legal and regulatory requirements, and maintain clinic records.\n\n" +
-            "Patient records will be handled confidentially and accessed only by authorized clinic personnel. The patient may request correction of inaccurate information and may ask the clinic about how their data is used, subject to legal and clinic record-retention requirements.\n\n" +
-            "The patient confirms that the information provided is true and that the clinic explained why the data is needed before the record is saved.";
+            "The system also stores and processes authorized staff user information, such as account details, roles, access permissions, and system activity records, for authentication, authorization, audit trail, security monitoring, and clinic accountability.\n\n" +
+            "Patient and staff records will be handled confidentially and accessed only by authorized clinic personnel according to each user's role. Patients and staff may request correction of inaccurate information and may ask the clinic about how their data is used, subject to legal, security, and clinic record-retention requirements.\n\n" +
+            "The staff member saving this record confirms that the patient or authorized representative was informed why the data is needed, that consent or authorization was obtained where required, and that the information entered is based on the details provided to the clinic.";
 
         #endregion
 
@@ -131,6 +138,16 @@ namespace CruzNeryClinic.ViewModels
                 "Other"
             };
 
+            BirthDayOptions = new ObservableCollection<int>();
+            BirthMonthOptions = new ObservableCollection<string>(
+                CultureInfo.CurrentCulture.DateTimeFormat.MonthNames
+                    .Where(month => !string.IsNullOrWhiteSpace(month))
+            );
+            BirthYearOptions = new ObservableCollection<int>(
+                Enumerable.Range(DateTime.Today.Year - 120, 121).Reverse()
+            );
+            SyncDateOfBirthPartsFromDate();
+
             LoadServiceOptions();
 
             AddNewPatientCommand = new RelayCommand(OpenAddPatientOverlay);
@@ -167,6 +184,12 @@ namespace CruzNeryClinic.ViewModels
         public ObservableCollection<string> SortOptions { get; }
 
         public ObservableCollection<string> GenderOptions { get; }
+
+        public ObservableCollection<int> BirthDayOptions { get; }
+
+        public ObservableCollection<string> BirthMonthOptions { get; }
+
+        public ObservableCollection<int> BirthYearOptions { get; }
 
         public ObservableCollection<ServiceItem> ServiceOptions { get; } = new();
 
@@ -325,8 +348,39 @@ namespace CruzNeryClinic.ViewModels
             {
                 if (SetProperty(ref formDateOfBirth, value))
                 {
+                    SyncDateOfBirthPartsFromDate();
                     UpdateCalculatedAgeAndSeniorStatus();
                 }
+            }
+        }
+
+        public int? SelectedBirthDay
+        {
+            get => selectedBirthDay;
+            set
+            {
+                if (SetProperty(ref selectedBirthDay, value))
+                    SyncDateOfBirthFromParts();
+            }
+        }
+
+        public string SelectedBirthMonth
+        {
+            get => selectedBirthMonth;
+            set
+            {
+                if (SetProperty(ref selectedBirthMonth, value))
+                    SyncDateOfBirthFromParts();
+            }
+        }
+
+        public int? SelectedBirthYear
+        {
+            get => selectedBirthYear;
+            set
+            {
+                if (SetProperty(ref selectedBirthYear, value))
+                    SyncDateOfBirthFromParts();
             }
         }
 
@@ -1188,7 +1242,7 @@ namespace CruzNeryClinic.ViewModels
 
             if (!FormHasDataPrivacyConsent)
             {
-                ShowPatientFormError("Please review and confirm the patient's Data Privacy Consent before saving.");
+                ShowPatientFormError("Please confirm that data privacy consent or authorization has been recorded before saving.");
                 return false;
             }
 
@@ -1332,6 +1386,89 @@ namespace CruzNeryClinic.ViewModels
             OnPropertyChanged(nameof(CalculatedAgeDisplay));
             OnPropertyChanged(nameof(IsSeniorCitizenAutoChecked));
         }
+
+        private void SyncDateOfBirthPartsFromDate()
+        {
+            if (isSyncingDateOfBirthParts)
+                return;
+
+            isSyncingDateOfBirthParts = true;
+
+            DateTime selectedDate = FormDateOfBirth?.Date ?? DateTime.Today;
+            UpdateBirthDayOptions(selectedDate.Year, selectedDate.Month);
+
+            selectedBirthDay = selectedDate.Day;
+            selectedBirthMonth = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(selectedDate.Month);
+            selectedBirthYear = selectedDate.Year;
+
+            OnPropertyChanged(nameof(SelectedBirthDay));
+            OnPropertyChanged(nameof(SelectedBirthMonth));
+            OnPropertyChanged(nameof(SelectedBirthYear));
+
+            isSyncingDateOfBirthParts = false;
+        }
+
+        private void SyncDateOfBirthFromParts()
+        {
+            if (isSyncingDateOfBirthParts)
+                return;
+
+            if (!SelectedBirthYear.HasValue || string.IsNullOrWhiteSpace(SelectedBirthMonth))
+                return;
+
+            int month = GetBirthMonthNumber(SelectedBirthMonth);
+
+            if (month <= 0)
+                return;
+
+            UpdateBirthDayOptions(SelectedBirthYear.Value, month);
+
+            int day = SelectedBirthDay ?? 1;
+            int maxDay = DateTime.DaysInMonth(SelectedBirthYear.Value, month);
+
+            if (day > maxDay)
+            {
+                selectedBirthDay = maxDay;
+                OnPropertyChanged(nameof(SelectedBirthDay));
+                day = maxDay;
+            }
+
+            DateTime newDateOfBirth = new DateTime(SelectedBirthYear.Value, month, day);
+
+            if (formDateOfBirth.HasValue && formDateOfBirth.Value.Date == newDateOfBirth.Date)
+                return;
+
+            formDateOfBirth = newDateOfBirth;
+            OnPropertyChanged(nameof(FormDateOfBirth));
+            UpdateCalculatedAgeAndSeniorStatus();
+        }
+
+        private void UpdateBirthDayOptions(int year, int month)
+        {
+            int maxDay = DateTime.DaysInMonth(year, month);
+
+            if (BirthDayOptions.Count == maxDay)
+                return;
+
+            BirthDayOptions.Clear();
+
+            for (int day = 1; day <= maxDay; day++)
+                BirthDayOptions.Add(day);
+        }
+
+        private int GetBirthMonthNumber(string monthName)
+        {
+            string[] monthNames = CultureInfo.CurrentCulture.DateTimeFormat.MonthNames;
+
+            for (int index = 0; index < monthNames.Length; index++)
+            {
+                if (string.Equals(monthNames[index], monthName, StringComparison.OrdinalIgnoreCase))
+                    return index + 1;
+            }
+
+            return 0;
+        }
+
         private void ClearPatientForm()
         {
             FormFirstName = string.Empty;

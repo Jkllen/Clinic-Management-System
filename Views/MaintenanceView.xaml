@@ -292,7 +292,10 @@
                                         FontSize="14"
                                         FontWeight="Bold"
                                         Foreground="#111111"
-                                        Text="Primary Backup Location *" />
+                                        >
+                                <Run Text="Primary Backup Location" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
 
                                     <Grid Margin="0,10,0,0">
                                         <Grid.ColumnDefinitions>

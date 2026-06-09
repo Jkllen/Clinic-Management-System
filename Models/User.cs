@@ -72,6 +72,12 @@ namespace CruzNeryClinic.Models
 
         public DateTime? LastLoginAt { get; set; }
 
+        public bool HasEmployeePrivacyAcknowledgement { get; set; }
+
+        public DateTime? EmployeePrivacyAcknowledgedAt { get; set; }
+
+        public string EmployeePrivacyAcknowledgementVersion { get; set; } = string.Empty;
+
         // Helper property for displaying the full name in the sidebar or tables.
         public string FullName
         {

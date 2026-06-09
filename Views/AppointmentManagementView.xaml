@@ -493,9 +493,16 @@
                         <StackPanel Orientation="Horizontal">
                             <fa:IconBlock
                                 Margin="0,0,8,0"
+                                FontSize="16"
+                                VerticalAlignment="Center"
                                 Foreground="White"
                                 Icon="Walking" />
-                            <TextBlock FontWeight="Bold" Text="Add Walk-in Visit" />
+                            <TextBlock 
+                                VerticalAlignment="Center"
+                                FontSize="14"
+                                FontWeight="SemiBold"
+                                Foreground="White"
+                                Text="Add Walk-in Visit" />
                         </StackPanel>
                     </Button>
 
@@ -510,9 +517,16 @@
                         <StackPanel Orientation="Horizontal">
                             <fa:IconBlock
                                 Margin="0,0,8,0"
+                                FontSize="16"
+                                VerticalAlignment="Center"
                                 Foreground="White"
                                 Icon="CalendarPlus" />
-                            <TextBlock FontWeight="Bold" Text="Add Schedule" />
+                            <TextBlock 
+                                VerticalAlignment="Center"
+                                FontSize="14"
+                                FontWeight="SemiBold"
+                                Foreground="White"
+                                Text="Add Schedule" />
                         </StackPanel>
                     </Button>
                 </StackPanel>
@@ -644,14 +658,15 @@
                                 </DataGridTemplateColumn>
 
                                 <DataGridTemplateColumn
-                                    Width="Auto"
-                                    MinWidth="110"
+                                    Width="170"
+                                    MinWidth="170"
                                     Header="Actions">
 
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <StackPanel
-                                                HorizontalAlignment="Left"
+                                                Width="154"
+                                                HorizontalAlignment="Center"
                                                 Orientation="Horizontal">
 
                                                 <!-- Always visible primary action -->
@@ -855,17 +870,28 @@
                             </Grid.RowDefinitions>
 
                             <StackPanel Grid.Row="0" Grid.Column="0">
-                                <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Appointment Date *" />
-                                <DatePicker Height="46" SelectedDate="{Binding RescheduleDate, Mode=TwoWay}" />
+                                <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" >
+                                <Run Text="Appointment Date" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
+                                <DatePicker
+                                    SelectedDate="{Binding RescheduleDate, Mode=TwoWay}"
+                                    Style="{StaticResource AppointmentDatePickerStyle}" />
                             </StackPanel>
 
                             <StackPanel Grid.Row="0" Grid.Column="2">
-                                <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Appointment Time *" />
+                                <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" >
+                                <Run Text="Appointment Time" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
                                 <TextBox Style="{StaticResource AppointmentOverlayTextBoxStyle}" Text="{Binding RescheduleTimeText, UpdateSourceTrigger=PropertyChanged}" />
                             </StackPanel>
 
                             <StackPanel Grid.Row="2" Grid.Column="0">
-                                <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Service / Treatment *" />
+                                <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" >
+                                <Run Text="Service / Treatment" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
                                 <ComboBox
                                     Height="42"
                                     ItemsSource="{Binding ServiceOptions}"
@@ -880,7 +906,10 @@
                             </StackPanel>
 
                             <StackPanel Grid.Row="2" Grid.Column="2">
-                                <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Dentist *" />
+                                <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" >
+                                <Run Text="Dentist" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
                                 <ComboBox
                                     Height="42"
                                     ItemsSource="{Binding DentistOptions}"
@@ -1421,7 +1450,10 @@
                                 </Grid.ColumnDefinitions>
 
                                 <StackPanel Grid.Column="0" Visibility="{Binding RequiresTreatmentStage, Converter={StaticResource BoolToVisibilityConverter}}">
-                                    <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Treatment Step *" />
+                                    <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" >
+                                <Run Text="Treatment Step" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
                                     <ComboBox
                                         Height="42"
                                         ItemsSource="{Binding TreatmentStageOptions}"
@@ -1431,8 +1463,13 @@
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="2" Visibility="{Binding RequiresFollowUpDate, Converter={StaticResource BoolToVisibilityConverter}}">
-                                    <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Return Date / Next Step *" />
-                                    <DatePicker Height="46" SelectedDate="{Binding FormFollowUpDate, Mode=TwoWay}" />
+                                    <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" >
+                                <Run Text="Return Date / Next Step" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
+                                    <DatePicker
+                                        SelectedDate="{Binding FormFollowUpDate, Mode=TwoWay}"
+                                        Style="{StaticResource AppointmentDatePickerStyle}" />
                                 </StackPanel>
                             </Grid>
 
@@ -1502,12 +1539,18 @@
                                 </Grid.ColumnDefinitions>
 
                                 <StackPanel Grid.Column="0" Visibility="{Binding HasExtractionService, Converter={StaticResource BoolToVisibilityConverter}}">
-                                    <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Medication / Prescription *" />
+                                    <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" >
+                                <Run Text="Medication / Prescription" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
                                     <TextBox Style="{StaticResource AppointmentOverlayTextBoxStyle}" Text="{Binding FormPrescription, UpdateSourceTrigger=PropertyChanged}" />
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="2" Visibility="{Binding HasProphylaxisService, Converter={StaticResource BoolToVisibilityConverter}}">
-                                    <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Prophylaxis Severity *" />
+                                    <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" >
+                                <Run Text="Prophylaxis Severity" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
                                     <ComboBox
                                         Height="42"
                                         ItemsSource="{Binding ProphylaxisSeverityOptions}"
@@ -1525,12 +1568,18 @@
                                 </Grid.ColumnDefinitions>
 
                                 <StackPanel Grid.Column="0">
-                                    <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Restoration Surface *" />
+                                    <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" >
+                                <Run Text="Restoration Surface" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
                                     <TextBox Style="{StaticResource AppointmentOverlayTextBoxStyle}" Text="{Binding FormRestorationSurface, UpdateSourceTrigger=PropertyChanged}" />
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="2">
-                                    <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Restoration Depth *" />
+                                    <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" >
+                                <Run Text="Restoration Depth" />
+                                <Run Foreground="#E53935" Text=" *" />
+                            </TextBlock>
                                     <ComboBox
                                         Height="42"
                                         ItemsSource="{Binding RestorationDepthOptions}"
@@ -1681,6 +1730,7 @@
                         Height="130"
                         Padding="14,10"
                         AcceptsReturn="True"
+                        Style="{StaticResource ModernTextAreaStyle}"
                         TextWrapping="Wrap"
                         VerticalScrollBarVisibility="Auto"
                         Text="{Binding CompletionTreatmentNotes, UpdateSourceTrigger=PropertyChanged}" />
