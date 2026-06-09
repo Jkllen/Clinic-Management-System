@@ -507,6 +507,10 @@
                         BorderThickness="1"
                         CornerRadius="8">
                         <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <ScrollViewer.Resources>
+                                <Style BasedOn="{StaticResource BlueDataGridScrollBarStyle}" TargetType="{x:Type ScrollBar}" />
+                            </ScrollViewer.Resources>
+
                             <TextBlock
                                 FontSize="14"
                                 Foreground="#333333"

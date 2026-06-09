@@ -138,6 +138,10 @@
                                 CornerRadius="10">
 
                                 <ScrollViewer>
+                                    <ScrollViewer.Resources>
+                                        <Style BasedOn="{StaticResource BlueDataGridScrollBarStyle}" TargetType="{x:Type ScrollBar}" />
+                                    </ScrollViewer.Resources>
+
                                     <ItemsPresenter/>
                                 </ScrollViewer>
                             </Border>
