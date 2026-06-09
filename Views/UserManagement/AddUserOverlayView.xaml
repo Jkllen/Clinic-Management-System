@@ -436,13 +436,9 @@
 
                                 <StackPanel
                                     Grid.Row="0"
-                                    Grid.Column="2"
-                                    Margin="0,36,0,0">
-                                    <TextBlock
-                                        Margin="0,0,0,6"
-                                        FontSize="13"
-                                        Foreground="#777777"
-                                        Text="Answer" />
+                                    Grid.Column="2">
+                                    <TextBlock FontSize="16" Text=" " />
+                                    <TextBlock Margin="0,0,0,6" FontSize="12" Foreground="#777777" Text="Answer" />
                                     <TextBox
                                         Style="{StaticResource AddUserOverlayTextBoxStyle}"
                                         Tag="Enter your answer"
@@ -471,13 +467,9 @@
 
                                 <StackPanel
                                     Grid.Row="1"
-                                    Grid.Column="2"
-                                    Margin="0,36,0,0">
-                                    <TextBlock
-                                        Margin="0,0,0,6"
-                                        FontSize="13"
-                                        Foreground="#777777"
-                                        Text="Answer" />
+                                    Grid.Column="2">
+                                    <TextBlock FontSize="16" Text=" " />
+                                    <TextBlock Margin="0,0,0,6" FontSize="12" Foreground="#777777" Text="Answer" />
                                     <TextBox
                                         Style="{StaticResource AddUserOverlayTextBoxStyle}"
                                         Tag="Enter your answer"
@@ -506,13 +498,9 @@
 
                                 <StackPanel
                                     Grid.Row="2"
-                                    Grid.Column="2"
-                                    Margin="0,36,0,0">
-                                    <TextBlock
-                                        Margin="0,0,0,6"
-                                        FontSize="13"
-                                        Foreground="#777777"
-                                        Text="Answer" />
+                                    Grid.Column="2">
+                                    <TextBlock FontSize="16" Text=" " />
+                                    <TextBlock Margin="0,0,0,6" FontSize="12" Foreground="#777777" Text="Answer" />
                                     <TextBox
                                         Style="{StaticResource AddUserOverlayTextBoxStyle}"
                                         Tag="Enter your answer"
