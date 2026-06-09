@@ -1,6 +1,9 @@
+using CommunityToolkit.Mvvm.Input;
+using CruzNeryClinic.Repositories;
 using CruzNeryClinic.Services;
 using CruzNeryClinic.Views;
 using System;
+using System.Windows.Input;
 using System.Windows.Controls;
 
 namespace CruzNeryClinic.ViewModels
@@ -9,15 +12,37 @@ namespace CruzNeryClinic.ViewModels
     // It keeps the sidebar visible while changing only the right-side module content.
     public class MainShellViewModel : BaseViewModel
     {
+        private const string EmployeePrivacyAcknowledgementVersion = "CNDC-EMP-DPA-2026-01";
+        private const string EmployeePrivacyNoticeBody =
+            "CRUZ-NERY DENTAL CLINIC EMPLOYEE PRIVACY NOTICE AND ACKNOWLEDGEMENT\n\n" +
+            "This system is used only by authorized Cruz-Nery Dental Clinic staff. Before accessing the dashboard and clinic modules, each staff user must acknowledge how their data is handled while using the system.\n\n" +
+            "The clinic collects and stores staff account information such as name, contact number, username, role, access permissions, security questions, login activity, and system activity records. Passwords and security answers are stored as protected hashes, not as plain text.\n\n" +
+            "This information is used to authenticate users, apply role-based access, protect patient and clinic records, maintain audit trails, investigate system activity when needed, and support clinic operations, security, and accountability.\n\n" +
+            "Staff activity inside the system may be recorded, including login events and actions involving users, patients, appointments, billing, inventory, reports, maintenance, backups, and other protected clinic records.\n\n" +
+            "Only authorized personnel may access staff information and activity records according to their role and clinic responsibilities. Staff must use their own account, keep credentials confidential, and access patient or clinic data only for legitimate work purposes.\n\n" +
+            "By acknowledging this notice, the staff member confirms that they understand the clinic may process their account and activity data for system security, audit trail, compliance, and clinic accountability.";
+
+        private readonly UserRepository userRepository;
         private UserControl _currentModuleView;
         private string _selectedModule = "Dashboard";
+        private bool isEmployeePrivacyAcknowledgementOpen;
+        private bool hasConfirmedEmployeePrivacyNotice;
 
         public event Action? LogoutRequested;
 
         public MainShellViewModel()
         {
+            userRepository = new UserRepository();
+
             // Default module after login.
             _currentModuleView = CreateDashboardView();
+
+            IsEmployeePrivacyAcknowledgementOpen = NeedsEmployeePrivacyAcknowledgement();
+
+            AcknowledgeEmployeePrivacyCommand = new RelayCommand(
+                AcknowledgeEmployeePrivacy,
+                () => HasConfirmedEmployeePrivacyNotice
+            );
         }
 
         public UserControl CurrentModuleView
@@ -32,8 +57,31 @@ namespace CruzNeryClinic.ViewModels
             set => SetProperty(ref _selectedModule, value);
         }
 
+        public bool IsEmployeePrivacyAcknowledgementOpen
+        {
+            get => isEmployeePrivacyAcknowledgementOpen;
+            set => SetProperty(ref isEmployeePrivacyAcknowledgementOpen, value);
+        }
+
+        public bool HasConfirmedEmployeePrivacyNotice
+        {
+            get => hasConfirmedEmployeePrivacyNotice;
+            set
+            {
+                if (SetProperty(ref hasConfirmedEmployeePrivacyNotice, value))
+                    (AcknowledgeEmployeePrivacyCommand as RelayCommand)?.NotifyCanExecuteChanged();
+            }
+        }
+
+        public string EmployeePrivacyNoticeText => EmployeePrivacyNoticeBody;
+
+        public ICommand AcknowledgeEmployeePrivacyCommand { get; }
+
         public void NavigateTo(string moduleName)
         {
+            if (IsEmployeePrivacyAcknowledgementOpen)
+                return;
+
             if (!SessionService.CanAccessModule(moduleName))
                 return;
 
@@ -58,6 +106,26 @@ namespace CruzNeryClinic.ViewModels
         {
             SessionService.Logout();
             LogoutRequested?.Invoke();
+        }
+
+        private bool NeedsEmployeePrivacyAcknowledgement()
+        {
+            return SessionService.CurrentUser == null
+                || !SessionService.CurrentUser.HasEmployeePrivacyAcknowledgement
+                || SessionService.CurrentUser.EmployeePrivacyAcknowledgementVersion != EmployeePrivacyAcknowledgementVersion;
+        }
+
+        private void AcknowledgeEmployeePrivacy()
+        {
+            if (SessionService.CurrentUser == null || !HasConfirmedEmployeePrivacyNotice)
+                return;
+
+            userRepository.RecordEmployeePrivacyAcknowledgement(
+                SessionService.CurrentUser,
+                EmployeePrivacyAcknowledgementVersion
+            );
+
+            IsEmployeePrivacyAcknowledgementOpen = false;
         }
 
         private DashboardView CreateDashboardView()

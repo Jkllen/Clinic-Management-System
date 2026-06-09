@@ -91,13 +91,15 @@ namespace CruzNeryClinic.ViewModels
         private int historyTreatmentCurrentPage = 1;
         private int historyTreatmentTotalPages = 1;
         private const int HistoryTreatmentPageSize = 3;
-        private const string DataPrivacyConsentVersion = "CNDC-DPA-2026-01";
+        private const string DataPrivacyConsentVersion = "CNDC-DPA-2026-02";
         private const string DataPrivacyConsentBody =
-            "CRUZ-NERY DENTAL CLINIC DATA PRIVACY CONSENT FORM\n\n" +
-            "By signing or agreeing to this consent, the patient or authorized representative allows Cruz-Nery Dental Clinic to collect, use, store, and process personal information, contact details, dental and medical history, treatment records, appointment records, billing records, and related documents for legitimate clinic purposes.\n\n" +
+            "CRUZ-NERY DENTAL CLINIC DATA PRIVACY NOTICE AND CONSENT RECORD\n\n" +
+            "This record is completed by authorized clinic staff because the system is for internal clinic use only. Patients do not directly access this application.\n\n" +
+            "By giving consent through the clinic's registration or update process, the patient or authorized representative allows Cruz-Nery Dental Clinic to collect, use, store, and process personal information, contact details, dental and medical history, treatment records, appointment records, billing records, and related documents for legitimate clinic purposes.\n\n" +
             "The clinic may use this information to provide dental care, manage appointments, document treatments, prepare invoices and receipts, contact the patient for follow-ups, comply with legal and regulatory requirements, and maintain clinic records.\n\n" +
-            "Patient records will be handled confidentially and accessed only by authorized clinic personnel. The patient may request correction of inaccurate information and may ask the clinic about how their data is used, subject to legal and clinic record-retention requirements.\n\n" +
-            "The patient confirms that the information provided is true and that the clinic explained why the data is needed before the record is saved.";
+            "The system also stores and processes authorized staff user information, such as account details, roles, access permissions, and system activity records, for authentication, authorization, audit trail, security monitoring, and clinic accountability.\n\n" +
+            "Patient and staff records will be handled confidentially and accessed only by authorized clinic personnel according to each user's role. Patients and staff may request correction of inaccurate information and may ask the clinic about how their data is used, subject to legal, security, and clinic record-retention requirements.\n\n" +
+            "The staff member saving this record confirms that the patient or authorized representative was informed why the data is needed, that consent or authorization was obtained where required, and that the information entered is based on the details provided to the clinic.";
 
         #endregion
 
@@ -1240,7 +1242,7 @@ namespace CruzNeryClinic.ViewModels
 
             if (!FormHasDataPrivacyConsent)
             {
-                ShowPatientFormError("Please review and confirm the patient's Data Privacy Consent before saving.");
+                ShowPatientFormError("Please confirm that data privacy consent or authorization has been recorded before saving.");
                 return false;
             }
 

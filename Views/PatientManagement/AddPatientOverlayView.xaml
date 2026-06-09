@@ -257,10 +257,13 @@
 
                         <StackPanel Grid.Column="0">
                             <CheckBox
-                                Content="Patient has reviewed and agreed to the Data Privacy Consent Form *"
                                 FontSize="15"
-                                FontWeight="SemiBold"
-                                IsChecked="{Binding FormHasDataPrivacyConsent}" />
+                                IsChecked="{Binding FormHasDataPrivacyConsent}">
+                                <TextBlock FontWeight="SemiBold">
+                                    <Run Text="Staff confirmed data privacy consent or authorization was recorded" />
+                                    <Run Foreground="#E53935" Text=" *" />
+                                </TextBlock>
+                            </CheckBox>
 
                             <TextBlock
                                 Margin="28,6,0,0"
@@ -494,7 +497,7 @@
                         FontSize="20"
                         FontWeight="Bold"
                         Foreground="#111111"
-                        Text="Data Privacy Consent Form" />
+                        Text="Data Privacy Consent Record" />
 
                     <Border
                         Grid.Row="2"
@@ -532,7 +535,7 @@
                             Height="40"
                             Background="#073C98"
                             Command="{Binding AcceptDataPrivacyConsentCommand}"
-                            Content="Accept Consent"
+                            Content="Record Consent"
                             Foreground="White"
                             Style="{StaticResource SecondaryButtonStyle}" />
                     </StackPanel>
