@@ -453,7 +453,7 @@
                                 Width="55"
                                 Height="55"
                                 Background="#F5DEF5"
-                                BorderBrush="#A6D7F3"
+                                BorderBrush="#C462C4"
                                 BorderThickness="2"
                                 CornerRadius="10">
                                 <fa:IconBlock
@@ -475,7 +475,7 @@
                                 Width="55"
                                 Height="55"
                                 Background="#FEF3C7"
-                                BorderBrush="#65C77F"
+                                BorderBrush="#EAB308"
                                 BorderThickness="2"
                                 CornerRadius="10">
                                 <fa:IconBlock
@@ -497,7 +497,7 @@
                                 Width="55"
                                 Height="55"
                                 Background="#FF0000"
-                                BorderBrush="#FFA500"
+                                BorderBrush="#CC0000"
                                 BorderThickness="2"
                                 CornerRadius="10">
                                 <fa:IconBlock
