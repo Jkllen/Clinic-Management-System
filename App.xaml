@@ -379,6 +379,307 @@
         </Style>
         <!--#endregion TextBox and TextArea Styles-->
 
+        <!--#region DatePicker, Time Picker, and ListBox Styles-->
+        <Style x:Key="ModernDatePickerTextBoxStyle" TargetType="DatePickerTextBox">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="{StaticResource FieldTextBrush}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DatePickerTextBox">
+                        <Grid>
+                            <ContentControl
+                                x:Name="PART_Watermark"
+                                Focusable="False"
+                                Foreground="{StaticResource FieldPlaceholderBrush}"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Visibility="Hidden" />
+                            <ScrollViewer
+                                x:Name="PART_ContentHost"
+                                Background="Transparent"
+                                Focusable="False"
+                                HorizontalScrollBarVisibility="Hidden"
+                                VerticalAlignment="Center"
+                                VerticalScrollBarVisibility="Hidden" />
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="AppointmentDatePickerStyle" TargetType="DatePicker">
+            <Setter Property="Height" Value="46" />
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Foreground" Value="{StaticResource FieldTextBrush}" />
+            <Setter Property="Background" Value="{StaticResource FieldSurfaceBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource FieldBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DatePicker">
+                        <Grid SnapsToDevicePixels="True">
+                            <Border
+                                x:Name="DatePickerBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="7">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="42" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <DatePickerTextBox
+                                        x:Name="PART_TextBox"
+                                        Grid.Column="0"
+                                        Margin="12,0,2,0"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Focusable="True"
+                                        FontFamily="{TemplateBinding FontFamily}"
+                                        FontSize="{TemplateBinding FontSize}"
+                                        Foreground="{TemplateBinding Foreground}"
+                                        Style="{StaticResource ModernDatePickerTextBoxStyle}"
+                                        VerticalAlignment="Center" />
+
+                                    <Button
+                                        x:Name="PART_Button"
+                                        Grid.Column="1"
+                                        Margin="0,0,4,0"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Cursor="Hand"
+                                        Focusable="False"
+                                        VerticalAlignment="Center">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border
+                                                    x:Name="ButtonBorder"
+                                                    Padding="6"
+                                                    Background="Transparent"
+                                                    CornerRadius="6">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="ButtonBorder" Property="Background" Value="#EAF5FF" />
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                        <fa:IconBlock
+                                            FontSize="15"
+                                            Foreground="{StaticResource FieldAccentBrush}"
+                                            Icon="CalendarAlt" />
+                                    </Button>
+
+                                    <Popup
+                                        x:Name="PART_Popup"
+                                        AllowsTransparency="True"
+                                        Placement="Bottom"
+                                        StaysOpen="False" />
+                                </Grid>
+                            </Border>
+
+                            <Border
+                                x:Name="FocusBar"
+                                Height="2"
+                                Margin="1,0,1,1"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Bottom"
+                                Background="{StaticResource FieldAccentBrush}"
+                                CornerRadius="0,0,7,7"
+                                Opacity="0" />
+                        </Grid>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                <Setter TargetName="DatePickerBorder" Property="BorderBrush" Value="{StaticResource FieldAccentBrush}" />
+                                <Setter TargetName="FocusBar" Property="Opacity" Value="1" />
+                            </Trigger>
+
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="DatePickerBorder" Property="BorderBrush" Value="{StaticResource FieldBorderHoverBrush}" />
+                            </Trigger>
+
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.62" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style
+            x:Key="DateOfBirthDatePickerStyle"
+            BasedOn="{StaticResource AppointmentDatePickerStyle}"
+            TargetType="DatePicker">
+            <Setter Property="Height" Value="46" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="BorderBrush" Value="#64748B" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DatePicker">
+                        <Border
+                            x:Name="DatePickerBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="30" />
+                                </Grid.ColumnDefinitions>
+
+                                <DatePickerTextBox
+                                    x:Name="PART_TextBox"
+                                    Grid.Column="0"
+                                    Margin="8,0,2,0"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Focusable="True"
+                                    FontFamily="{TemplateBinding FontFamily}"
+                                    FontSize="{TemplateBinding FontSize}"
+                                    Foreground="{TemplateBinding Foreground}"
+                                    Style="{StaticResource ModernDatePickerTextBoxStyle}"
+                                    VerticalAlignment="Center" />
+
+                                <Button
+                                    x:Name="PART_Button"
+                                    Grid.Column="1"
+                                    Width="24"
+                                    Height="24"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Cursor="Hand"
+                                    Focusable="False">
+                                    <fa:IconBlock
+                                        FontSize="13"
+                                        Foreground="#475569"
+                                        Icon="CalendarAlt" />
+                                </Button>
+
+                                <Popup
+                                    x:Name="PART_Popup"
+                                    AllowsTransparency="True"
+                                    Placement="Bottom"
+                                    StaysOpen="False" />
+                            </Grid>
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                <Setter TargetName="DatePickerBorder" Property="BorderBrush" Value="{StaticResource FieldAccentBrush}" />
+                            </Trigger>
+
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="DatePickerBorder" Property="BorderBrush" Value="{StaticResource FieldBorderHoverBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="AppointmentTimePickerContainerStyle" TargetType="Border">
+            <Setter Property="Height" Value="46" />
+            <Setter Property="Background" Value="{StaticResource FieldSurfaceBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource FieldBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="7" />
+        </Style>
+
+        <Style x:Key="AppointmentTimeSegmentTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Foreground" Value="{StaticResource FieldTextBrush}" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        </Style>
+
+        <Style x:Key="AppointmentTimePeriodComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Background" Value="#F8FAFC" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Foreground" Value="{StaticResource FieldTextBrush}" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+
+        <Style x:Key="PatientLookupPopupBorderStyle" TargetType="Border">
+            <Setter Property="MaxHeight" Value="220" />
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderBrush" Value="{StaticResource FieldBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="0,0,7,7" />
+        </Style>
+
+        <Style x:Key="PatientLookupListBoxStyle" TargetType="ListBox">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+        </Style>
+
+        <Style x:Key="PatientLookupListBoxItemStyle" TargetType="ListBoxItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border
+                            x:Name="ItemBorder"
+                            Background="Transparent"
+                            BorderBrush="#EEF2F7"
+                            BorderThickness="0,0,0,1">
+                            <ContentPresenter />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="#F3F8FF" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="#EAF5FF" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="PatientLookupItemButtonStyle" TargetType="Button">
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="Transparent">
+                            <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <!--#endregion DatePicker, Time Picker, and ListBox Styles-->
+
         <!--#region Button and ScrollBar Styles-->
         <!--  Default Modern Filled Action Button Style  -->
         <Style x:Key="SmallActionButtonStyle" TargetType="Button">

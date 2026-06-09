@@ -93,56 +93,19 @@
                             StaysOpen="False">
 
                             <Border
-                                MaxHeight="220"
-                                Background="White"
-                                BorderBrush="#D8D8D8"
-                                BorderThickness="1"
-                                CornerRadius="10">
+                                Style="{StaticResource PatientLookupPopupBorderStyle}">
 
                                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                                     <ListBox
-                                        BorderThickness="0"
-                                        ItemsSource="{Binding PatientSearchResults}">
-
-                                        <ListBox.ItemContainerStyle>
-                                            <Style TargetType="ListBoxItem">
-                                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                                                <Setter Property="Padding" Value="0" />
-                                                <Setter Property="Cursor" Value="Hand" />
-                                            </Style>
-                                        </ListBox.ItemContainerStyle>
+                                        ItemContainerStyle="{StaticResource PatientLookupListBoxItemStyle}"
+                                        ItemsSource="{Binding PatientSearchResults}"
+                                        Style="{StaticResource PatientLookupListBoxStyle}">
                                             <ListBox.ItemTemplate>
                                                 <DataTemplate>
                                                     <Button
-                                                        HorizontalAlignment="Stretch"
-                                                        HorizontalContentAlignment="Stretch"
-                                                        Background="Transparent"
-                                                        BorderThickness="0"
-                                                        Cursor="Hand"
                                                         Command="{Binding DataContext.SelectPatientCommand, Source={x:Reference Root}}"
-                                                        CommandParameter="{Binding}">
-
-                                                        <Button.Template>
-                                                            <ControlTemplate TargetType="Button">
-                                                                <Border
-                                                                    x:Name="ButtonBorder"
-                                                                    Background="{TemplateBinding Background}">
-                                                                    <ContentPresenter
-                                                                        HorizontalAlignment="Stretch"
-                                                                        VerticalAlignment="Center" />
-                                                                </Border>
-
-                                                                <ControlTemplate.Triggers>
-                                                                    <Trigger Property="IsMouseOver" Value="True">
-                                                                        <Setter TargetName="ButtonBorder" Property="Background" Value="#EEF6FF" />
-                                                                    </Trigger>
-
-                                                                    <Trigger Property="IsPressed" Value="True">
-                                                                        <Setter TargetName="ButtonBorder" Property="Background" Value="#DDEEFF" />
-                                                                    </Trigger>
-                                                                </ControlTemplate.Triggers>
-                                                            </ControlTemplate>
-                                                        </Button.Template>
+                                                        CommandParameter="{Binding}"
+                                                        Style="{StaticResource PatientLookupItemButtonStyle}">
 
                                                         <Border
                                                             Padding="12,8"
@@ -302,7 +265,9 @@
 
                     <StackPanel Grid.Row="2" Grid.Column="0">
                         <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Appointment Date *" />
-                        <DatePicker Height="46" SelectedDate="{Binding FormAppointmentDate, Mode=TwoWay}" />
+                        <DatePicker
+                            SelectedDate="{Binding FormAppointmentDate, Mode=TwoWay}"
+                            Style="{StaticResource AppointmentDatePickerStyle}" />
                     </StackPanel>
 
                     <StackPanel Grid.Row="2" Grid.Column="2">
@@ -451,7 +416,9 @@
 
                         <StackPanel Grid.Row="0" Grid.Column="2" Visibility="{Binding RequiresFollowUpDate, Converter={StaticResource BoolToVisibilityConverter}}">
                             <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Return Date / Next Step *" />
-                            <DatePicker Height="46" SelectedDate="{Binding FormFollowUpDate, Mode=TwoWay}" />
+                            <DatePicker
+                                SelectedDate="{Binding FormFollowUpDate, Mode=TwoWay}"
+                                Style="{StaticResource AppointmentDatePickerStyle}" />
                         </StackPanel>
 
                         <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Visibility="{Binding HasToothSelection, Converter={StaticResource BoolToVisibilityConverter}}">

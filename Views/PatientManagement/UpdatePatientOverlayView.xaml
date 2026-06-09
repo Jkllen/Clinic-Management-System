@@ -149,8 +149,8 @@
                             Text="Date of Birth *" />
 
                         <DatePicker
-                            Height="46"
-                            SelectedDate="{Binding FormDateOfBirth, Mode=TwoWay}" />
+                            SelectedDate="{Binding FormDateOfBirth, Mode=TwoWay}"
+                            Style="{StaticResource DateOfBirthDatePickerStyle}" />
                     </StackPanel>
 
                     <!-- Gender -->

@@ -856,7 +856,9 @@
 
                             <StackPanel Grid.Row="0" Grid.Column="0">
                                 <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Appointment Date *" />
-                                <DatePicker Height="46" SelectedDate="{Binding RescheduleDate, Mode=TwoWay}" />
+                                <DatePicker
+                                    SelectedDate="{Binding RescheduleDate, Mode=TwoWay}"
+                                    Style="{StaticResource AppointmentDatePickerStyle}" />
                             </StackPanel>
 
                             <StackPanel Grid.Row="0" Grid.Column="2">
@@ -1432,7 +1434,9 @@
 
                                 <StackPanel Grid.Column="2" Visibility="{Binding RequiresFollowUpDate, Converter={StaticResource BoolToVisibilityConverter}}">
                                     <TextBlock Style="{StaticResource AppointmentOverlayFieldLabelStyle}" Text="Return Date / Next Step *" />
-                                    <DatePicker Height="46" SelectedDate="{Binding FormFollowUpDate, Mode=TwoWay}" />
+                                    <DatePicker
+                                        SelectedDate="{Binding FormFollowUpDate, Mode=TwoWay}"
+                                        Style="{StaticResource AppointmentDatePickerStyle}" />
                                 </StackPanel>
                             </Grid>
 
