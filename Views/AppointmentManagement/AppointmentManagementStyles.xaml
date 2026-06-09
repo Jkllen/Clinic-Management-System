@@ -16,26 +16,19 @@
         <Setter Property="Margin" Value="2,0,0,6"/>
     </Style>
 
-    <Style x:Key="AppointmentOverlayTextBoxStyle" TargetType="TextBox">
+    <Style
+        x:Key="AppointmentOverlayTextBoxStyle"
+        BasedOn="{StaticResource ModernTextBoxStyle}"
+        TargetType="TextBox">
         <Setter Property="Height" Value="46"/>
         <Setter Property="FontSize" Value="15"/>
-        <Setter Property="Foreground" Value="#111111"/>
-        <Setter Property="Background" Value="White"/>
-        <Setter Property="BorderBrush" Value="#D8D8D8"/>
-        <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="Padding" Value="16,0,16,0"/>
-        <Setter Property="VerticalContentAlignment" Value="Center"/>
     </Style>
 
     <Style x:Key="AppointmentOverlayTextAreaStyle"
            TargetType="TextBox"
-           BasedOn="{StaticResource AppointmentOverlayTextBoxStyle}">
+           BasedOn="{StaticResource ModernTextAreaStyle}">
         <Setter Property="Height" Value="90"/>
-        <Setter Property="AcceptsReturn" Value="True"/>
-        <Setter Property="TextWrapping" Value="Wrap"/>
-        <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
-        <Setter Property="VerticalContentAlignment" Value="Top"/>
-        <Setter Property="Padding" Value="16,12,16,12"/>
+        <Setter Property="FontSize" Value="15"/>
     </Style>
 
     <Style x:Key="AppointmentOverlayComboBoxStyle" TargetType="ComboBox">

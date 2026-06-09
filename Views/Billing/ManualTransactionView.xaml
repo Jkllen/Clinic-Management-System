@@ -292,7 +292,7 @@
                                 Height="46"
                                 Margin="0,8,0,0"
                                 IsReadOnly="True"
-                                Style="{StaticResource ModernTextBoxStyle}"
+                                Style="{StaticResource ModernTextAreaStyle}"
                                 Tag="Auto-Filled"
                                 Text="{Binding ManualReceiptNumber}" />
                         </StackPanel>

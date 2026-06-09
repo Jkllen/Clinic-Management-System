@@ -1681,6 +1681,7 @@
                         Height="130"
                         Padding="14,10"
                         AcceptsReturn="True"
+                        Style="{StaticResource ModernTextAreaStyle}"
                         TextWrapping="Wrap"
                         VerticalScrollBarVisibility="Auto"
                         Text="{Binding CompletionTreatmentNotes, UpdateSourceTrigger=PropertyChanged}" />

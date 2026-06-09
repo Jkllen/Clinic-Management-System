@@ -103,7 +103,7 @@
                         FontSize="15"
                         FontWeight="SemiBold"
                         Foreground="{Binding UpdatePasswordTabForeground}"
-                        Style="{StaticResource PrimaryButtonStyle}">
+                        Style="{StaticResource SmallActionButtonStyle}">
                         <TextBlock VerticalAlignment="Center" Text="2) Change Password" />
                     </Button>
 
@@ -118,7 +118,7 @@
                         FontSize="15"
                         FontWeight="SemiBold"
                         Foreground="{Binding UpdateSecurityTabForeground}"
-                        Style="{StaticResource PrimaryButtonStyle}">
+                        Style="{StaticResource SmallActionButtonStyle}">
                         <TextBlock VerticalAlignment="Center" Text="3) Security" />
                     </Button>
                 </Grid>
@@ -199,7 +199,7 @@
 
                                 <TextBox
                                     Margin="0,8,0,0"
-                                    Style="{StaticResource AddUserOverlayTextBoxStyle}"
+                                    Style="{StaticResource UserOverlayTextBoxStyle}"
                                     Tag="Enter first name"
                                     Text="{Binding UpdateUserFirstName, UpdateSourceTrigger=PropertyChanged}" />
                             </StackPanel>
@@ -228,7 +228,7 @@
 
                                 <TextBox
                                     Margin="0,8,0,0"
-                                    Style="{StaticResource AddUserOverlayTextBoxStyle}"
+                                    Style="{StaticResource UserOverlayTextBoxStyle}"
                                     Tag="Enter last name"
                                     Text="{Binding UpdateUserLastName, UpdateSourceTrigger=PropertyChanged}" />
                             </StackPanel>
@@ -242,7 +242,7 @@
 
                                 <TextBox
                                     Margin="0,8,0,0"
-                                    Style="{StaticResource AddUserOverlayTextBoxStyle}"
+                                    Style="{StaticResource UserOverlayTextBoxStyle}"
                                     Tag="Enter contact number"
                                     Text="{Binding UpdateUserContactNumber, UpdateSourceTrigger=PropertyChanged}" />
                             </StackPanel>
@@ -256,7 +256,7 @@
 
                                 <TextBox
                                     Margin="0,8,0,0"
-                                    Style="{StaticResource AddUserOverlayTextBoxStyle}"
+                                    Style="{StaticResource UserOverlayTextBoxStyle}"
                                     Tag="Enter middle name"
                                     Text="{Binding UpdateUserMiddleName, UpdateSourceTrigger=PropertyChanged}" />
                             </StackPanel>
@@ -353,23 +353,16 @@
                                     <PasswordBox
                                         x:Name="UpdateOldPasswordBox"
                                         PasswordChanged="UpdateOldPasswordBox_PasswordChanged"
-                                        Style="{StaticResource AddUserOverlayPasswordBoxStyle}"
+                                        Style="{StaticResource UserOverlayPasswordBoxStyle}"
+                                        Tag="Legacy password"
                                         Visibility="{Binding IsUpdateOldPasswordHidden, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                                     <TextBox
-                                        Style="{StaticResource AddUserOverlayTextBoxStyle}"
+                                        Style="{StaticResource UserOverlayVisiblePasswordTextBoxStyle}"
+                                        Tag="Legacy password"
                                         Text="{Binding UpdateOldPassword, UpdateSourceTrigger=PropertyChanged}"
                                         TextChanged="UpdateOldPasswordTextBox_TextChanged"
                                         Visibility="{Binding IsUpdateOldPasswordVisible, Converter={StaticResource BoolToVisibilityConverter}}" />
-
-                                    <TextBlock
-                                        Margin="16,0,48,0"
-                                        VerticalAlignment="Center"
-                                        FontSize="14"
-                                        Foreground="#A0A0A0"
-                                        IsHitTestVisible="False"
-                                        Text="Legacy password"
-                                        Visibility="{Binding IsUpdateOldPasswordEmpty, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                                     <Button
                                         Margin="0,0,14,0"
@@ -396,23 +389,16 @@
                                     <PasswordBox
                                         x:Name="UpdateConfirmNewPasswordBox"
                                         PasswordChanged="UpdateConfirmNewPasswordBox_PasswordChanged"
-                                        Style="{StaticResource AddUserOverlayPasswordBoxStyle}"
+                                        Style="{StaticResource UserOverlayPasswordBoxStyle}"
+                                        Tag="Enter your confirm new password"
                                         Visibility="{Binding IsUpdateConfirmNewPasswordHidden, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                                     <TextBox
-                                        Style="{StaticResource AddUserOverlayTextBoxStyle}"
+                                        Style="{StaticResource UserOverlayVisiblePasswordTextBoxStyle}"
+                                        Tag="Enter your confirm new password"
                                         Text="{Binding UpdateConfirmNewPassword, UpdateSourceTrigger=PropertyChanged}"
                                         TextChanged="UpdateConfirmNewPasswordTextBox_TextChanged"
                                         Visibility="{Binding IsUpdateConfirmNewPasswordVisible, Converter={StaticResource BoolToVisibilityConverter}}" />
-
-                                    <TextBlock
-                                        Margin="16,0,48,0"
-                                        VerticalAlignment="Center"
-                                        FontSize="14"
-                                        Foreground="#A0A0A0"
-                                        IsHitTestVisible="False"
-                                        Text="Enter your confirm new password"
-                                        Visibility="{Binding IsUpdateConfirmNewPasswordEmpty, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                                     <Button
                                         Margin="0,0,14,0"
@@ -439,23 +425,16 @@
                                     <PasswordBox
                                         x:Name="UpdateNewPasswordBox"
                                         PasswordChanged="UpdateNewPasswordBox_PasswordChanged"
-                                        Style="{StaticResource AddUserOverlayPasswordBoxStyle}"
+                                        Style="{StaticResource UserOverlayPasswordBoxStyle}"
+                                        Tag="Enter your new password"
                                         Visibility="{Binding IsUpdateNewPasswordHidden, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                                     <TextBox
-                                        Style="{StaticResource AddUserOverlayTextBoxStyle}"
+                                        Style="{StaticResource UserOverlayVisiblePasswordTextBoxStyle}"
+                                        Tag="Enter your new password"
                                         Text="{Binding UpdateNewPassword, UpdateSourceTrigger=PropertyChanged}"
                                         TextChanged="UpdateNewPasswordTextBox_TextChanged"
                                         Visibility="{Binding IsUpdateNewPasswordVisible, Converter={StaticResource BoolToVisibilityConverter}}" />
-
-                                    <TextBlock
-                                        Margin="16,0,48,0"
-                                        VerticalAlignment="Center"
-                                        FontSize="14"
-                                        Foreground="#A0A0A0"
-                                        IsHitTestVisible="False"
-                                        Text="Enter your new password"
-                                        Visibility="{Binding IsUpdateNewPasswordEmpty, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                                     <Button
                                         Margin="0,0,14,0"
@@ -535,12 +514,18 @@
                             Row 0: Header section
                             =========================
                         -->
-                        <StackPanel
-                            Grid.Row="0"
-                            Margin="0,8,0,0"
-                            Orientation="Horizontal">
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                    <!-- Icon -->
+                                    <ColumnDefinition Width="Auto" />
+                                    <!-- Spacing -->
+                                    <ColumnDefinition Width="15" />
+                                    <!-- Content -->
+                                    <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
 
                             <Border
+                                Grid.Column="0"
                                 Width="86"
                                 Height="86"
                                 Background="#FFF9FD"
@@ -555,20 +540,25 @@
                                     Icon="UserShield" />
                             </Border>
 
-                            <StackPanel Margin="20,10,0,0">
+                            <StackPanel 
+                                VerticalAlignment="Center"
+                                Grid.Column="2">
                                 <TextBlock
-                                    FontSize="28"
+                                    FontSize="16"
                                     FontWeight="Bold"
                                     Foreground="Black"
                                     Text="Security Questions" />
 
                                 <TextBlock
                                     Margin="0,8,0,0"
-                                    FontSize="18"
+                                    FontSize="14"
                                     Foreground="#6F6F6F"
+                                    TextWrapping="Wrap"
+                                    TextTrimming="CharacterEllipsis"
+                                    MaxWidth="600"
                                     Text="Change the selected user's password recovery questions." />
                             </StackPanel>
-                        </StackPanel>
+                        </Grid>
 
                         <!--
                             =========================
@@ -617,131 +607,149 @@
                                     <ColumnDefinition Width="1*" />
                                 </Grid.ColumnDefinitions>
 
-                                <!--
-                                    =========================
-                                    SECURITY QUESTION 1
-                                    =========================
-                                -->
-                                <StackPanel Grid.Row="0" Grid.Column="0">
-                                    <TextBlock FontSize="16" Foreground="#777777">
+                                <!--  Security question 1  -->
+                                <Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="1.45*" />
+                                        <ColumnDefinition Width="32" />
+                                        <ColumnDefinition Width="1*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Row="0" Grid.Column="0" FontSize="16" Foreground="#777777">
                                         <Run Text="Security question 1:" />
                                         <Run Foreground="#E53935" Text=" *" />
                                     </TextBlock>
-
                                     <TextBlock
+                                        Grid.Row="1"
+                                        Grid.Column="0"
                                         Margin="0,4,0,6"
                                         FontSize="12"
                                         FontStyle="Italic"
                                         Foreground="#777777"
                                         Text="Choose a question:" />
-
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        Grid.Column="2"
+                                        Margin="0,4,0,6"
+                                        FontSize="12"
+                                        Foreground="#777777"
+                                        Text="Answer" />
                                     <ComboBox
+                                        Grid.Row="2"
+                                        Grid.Column="0"
                                         DisplayMemberPath="QuestionText"
                                         ItemsSource="{Binding SecurityQuestions}"
                                         SelectedItem="{Binding UpdateSelectedSecurityQuestion1, Mode=TwoWay}"
-                                        Style="{StaticResource AddUserOverlayComboBoxStyle}"
+                                        Style="{StaticResource ExactStyleComboBox}"
                                         Tag="Choose a security question" />
-                                </StackPanel>
-
-                                <StackPanel
-                                    Grid.Row="0"
-                                    Grid.Column="2"
-                                    Margin="0,34,0,0">
-                                    <TextBlock
-                                        Margin="0,0,0,6"
-                                        FontSize="13"
-                                        Foreground="#777777"
-                                        Text="Answer" />
-
                                     <TextBox
-                                        Style="{StaticResource AddUserOverlayTextBoxStyle}"
+                                        Grid.Row="2"
+                                        Grid.Column="2"
+                                        Style="{StaticResource UserOverlayTextBoxStyle}"
                                         Tag="Enter your answer"
                                         Text="{Binding UpdateSecurityAnswer1, UpdateSourceTrigger=PropertyChanged}" />
-                                </StackPanel>
+                                </Grid>
 
-                                <!--
-                                    =========================
-                                    SECURITY QUESTION 2
-                                    =========================
-                                -->
-                                <StackPanel Grid.Row="2" Grid.Column="0">
-                                    <TextBlock FontSize="16" Foreground="#777777">
+                                <!--  Security question 2  -->
+                                <Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="1.45*" />
+                                        <ColumnDefinition Width="32" />
+                                        <ColumnDefinition Width="1*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Row="0" Grid.Column="0" FontSize="16" Foreground="#777777">
                                         <Run Text="Security question 2:" />
                                         <Run Foreground="#E53935" Text=" *" />
                                     </TextBlock>
-
                                     <TextBlock
+                                        Grid.Row="1"
+                                        Grid.Column="0"
                                         Margin="0,4,0,6"
                                         FontSize="12"
                                         FontStyle="Italic"
                                         Foreground="#777777"
                                         Text="Choose a question:" />
-
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        Grid.Column="2"
+                                        Margin="0,4,0,6"
+                                        FontSize="12"
+                                        Foreground="#777777"
+                                        Text="Answer" />
                                     <ComboBox
+                                        Grid.Row="2"
+                                        Grid.Column="0"
                                         DisplayMemberPath="QuestionText"
                                         ItemsSource="{Binding SecurityQuestions}"
                                         SelectedItem="{Binding UpdateSelectedSecurityQuestion2, Mode=TwoWay}"
-                                        Style="{StaticResource AddUserOverlayComboBoxStyle}"
+                                        Style="{StaticResource ExactStyleComboBox}"
                                         Tag="Choose a security question" />
-                                </StackPanel>
-
-                                <StackPanel
-                                    Grid.Row="2"
-                                    Grid.Column="2"
-                                    Margin="0,34,0,0">
-                                    <TextBlock
-                                        Margin="0,0,0,6"
-                                        FontSize="13"
-                                        Foreground="#777777"
-                                        Text="Answer" />
-
                                     <TextBox
-                                        Style="{StaticResource AddUserOverlayTextBoxStyle}"
+                                        Grid.Row="2"
+                                        Grid.Column="2"
+                                        Style="{StaticResource UserOverlayTextBoxStyle}"
                                         Tag="Enter your answer"
                                         Text="{Binding UpdateSecurityAnswer2, UpdateSourceTrigger=PropertyChanged}" />
-                                </StackPanel>
+                                </Grid>
 
-                                <!--
-                                    =========================
-                                    SECURITY QUESTION 3
-                                    =========================
-                                -->
-                                <StackPanel Grid.Row="4" Grid.Column="0">
-                                    <TextBlock FontSize="16" Foreground="#777777">
+                                <!--  Security question 3  -->
+                                <Grid Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="1.45*" />
+                                        <ColumnDefinition Width="32" />
+                                        <ColumnDefinition Width="1*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Row="0" Grid.Column="0" FontSize="16" Foreground="#777777">
                                         <Run Text="Security question 3:" />
                                         <Run Foreground="#E53935" Text=" *" />
                                     </TextBlock>
-
                                     <TextBlock
+                                        Grid.Row="1"
+                                        Grid.Column="0"
                                         Margin="0,4,0,6"
                                         FontSize="12"
                                         FontStyle="Italic"
                                         Foreground="#777777"
                                         Text="Choose a question:" />
-
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        Grid.Column="2"
+                                        Margin="0,4,0,6"
+                                        FontSize="12"
+                                        Foreground="#777777"
+                                        Text="Answer" />
                                     <ComboBox
+                                        Grid.Row="2"
+                                        Grid.Column="0"
                                         DisplayMemberPath="QuestionText"
                                         ItemsSource="{Binding SecurityQuestions}"
                                         SelectedItem="{Binding UpdateSelectedSecurityQuestion3, Mode=TwoWay}"
-                                        Style="{StaticResource AddUserOverlayComboBoxStyle}"
+                                        Style="{StaticResource ExactStyleComboBox}"
                                         Tag="Choose a security question" />
-                                </StackPanel>
-
-                                <StackPanel
-                                    Grid.Row="4"
-                                    Grid.Column="2"
-                                    Margin="0,34,0,0">
-                                    <TextBlock
-                                        Margin="0,0,0,6"
-                                        FontSize="13"
-                                        Foreground="#777777"
-                                        Text="Answer" />
-
                                     <TextBox
-                                        Style="{StaticResource AddUserOverlayTextBoxStyle}"
+                                        Grid.Row="2"
+                                        Grid.Column="2"
+                                        Style="{StaticResource UserOverlayTextBoxStyle}"
                                         Tag="Enter your answer"
                                         Text="{Binding UpdateSecurityAnswer3, UpdateSourceTrigger=PropertyChanged}" />
-                                </StackPanel>
+                                </Grid>
                             </Grid>
                         </ScrollViewer>
                     </Grid>
@@ -870,23 +878,16 @@
                                 <PasswordBox
                                     x:Name="UpdateAdminPasswordBox"
                                     PasswordChanged="UpdateAdminPasswordBox_PasswordChanged"
-                                    Style="{StaticResource AddUserOverlayPasswordBoxStyle}"
+                                    Style="{StaticResource UserOverlayPasswordBoxStyle}"
+                                    Tag="Enter admin password"
                                     Visibility="{Binding IsUpdateAdminPasswordHidden, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                                 <TextBox
-                                    Style="{StaticResource AddUserOverlayTextBoxStyle}"
+                                    Style="{StaticResource UserOverlayVisiblePasswordTextBoxStyle}"
+                                    Tag="Enter admin password"
                                     Text="{Binding UpdateAdminPassword, UpdateSourceTrigger=PropertyChanged}"
                                     TextChanged="UpdateAdminPasswordTextBox_TextChanged"
                                     Visibility="{Binding IsUpdateAdminPasswordVisible, Converter={StaticResource BoolToVisibilityConverter}}" />
-
-                                <TextBlock
-                                    Margin="16,0,48,0"
-                                    VerticalAlignment="Center"
-                                    FontSize="14"
-                                    Foreground="#A0A0A0"
-                                    IsHitTestVisible="False"
-                                    Text="Enter admin password"
-                                    Visibility="{Binding IsUpdateAdminPasswordEmpty, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                                 <Button
                                     Margin="0,0,14,0"
@@ -1013,3 +1014,4 @@
         </Border>
     </Grid>
 </UserControl>
+

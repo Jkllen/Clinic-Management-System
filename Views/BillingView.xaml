@@ -562,7 +562,7 @@
                                     Height="42"
                                     HorizontalAlignment="Left"
                                     IsReadOnly="True"
-                                    Style="{StaticResource ModernTextBoxStyle}"
+                                    Style="{StaticResource ModernTextAreaStyle}"
                                     Tag="Auto-Filled"
                                     Text="{Binding PaymentHistoryPatientName, Mode=OneWay}" />
 

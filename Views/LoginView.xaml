@@ -19,47 +19,6 @@
         <!-- Converts bool values into Visibility for error messages. -->
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
 
-        <!-- Rounded textbox style for login inputs -->
-        <Style x:Key="LoginTextBoxStyle" TargetType="TextBox">
-            <Setter Property="Height" Value="52"/>
-            <Setter Property="FontSize" Value="22"/>
-            <Setter Property="Foreground" Value="#111111"/>
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="BorderBrush" Value="#9A9A9A"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="28,0,20,0"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="TextBox">
-                        <Border x:Name="TextBoxBorder"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="8"
-                                SnapsToDevicePixels="True">
-                            <Grid>
-                                <ScrollViewer x:Name="PART_ContentHost"
-                                            Margin="{TemplateBinding Padding}"
-                                            VerticalAlignment="Center"/>
-                            </Grid>
-                        </Border>
-
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="TextBoxBorder" Property="BorderBrush" Value="#223357"/>
-                            </Trigger>
-
-                            <Trigger Property="IsKeyboardFocused" Value="True">
-                                <Setter TargetName="TextBoxBorder" Property="BorderBrush" Value="#223357"/>
-                                <Setter TargetName="TextBoxBorder" Property="BorderThickness" Value="2"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
         <!-- 
             Modern link button style.
             Used for Forgot Password.
@@ -236,32 +195,10 @@
                               Height="58"
                               Margin="0,0,0,18">
 
-                            <TextBox Style="{StaticResource LoginTextBoxStyle}"
+                            <TextBox Style="{StaticResource AuthIconTextBoxStyle}"
                                      Text="{Binding LoginInput, UpdateSourceTrigger=PropertyChanged}"
+                                     Tag="Enter your user id"
                                      ToolTip="Enter your user ID"/>
-
-                            <!-- Placeholder text -->
-                            <TextBlock Text="Enter your user id"
-                                       FontFamily="{StaticResource AppFont}"
-                                       FontSize="22"
-                                       Foreground="#8A8A8A"
-                                       IsHitTestVisible="False"
-                                       VerticalAlignment="Center"
-                                       Margin="62,2,0,0">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding LoginInput}" Value="">
-                                                <Setter Property="Visibility" Value="Visible"/>
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding LoginInput}" Value="{x:Null}">
-                                                <Setter Property="Visibility" Value="Visible"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
 
                             <fa:IconBlock Icon="User"
                                           Foreground="#08CFA5"
@@ -289,26 +226,18 @@
 
                             <!-- Hidden password mode -->
                             <PasswordBox x:Name="PasswordInput"
-                                        Style="{StaticResource LoginPasswordBoxStyle}"
+                                        Style="{StaticResource AuthIconPasswordBoxStyle}"
+                                        Tag="Enter your password"
                                         PasswordChanged="PasswordInput_PasswordChanged"
                                         ToolTip="Enter your password"/>
 
                             <!-- Visible password mode -->
                             <TextBox x:Name="VisiblePasswordInput"
-                                    Style="{StaticResource LoginTextBoxStyle}"
+                                    Style="{StaticResource AuthVisiblePasswordTextBoxStyle}"
+                                    Tag="Enter your password"
                                     TextChanged="VisiblePasswordInput_TextChanged"
                                     Visibility="Collapsed"
                                     ToolTip="Enter your password"/>
-
-                            <!-- Placeholder text for password -->
-                            <TextBlock x:Name="PasswordPlaceholder"
-                                    Text="Enter your password"
-                                    FontFamily="{StaticResource AppFont}"
-                                    FontSize="22"
-                                    Foreground="#8A8A8A"
-                                    IsHitTestVisible="False"
-                                    VerticalAlignment="Center"
-                                    Margin="62,2,0,0"/>
 
                             <!-- Lock icon -->
                             <fa:IconBlock Icon="Lock"

@@ -31,7 +31,6 @@ namespace CruzNeryClinic.Views
             VisiblePasswordInput.Text = PasswordInput.Password;
             isUpdatingPassword = false;
 
-            UpdatePasswordPlaceholder();
         }
 
         private void VisiblePasswordInput_TextChanged(object sender, TextChangedEventArgs e)
@@ -47,7 +46,6 @@ namespace CruzNeryClinic.Views
             PasswordInput.Password = VisiblePasswordInput.Text;
             isUpdatingPassword = false;
 
-            UpdatePasswordPlaceholder();
         }
 
         private void TogglePasswordButton_Click(object sender, RoutedEventArgs e)
@@ -72,7 +70,6 @@ namespace CruzNeryClinic.Views
                 PasswordInput.Focus();
             }
 
-            UpdatePasswordPlaceholder();
         }
 
         private void UpdateViewModelPassword(string password)
@@ -83,15 +80,5 @@ namespace CruzNeryClinic.Views
             }
         }
 
-        private void UpdatePasswordPlaceholder()
-        {
-            string currentPassword = isPasswordVisible
-                ? VisiblePasswordInput.Text
-                : PasswordInput.Password;
-
-            PasswordPlaceholder.Visibility = string.IsNullOrEmpty(currentPassword)
-                ? Visibility.Visible
-                : Visibility.Collapsed;
-        }
     }
 }
