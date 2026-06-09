@@ -42,6 +42,7 @@ namespace CruzNeryClinic.ViewModels
         private decimal appointmentDiscountAmount;
         private decimal appointmentPaymentAmount;
         private decimal appointmentBalance;
+        private decimal appointmentChangeAmount;
 
         private string appointmentPaymentMethod = "Cash";
         private string appointmentNotes = string.Empty;
@@ -101,6 +102,7 @@ namespace CruzNeryClinic.ViewModels
         private decimal balanceCurrentBalance;
         private decimal balancePaymentAmount;
         private decimal balanceRemainingAfterPayment;
+        private decimal balanceChangeAmount;
 
         private string balancePaymentNotes = string.Empty;
 
@@ -124,6 +126,7 @@ namespace CruzNeryClinic.ViewModels
         private decimal manualDiscountAmount;
         private decimal manualPaymentAmount;
         private decimal manualBalance;
+        private decimal manualChangeAmount;
 
         private string manualNotes = string.Empty;
 
@@ -622,6 +625,22 @@ namespace CruzNeryClinic.ViewModels
 
         public string AppointmentBalanceDisplay =>
             $"₱{AppointmentBalance:N2}";
+        public decimal AppointmentChangeAmount
+        {
+            get => appointmentChangeAmount;
+            set
+            {
+                if (SetProperty(ref appointmentChangeAmount, value))
+                    OnPropertyChanged(nameof(AppointmentChangeAmountDisplay));
+            }
+        }
+
+        public string AppointmentChangeAmountDisplay =>
+            $"₱{AppointmentChangeAmount:N2}";
+
+        public string AppointmentPaymentAmountDisplay =>
+            $"₱{AppointmentPaymentAmount:N2}";
+
         public string AppointmentPaymentErrorMessage
         {
             get => appointmentPaymentErrorMessage;
@@ -730,6 +749,19 @@ namespace CruzNeryClinic.ViewModels
 
         public string BalanceRemainingAfterPaymentDisplay =>
             $"₱{BalanceRemainingAfterPayment:N2}";
+
+        public decimal BalanceChangeAmount
+        {
+            get => balanceChangeAmount;
+            set
+            {
+                if (SetProperty(ref balanceChangeAmount, value))
+                    OnPropertyChanged(nameof(BalanceChangeAmountDisplay));
+            }
+        }
+
+        public string BalanceChangeAmountDisplay =>
+            $"₱{BalanceChangeAmount:N2}";
 
         private bool showAllBalancePaymentItems;
 
@@ -920,6 +952,19 @@ namespace CruzNeryClinic.ViewModels
 
         public string ManualBalanceDisplay =>
             $"₱{ManualBalance:N2}";
+
+        public decimal ManualChangeAmount
+        {
+            get => manualChangeAmount;
+            set
+            {
+                if (SetProperty(ref manualChangeAmount, value))
+                    OnPropertyChanged(nameof(ManualChangeAmountDisplay));
+            }
+        }
+
+        public string ManualChangeAmountDisplay =>
+            $"₱{ManualChangeAmount:N2}";
 
         public string ManualSubtotalDisplay
         {
@@ -1876,17 +1921,18 @@ namespace CruzNeryClinic.ViewModels
             else
                 currentInvoiceBalance = billableAmount;
 
-            // Do not force the payment back to 0 unless there is truly no payable balance.
-            if (AppointmentPaymentAmount > currentInvoiceBalance)
-                AppointmentPaymentAmount = currentInvoiceBalance;
+            decimal collectiblePayment = Math.Min(AppointmentPaymentAmount, currentInvoiceBalance);
 
-            AppointmentBalance = Math.Max(currentInvoiceBalance - AppointmentPaymentAmount, 0);
+            AppointmentBalance = Math.Max(currentInvoiceBalance - collectiblePayment, 0);
+            AppointmentChangeAmount = Math.Max(AppointmentPaymentAmount - currentInvoiceBalance, 0);
 
             OnPropertyChanged(nameof(AppointmentVatExemptSalesDisplay));
             OnPropertyChanged(nameof(AppointmentDiscountLabel));
             OnPropertyChanged(nameof(AppointmentBillableAmountDisplay));
             OnPropertyChanged(nameof(AppointmentSubtotalDisplay));
+            OnPropertyChanged(nameof(AppointmentPaymentAmountDisplay));
             OnPropertyChanged(nameof(AppointmentBalanceDisplay));
+            OnPropertyChanged(nameof(AppointmentChangeAmountDisplay));
             OnPropertyChanged(nameof(SelectedInvoiceBalanceDisplay));
         }
 
@@ -1975,17 +2021,13 @@ namespace CruzNeryClinic.ViewModels
                     return;
                 }
 
-                if (AppointmentPaymentAmount > SelectedOpenInvoice.RemainingBalance)
-                {
-                    ShowAppointmentPaymentError("Payment amount cannot be greater than the selected invoice balance.");
-                    return;
-                }
+                decimal collectiblePayment = Math.Min(AppointmentPaymentAmount, SelectedOpenInvoice.RemainingBalance);
 
                 PaymentRecord payment = new()
                 {
                     BillingId = SelectedOpenInvoice.BillingId,
                     PatientId = SelectedOpenInvoice.PatientId,
-                    AmountPaid = AppointmentPaymentAmount,
+                    AmountPaid = collectiblePayment,
                     PaymentMethod = AppointmentPaymentMethod,
                     PaymentDate = DateTime.Today,
                     ReceivedByUserId = null,
@@ -2001,6 +2043,7 @@ namespace CruzNeryClinic.ViewModels
 
                 AppointmentTotalAmount = 0;
                 AppointmentPaymentAmount = 0;
+                AppointmentChangeAmount = 0;
                 AppointmentNotes = string.Empty;
                 AppointmentInvoiceItemName = string.Empty;
 
@@ -2044,6 +2087,7 @@ namespace CruzNeryClinic.ViewModels
             AppointmentDiscountAmount = 0;
             AppointmentPaymentAmount = 0;
             AppointmentBalance = 0;
+            AppointmentChangeAmount = 0;
             AppointmentPaymentMethod = "Cash";
             AppointmentNotes = string.Empty;
 
@@ -2059,7 +2103,9 @@ namespace CruzNeryClinic.ViewModels
             OnPropertyChanged(nameof(AppointmentDiscountLabel));
             OnPropertyChanged(nameof(AppointmentBillableAmountDisplay));
             OnPropertyChanged(nameof(AppointmentSubtotalDisplay));
+            OnPropertyChanged(nameof(AppointmentPaymentAmountDisplay));
             OnPropertyChanged(nameof(AppointmentBalanceDisplay));
+            OnPropertyChanged(nameof(AppointmentChangeAmountDisplay));
         }
 
         private void ShowAppointmentPaymentError(string message)
@@ -2155,14 +2201,15 @@ namespace CruzNeryClinic.ViewModels
             if (BalancePaymentAmount < 0)
                 BalancePaymentAmount = 0;
 
-            if (BalancePaymentAmount > BalanceCurrentBalance)
-                BalancePaymentAmount = BalanceCurrentBalance;
+            decimal collectiblePayment = Math.Min(BalancePaymentAmount, BalanceCurrentBalance);
 
-            BalanceRemainingAfterPayment = Math.Max(BalanceCurrentBalance - BalancePaymentAmount, 0);
+            BalanceRemainingAfterPayment = Math.Max(BalanceCurrentBalance - collectiblePayment, 0);
+            BalanceChangeAmount = Math.Max(BalancePaymentAmount - BalanceCurrentBalance, 0);
 
             OnPropertyChanged(nameof(BalanceCurrentBalanceDisplay));
             OnPropertyChanged(nameof(BalancePaymentAmountDisplay));
             OnPropertyChanged(nameof(BalanceRemainingAfterPaymentDisplay));
+            OnPropertyChanged(nameof(BalanceChangeAmountDisplay));
         }
 
         private void ProcessBalancePayment()
@@ -2179,19 +2226,15 @@ namespace CruzNeryClinic.ViewModels
                 return;
             }
 
-            if (BalancePaymentAmount > BalanceCurrentBalance)
-            {
-                ShowPrompt("Balance Payment", "Payment amount cannot be greater than the current balance.");
-                return;
-            }
-
             try
             {
+                decimal collectiblePayment = Math.Min(BalancePaymentAmount, BalanceCurrentBalance);
+
                 PaymentRecord payment = new()
                 {
                     BillingId = SelectedBalancePaymentItem.BillingId,
                     PatientId = SelectedBalancePaymentItem.PatientId,
-                    AmountPaid = BalancePaymentAmount,
+                    AmountPaid = collectiblePayment,
                     PaymentMethod = "Cash",
                     PaymentDate = DateTime.Today,
                     ReceivedByUserId = null,
@@ -2228,12 +2271,14 @@ namespace CruzNeryClinic.ViewModels
             BalanceCurrentBalance = 0;
             BalancePaymentAmount = 0;
             BalanceRemainingAfterPayment = 0;
+            BalanceChangeAmount = 0;
             BalancePaymentNotes = string.Empty;
 
             OnPropertyChanged(nameof(BalancePaymentDateDisplay));
             OnPropertyChanged(nameof(BalanceCurrentBalanceDisplay));
             OnPropertyChanged(nameof(BalancePaymentAmountDisplay));
             OnPropertyChanged(nameof(BalanceRemainingAfterPaymentDisplay));
+            OnPropertyChanged(nameof(BalanceChangeAmountDisplay));
         }
 
         #endregion
@@ -2319,10 +2364,10 @@ namespace CruzNeryClinic.ViewModels
                 ? Math.Max(ManualVatExemptSales - ManualDiscountAmount, 0)
                 : Math.Max(ManualTotalAmount - ManualDiscountAmount, 0);
 
-            if (ManualPaymentAmount > billableAmount)
-                ManualPaymentAmount = billableAmount;
+            decimal collectiblePayment = Math.Min(ManualPaymentAmount, billableAmount);
 
-            ManualBalance = Math.Max(billableAmount - ManualPaymentAmount, 0);
+            ManualBalance = Math.Max(billableAmount - collectiblePayment, 0);
+            ManualChangeAmount = Math.Max(ManualPaymentAmount - billableAmount, 0);
 
             OnPropertyChanged(nameof(HasManualVatExemption));
             OnPropertyChanged(nameof(ManualTotalAmountDisplay));
@@ -2330,6 +2375,7 @@ namespace CruzNeryClinic.ViewModels
             OnPropertyChanged(nameof(ManualDiscountAmountDisplay));
             OnPropertyChanged(nameof(ManualPaymentAmountDisplay));
             OnPropertyChanged(nameof(ManualBalanceDisplay));
+            OnPropertyChanged(nameof(ManualChangeAmountDisplay));
             OnPropertyChanged(nameof(ManualSubtotalDisplay));
         }
 
@@ -2360,12 +2406,6 @@ namespace CruzNeryClinic.ViewModels
             if (ManualPaymentAmount < 0)
             {
                 ShowPrompt("Manual Transaction", "Payment amount cannot be negative.");
-                return;
-            }
-
-            if (ManualPaymentAmount > billableAmount)
-            {
-                ShowPrompt("Manual Transaction", "Payment amount cannot be greater than the billable amount.");
                 return;
             }
 
@@ -2424,11 +2464,13 @@ namespace CruzNeryClinic.ViewModels
 
                 if (ManualPaymentAmount > 0)
                 {
+                    decimal collectiblePayment = Math.Min(ManualPaymentAmount, billableAmount);
+
                     PaymentRecord payment = new()
                     {
                         BillingId = billingId,
                         PatientId = SelectedManualPatient.PatientId,
-                        AmountPaid = ManualPaymentAmount,
+                        AmountPaid = collectiblePayment,
                         PaymentMethod = "Cash",
                         PaymentDate = DateTime.Today,
                         ReceivedByUserId = null,
@@ -2466,6 +2508,7 @@ namespace CruzNeryClinic.ViewModels
             ManualDiscountAmount = 0;
             ManualPaymentAmount = 0;
             ManualBalance = 0;
+            ManualChangeAmount = 0;
             ManualNotes = string.Empty;
 
             OnPropertyChanged(nameof(ManualTransactionDateDisplay));
@@ -2475,6 +2518,7 @@ namespace CruzNeryClinic.ViewModels
             OnPropertyChanged(nameof(ManualDiscountAmountDisplay));
             OnPropertyChanged(nameof(ManualPaymentAmountDisplay));
             OnPropertyChanged(nameof(ManualBalanceDisplay));
+            OnPropertyChanged(nameof(ManualChangeAmountDisplay));
             OnPropertyChanged(nameof(ManualSubtotalDisplay));
         }
 
