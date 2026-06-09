@@ -4,6 +4,7 @@ using CruzNeryClinic.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -48,6 +49,10 @@ namespace CruzNeryClinic.ViewModels
         private string formLastName = string.Empty;
         private string formPhoneNumber = string.Empty;
         private DateTime? formDateOfBirth = DateTime.Today;
+        private int? selectedBirthDay;
+        private string selectedBirthMonth = string.Empty;
+        private int? selectedBirthYear;
+        private bool isSyncingDateOfBirthParts;
         private string formGender = string.Empty;
         private bool formIsPwd;
         private bool formIsSeniorCitizen;
@@ -131,6 +136,16 @@ namespace CruzNeryClinic.ViewModels
                 "Other"
             };
 
+            BirthDayOptions = new ObservableCollection<int>();
+            BirthMonthOptions = new ObservableCollection<string>(
+                CultureInfo.CurrentCulture.DateTimeFormat.MonthNames
+                    .Where(month => !string.IsNullOrWhiteSpace(month))
+            );
+            BirthYearOptions = new ObservableCollection<int>(
+                Enumerable.Range(DateTime.Today.Year - 120, 121).Reverse()
+            );
+            SyncDateOfBirthPartsFromDate();
+
             LoadServiceOptions();
 
             AddNewPatientCommand = new RelayCommand(OpenAddPatientOverlay);
@@ -167,6 +182,12 @@ namespace CruzNeryClinic.ViewModels
         public ObservableCollection<string> SortOptions { get; }
 
         public ObservableCollection<string> GenderOptions { get; }
+
+        public ObservableCollection<int> BirthDayOptions { get; }
+
+        public ObservableCollection<string> BirthMonthOptions { get; }
+
+        public ObservableCollection<int> BirthYearOptions { get; }
 
         public ObservableCollection<ServiceItem> ServiceOptions { get; } = new();
 
@@ -325,8 +346,39 @@ namespace CruzNeryClinic.ViewModels
             {
                 if (SetProperty(ref formDateOfBirth, value))
                 {
+                    SyncDateOfBirthPartsFromDate();
                     UpdateCalculatedAgeAndSeniorStatus();
                 }
+            }
+        }
+
+        public int? SelectedBirthDay
+        {
+            get => selectedBirthDay;
+            set
+            {
+                if (SetProperty(ref selectedBirthDay, value))
+                    SyncDateOfBirthFromParts();
+            }
+        }
+
+        public string SelectedBirthMonth
+        {
+            get => selectedBirthMonth;
+            set
+            {
+                if (SetProperty(ref selectedBirthMonth, value))
+                    SyncDateOfBirthFromParts();
+            }
+        }
+
+        public int? SelectedBirthYear
+        {
+            get => selectedBirthYear;
+            set
+            {
+                if (SetProperty(ref selectedBirthYear, value))
+                    SyncDateOfBirthFromParts();
             }
         }
 
@@ -1332,6 +1384,89 @@ namespace CruzNeryClinic.ViewModels
             OnPropertyChanged(nameof(CalculatedAgeDisplay));
             OnPropertyChanged(nameof(IsSeniorCitizenAutoChecked));
         }
+
+        private void SyncDateOfBirthPartsFromDate()
+        {
+            if (isSyncingDateOfBirthParts)
+                return;
+
+            isSyncingDateOfBirthParts = true;
+
+            DateTime selectedDate = FormDateOfBirth?.Date ?? DateTime.Today;
+            UpdateBirthDayOptions(selectedDate.Year, selectedDate.Month);
+
+            selectedBirthDay = selectedDate.Day;
+            selectedBirthMonth = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(selectedDate.Month);
+            selectedBirthYear = selectedDate.Year;
+
+            OnPropertyChanged(nameof(SelectedBirthDay));
+            OnPropertyChanged(nameof(SelectedBirthMonth));
+            OnPropertyChanged(nameof(SelectedBirthYear));
+
+            isSyncingDateOfBirthParts = false;
+        }
+
+        private void SyncDateOfBirthFromParts()
+        {
+            if (isSyncingDateOfBirthParts)
+                return;
+
+            if (!SelectedBirthYear.HasValue || string.IsNullOrWhiteSpace(SelectedBirthMonth))
+                return;
+
+            int month = GetBirthMonthNumber(SelectedBirthMonth);
+
+            if (month <= 0)
+                return;
+
+            UpdateBirthDayOptions(SelectedBirthYear.Value, month);
+
+            int day = SelectedBirthDay ?? 1;
+            int maxDay = DateTime.DaysInMonth(SelectedBirthYear.Value, month);
+
+            if (day > maxDay)
+            {
+                selectedBirthDay = maxDay;
+                OnPropertyChanged(nameof(SelectedBirthDay));
+                day = maxDay;
+            }
+
+            DateTime newDateOfBirth = new DateTime(SelectedBirthYear.Value, month, day);
+
+            if (formDateOfBirth.HasValue && formDateOfBirth.Value.Date == newDateOfBirth.Date)
+                return;
+
+            formDateOfBirth = newDateOfBirth;
+            OnPropertyChanged(nameof(FormDateOfBirth));
+            UpdateCalculatedAgeAndSeniorStatus();
+        }
+
+        private void UpdateBirthDayOptions(int year, int month)
+        {
+            int maxDay = DateTime.DaysInMonth(year, month);
+
+            if (BirthDayOptions.Count == maxDay)
+                return;
+
+            BirthDayOptions.Clear();
+
+            for (int day = 1; day <= maxDay; day++)
+                BirthDayOptions.Add(day);
+        }
+
+        private int GetBirthMonthNumber(string monthName)
+        {
+            string[] monthNames = CultureInfo.CurrentCulture.DateTimeFormat.MonthNames;
+
+            for (int index = 0; index < monthNames.Length; index++)
+            {
+                if (string.Equals(monthNames[index], monthName, StringComparison.OrdinalIgnoreCase))
+                    return index + 1;
+            }
+
+            return 0;
+        }
+
         private void ClearPatientForm()
         {
             FormFirstName = string.Empty;

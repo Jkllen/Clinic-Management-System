@@ -148,9 +148,36 @@
                             Style="{StaticResource PatientOverlayFieldLabelStyle}"
                             Text="Date of Birth *" />
 
-                        <DatePicker
-                            SelectedDate="{Binding FormDateOfBirth, Mode=TwoWay}"
-                            Style="{StaticResource DateOfBirthDatePickerStyle}" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="0.72*" />
+                                <ColumnDefinition Width="10" />
+                                <ColumnDefinition Width="1.35*" />
+                                <ColumnDefinition Width="10" />
+                                <ColumnDefinition Width="0.92*" />
+                            </Grid.ColumnDefinitions>
+
+                            <ComboBox
+                                Grid.Column="0"
+                                ItemsSource="{Binding BirthDayOptions}"
+                                SelectedItem="{Binding SelectedBirthDay, Mode=TwoWay}"
+                                Style="{StaticResource DateOfBirthSegmentComboBoxStyle}"
+                                Tag="Day" />
+
+                            <ComboBox
+                                Grid.Column="2"
+                                ItemsSource="{Binding BirthMonthOptions}"
+                                SelectedItem="{Binding SelectedBirthMonth, Mode=TwoWay}"
+                                Style="{StaticResource DateOfBirthSegmentComboBoxStyle}"
+                                Tag="Month" />
+
+                            <ComboBox
+                                Grid.Column="4"
+                                ItemsSource="{Binding BirthYearOptions}"
+                                SelectedItem="{Binding SelectedBirthYear, Mode=TwoWay}"
+                                Style="{StaticResource DateOfBirthSegmentComboBoxStyle}"
+                                Tag="Year" />
+                        </Grid>
                     </StackPanel>
 
                     <!-- Gender -->

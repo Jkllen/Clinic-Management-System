@@ -1015,6 +1015,21 @@
 
         <!--#endregion Default Dropdown Combobox Style-->
 
+        <!--#region Date of Birth Dropdown Styles-->
+        <Style
+            x:Key="DateOfBirthSegmentComboBoxStyle"
+            BasedOn="{StaticResource ExactStyleComboBox}"
+            TargetType="{x:Type ComboBox}">
+            <Setter Property="Height" Value="38" />
+            <Setter Property="MinWidth" Value="82" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Padding" Value="12,0,28,0" />
+            <Setter Property="Background" Value="#F8FAFC" />
+            <Setter Property="BorderBrush" Value="{StaticResource FieldBorderBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource FieldTextBrush}" />
+        </Style>
+        <!--#endregion Date of Birth Dropdown Styles-->
+
         <!--#region Modern Dropdown MenuItem Style-->
         <Style x:Key="ModernMoreDropdownMenuItemStyle" TargetType="{x:Type MenuItem}">
             <Setter Property="Height" Value="38" />
