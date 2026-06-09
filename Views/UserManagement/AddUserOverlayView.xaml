@@ -972,7 +972,7 @@
                                             Content="Copy"
                                             FontWeight="Bold"
                                             Foreground="White"
-                                            Style="{StaticResource PrimaryButtonStyle}" />
+                                            Style="{StaticResource SmallActionButtonStyle}" />
                                     </Grid>
                                 </StackPanel>
                             </Grid>
@@ -992,7 +992,7 @@
                                         Content="Close"
                                         FontWeight="Bold"
                                         Foreground="White"
-                                        Style="{StaticResource PrimaryButtonStyle}" />
+                                        Style="{StaticResource SmallActionButtonStyle}" />
 
                                     <Button
                                         Width="110"
@@ -1002,7 +1002,7 @@
                                         Content="Register again?"
                                         FontWeight="Bold"
                                         Foreground="White"
-                                        Style="{StaticResource PrimaryButtonStyle}" />
+                                        Style="{StaticResource SmallActionButtonStyle}" />
                                 </StackPanel>
                             </Grid>
                             </Grid>
