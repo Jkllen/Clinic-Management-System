@@ -648,8 +648,6 @@ namespace CruzNeryClinic.ViewModels
             int columnCount = headerCells.Split("<th").Length - 1;
             if (rows.Length == 0)
                 rows.Append($"<tr><td colspan=\"{columnCount}\" class=\"empty\">No records for the selected period.</td></tr>");
-            else if (totalRows > rowLimit)
-                rows.Append($"<tr><td colspan=\"{columnCount}\" class=\"empty\">Showing first {rowLimit:N0} of {totalRows:N0} records (summarized to save paper).</td></tr>");
 
             StringBuilder cards = new();
             foreach (var (label, value) in summary)
