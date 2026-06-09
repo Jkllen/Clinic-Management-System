@@ -48,7 +48,8 @@ namespace CruzNeryClinic.ViewModels
         private string formMiddleName = string.Empty;
         private string formLastName = string.Empty;
         private string formPhoneNumber = string.Empty;
-        private DateTime? formDateOfBirth = DateTime.Today;
+        private const int MinimumPatientAge = 1;
+        private DateTime? formDateOfBirth = DateTime.Today.AddYears(-MinimumPatientAge);
         private int? selectedBirthDay;
         private string selectedBirthMonth = string.Empty;
         private int? selectedBirthYear;
@@ -144,7 +145,7 @@ namespace CruzNeryClinic.ViewModels
                     .Where(month => !string.IsNullOrWhiteSpace(month))
             );
             BirthYearOptions = new ObservableCollection<int>(
-                Enumerable.Range(DateTime.Today.Year - 120, 121).Reverse()
+                Enumerable.Range(DateTime.Today.Year - 120, 121 - MinimumPatientAge).Reverse()
             );
             SyncDateOfBirthPartsFromDate();
 
@@ -1234,6 +1235,12 @@ namespace CruzNeryClinic.ViewModels
                 return false;
             }
 
+            if (CalculatePatientAge(FormDateOfBirth.Value.Date) < MinimumPatientAge)
+            {
+                ShowPatientFormError($"Patient must be at least {MinimumPatientAge} year old.");
+                return false;
+            }
+
             if (string.IsNullOrWhiteSpace(FormGender))
             {
                 ShowPatientFormError("Gender is required.");
@@ -1375,16 +1382,27 @@ namespace CruzNeryClinic.ViewModels
                 return;
             }
 
-            int age = today.Year - birthDate.Year;
-
-            if (birthDate.Date > today.AddYears(-age))
-                age--;
-
+            int age = CalculatePatientAge(birthDate);
             CalculatedAge = age;
             FormIsSeniorCitizen = age >= 60;
 
             OnPropertyChanged(nameof(CalculatedAgeDisplay));
             OnPropertyChanged(nameof(IsSeniorCitizenAutoChecked));
+        }
+
+        private int CalculatePatientAge(DateTime birthDate)
+        {
+            DateTime today = DateTime.Today;
+
+            if (birthDate.Date > today)
+                return 0;
+
+            int age = today.Year - birthDate.Year;
+
+            if (birthDate.Date > today.AddYears(-age))
+                age--;
+
+            return Math.Max(age, 0);
         }
 
         private void SyncDateOfBirthPartsFromDate()
@@ -1475,8 +1493,8 @@ namespace CruzNeryClinic.ViewModels
             FormMiddleName = string.Empty;
             FormLastName = string.Empty;
             FormPhoneNumber = string.Empty;
-            FormDateOfBirth = DateTime.Today;
-            CalculatedAge = 0;
+            FormDateOfBirth = DateTime.Today.AddYears(-MinimumPatientAge);
+            CalculatedAge = MinimumPatientAge;
             OnPropertyChanged(nameof(CalculatedAgeDisplay));
             OnPropertyChanged(nameof(IsSeniorCitizenAutoChecked));
             FormGender = string.Empty;

@@ -237,8 +237,10 @@
                     </StackPanel>
                 </Grid>
 
+                <Border Style="{StaticResource PatientOverlaySectionDividerStyle}" />
+
                 <TextBlock
-                    Margin="0,28,0,12"
+                    Margin="0,0,0,12"
                     FontSize="16"
                     FontWeight="SemiBold"
                     Text="Data Privacy Consent" />

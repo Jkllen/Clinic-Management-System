@@ -1736,5 +1736,20 @@
         <Style x:Key="MainScreenScrollBarStyle" BasedOn="{StaticResource BlueDataGridScrollBarStyle}" TargetType="{x:Type ScrollBar}" />
         <!--#endregion Layout, Sidebar, and Table Styles-->
 
+        <!-- Subtle section divider used between major patient overlay sections. -->
+        <Style x:Key="PatientOverlaySectionDividerStyle" TargetType="Border">
+            <Setter Property="Height" Value="1"/>
+            <Setter Property="Margin" Value="0,30,0,20"/>
+            <Setter Property="Background">
+                <Setter.Value>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Color="#223357" Offset="0"/>
+                        <GradientStop Color="#C8DCF0" Offset="0.48"/>
+                        <GradientStop Color="#00C2A8" Offset="1"/>
+                    </LinearGradientBrush>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
     </Application.Resources>
 </Application>

@@ -844,10 +844,11 @@
                 <!-- ─────────────── GRID SPLITTER (Row 1) ─────────────── -->
                 <GridSplitter
                     Grid.Row="1"
-                    Height="6"
+                    Height="4"
+                    Margin="0,5,0,0"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Center"
-                    Background="#D4D4D4"
+                    Background="#D0D0D0"
                     Cursor="SizeNS"
                     ShowsPreview="True" />
 
