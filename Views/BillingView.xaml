@@ -1000,7 +1000,7 @@
                                 <TextBlock
                                     FontSize="16"
                                     FontWeight="Bold"
-                                    Text="Payment Amount *" />
+                                    Text="Cash Received *" />
                                 <TextBox
                                     Height="52"
                                     Margin="0,8,0,0"
@@ -1066,12 +1066,21 @@
                                     </Grid>
 
                                     <Grid Margin="0,14,0,0">
-                                        <TextBlock Foreground="#223357" Text="Payment:" />
+                                        <TextBlock Foreground="#223357" Text="Cash Received:" />
                                         <TextBlock
                                             HorizontalAlignment="Right"
                                             FontWeight="Bold"
                                             Foreground="#223357"
-                                            Text="{Binding AppointmentPaymentAmount, StringFormat=-₱ {0:N2}}" />
+                                            Text="{Binding AppointmentPaymentAmountDisplay}" />
+                                    </Grid>
+
+                                    <Grid Margin="0,14,0,0">
+                                        <TextBlock Foreground="#223357" Text="Change:" />
+                                        <TextBlock
+                                            HorizontalAlignment="Right"
+                                            FontWeight="Bold"
+                                            Foreground="#D49A00"
+                                            Text="{Binding AppointmentChangeAmountDisplay}" />
                                     </Grid>
 
                                     <Border
