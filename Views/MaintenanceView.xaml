@@ -587,7 +587,8 @@
                                                         FontSize="12"
                                                         Foreground="#777777"
                                                         Text="Select backup file to restore data."
-                                                        TextWrapping="Wrap" />
+                                                        TextWrapping="Wrap"
+                                                        TextTrimming="CharacterEllipsis" />
                                                 </StackPanel>
                                             </Grid>
 

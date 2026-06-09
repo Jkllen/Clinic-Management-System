@@ -104,10 +104,12 @@ namespace CruzNeryClinic.Repositories
             bt.AmountPaid,
             bt.RemainingBalance,
             bt.PaymentStatus,
-            bt.TransactionDate
+            bt.TransactionDate,
+            COALESCE(bt.IsArchived, 0) AS IsArchived
         FROM BillingTransactions bt
         INNER JOIN Patients p
             ON bt.PatientId = p.PatientId
+        WHERE COALESCE(bt.IsArchived, 0) = 0
         ORDER BY bt.TransactionDate DESC, bt.BillingId DESC;";
 
             using SqliteDataReader reader = command.ExecuteReader();
@@ -176,7 +178,8 @@ SELECT
     bt.AmountPaid,
     bt.RemainingBalance,
     bt.PaymentStatus,
-    bt.TransactionDate
+    bt.TransactionDate,
+    COALESCE(bt.IsArchived, 0) AS IsArchived
 FROM BillingTransactions bt
 INNER JOIN Patients p
     ON bt.PatientId = p.PatientId
@@ -208,7 +211,8 @@ ORDER BY bt.TransactionDate DESC, bt.BillingId DESC;";
                     RemainingBalance = SafeGetSecureDecimal(reader, "RemainingBalance"),
 
                     PaymentStatus = SafeGetString(reader, "PaymentStatus"),
-                    TransactionDate = ParseDate(SafeGetString(reader, "TransactionDate"))
+                    TransactionDate = ParseDate(SafeGetString(reader, "TransactionDate")),
+                    IsArchived = Convert.ToInt32(reader["IsArchived"]) == 1
                 });
             }
 
@@ -273,13 +277,15 @@ ORDER BY bt.TransactionDate DESC, bt.BillingId DESC;";
             bt.RemainingBalance,
             bt.PaymentStatus,
             bt.TransactionDate,
-            bt.IsInvoiceOpen
+            bt.IsInvoiceOpen,
+            COALESCE(bt.IsArchived, 0) AS IsArchived
         FROM BillingTransactions bt
         INNER JOIN Patients p
             ON bt.PatientId = p.PatientId
         WHERE
             bt.PatientId = @PatientId
             AND COALESCE(bt.IsInvoiceOpen, 1) = 1
+            AND COALESCE(bt.IsArchived, 0) = 0
         ORDER BY bt.TransactionDate DESC, bt.BillingId DESC;";
 
             command.Parameters.AddWithValue("@PatientId", patientId);
@@ -315,7 +321,8 @@ ORDER BY bt.TransactionDate DESC, bt.BillingId DESC;";
                     RemainingBalance = SafeGetSecureDecimal(reader, "RemainingBalance"),
 
                     PaymentStatus = SafeGetString(reader, "PaymentStatus"),
-                    TransactionDate = ParseDate(SafeGetString(reader, "TransactionDate"))
+                    TransactionDate = ParseDate(SafeGetString(reader, "TransactionDate")),
+                    IsArchived = Convert.ToInt32(reader["IsArchived"]) == 1
                 });
             }
 
@@ -347,7 +354,8 @@ ORDER BY bt.TransactionDate DESC, bt.BillingId DESC;";
             bt.RemainingBalance,
             bt.PaymentStatus,
             bt.TransactionDate,
-            bt.IsInvoiceOpen
+            bt.IsInvoiceOpen,
+            COALESCE(bt.IsArchived, 0) AS IsArchived
         FROM BillingTransactions bt
         INNER JOIN Patients p
             ON bt.PatientId = p.PatientId
@@ -388,7 +396,8 @@ ORDER BY bt.TransactionDate DESC, bt.BillingId DESC;";
                 RemainingBalance = SafeGetSecureDecimal(reader, "RemainingBalance"),
 
                 PaymentStatus = SafeGetString(reader, "PaymentStatus"),
-                TransactionDate = ParseDate(SafeGetString(reader, "TransactionDate"))
+                TransactionDate = ParseDate(SafeGetString(reader, "TransactionDate")),
+                IsArchived = Convert.ToInt32(reader["IsArchived"]) == 1
             };
         }        
         
@@ -546,6 +555,7 @@ ORDER BY bt.TransactionDate DESC, bt.BillingId DESC;";
 
                 AmountPaid = actualAmountPaid,
                 RemainingBalance = SafeGetSecureDecimal(reader, "RemainingBalance"),
+                ChangeAmount = Math.Max(actualAmountPaid - SafeGetSecureDecimal(reader, "SubtotalAfterDiscount"), 0),
 
                 PaymentStatus = SafeGetString(reader, "PaymentStatus"),
                 PaymentMethod = SafeGetSecureString(reader, "PaymentMethod", "Cash"),
@@ -648,7 +658,8 @@ ORDER BY bt.TransactionDate DESC, bt.BillingId DESC;";
             bt.AmountPaid,
             bt.RemainingBalance,
             bt.PaymentStatus,
-            bt.TransactionDate
+            bt.TransactionDate,
+            COALESCE(bt.IsArchived, 0) AS IsArchived
         FROM BillingTransactions bt
         INNER JOIN Patients p
             ON bt.PatientId = p.PatientId
@@ -683,7 +694,8 @@ ORDER BY bt.TransactionDate DESC, bt.BillingId DESC;";
                     RemainingBalance = SafeGetSecureDecimal(reader, "RemainingBalance"),
 
                     PaymentStatus = SafeGetString(reader, "PaymentStatus"),
-                    TransactionDate = ParseDate(SafeGetString(reader, "TransactionDate"))
+                    TransactionDate = ParseDate(SafeGetString(reader, "TransactionDate")),
+                    IsArchived = Convert.ToInt32(reader["IsArchived"]) == 1
                 });
             }
 
@@ -1204,6 +1216,60 @@ SELECT last_insert_rowid();";
         {
             decimal balance = netAmount - amountPaid;
             return balance < 0 ? 0 : balance;
+        }
+
+        public void ArchiveBillingRecord(int billingId)
+        {
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+        UPDATE BillingTransactions
+        SET
+            IsArchived = 1,
+            ArchivedAt = @ArchivedAt,
+            UpdatedAt = @UpdatedAt
+        WHERE BillingId = @BillingId;";
+
+            string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            command.Parameters.AddWithValue("@ArchivedAt", timestamp);
+            command.Parameters.AddWithValue("@UpdatedAt", timestamp);
+            command.Parameters.AddWithValue("@BillingId", billingId);
+
+            command.ExecuteNonQuery();
+
+            ActivityLogService.Log(
+                "Archive",
+                "Billing",
+                $"Archived billing transaction #{billingId}.");
+        }
+
+        public void RestoreBillingRecord(int billingId)
+        {
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+        UPDATE BillingTransactions
+        SET
+            IsArchived = 0,
+            RestoredAt = @RestoredAt,
+            UpdatedAt = @UpdatedAt
+        WHERE BillingId = @BillingId;";
+
+            string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            command.Parameters.AddWithValue("@RestoredAt", timestamp);
+            command.Parameters.AddWithValue("@UpdatedAt", timestamp);
+            command.Parameters.AddWithValue("@BillingId", billingId);
+
+            command.ExecuteNonQuery();
+
+            ActivityLogService.Log(
+                "Restore",
+                "Billing",
+                $"Restored billing transaction #{billingId}.");
         }
 
         private string BuildFullName(string firstName, string middleName, string lastName)

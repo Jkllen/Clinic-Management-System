@@ -71,6 +71,7 @@ namespace CruzNeryClinic.ViewModels
         private BillingPatientLookupItem? selectedPaymentHistoryPatient;
         private string paymentHistoryPatientName = string.Empty;
         private bool hasSelectedPaymentHistoryPatient;
+        private string selectedTransactionHistoryFilter = "Current";
 
 
         private string errorMessage = string.Empty;
@@ -150,7 +151,11 @@ namespace CruzNeryClinic.ViewModels
 
         public ObservableCollection<BillingRecordListItem> SelectedPatientBillingRecords { get; }
 
+        public ObservableCollection<BillingRecordListItem> FilteredPatientBillingRecords { get; }
+
         public ObservableCollection<BillingRecordListItem> LatestPatientBillingRecords { get; }
+
+        public ObservableCollection<string> TransactionHistoryFilterOptions { get; }
 
         public ObservableCollection<BillingPatientLookupItem> ManualPatientLookupResults { get; }
 
@@ -309,7 +314,17 @@ namespace CruzNeryClinic.ViewModels
         }
 
         public bool HasMoreThanThreePatientBillingRecords =>
-            SelectedPatientBillingRecords.Count > 3;
+            SelectedPatientBillingRecords.Count(record => !record.IsArchived) > 3;
+
+        public string SelectedTransactionHistoryFilter
+        {
+            get => selectedTransactionHistoryFilter;
+            set
+            {
+                if (SetProperty(ref selectedTransactionHistoryFilter, value))
+                    ApplyTransactionHistoryFilter();
+            }
+        }
 
         public string PaymentHistorySearchText
         {
@@ -1012,6 +1027,10 @@ namespace CruzNeryClinic.ViewModels
 
         public ICommand ExpandReceiptCommand { get; }
 
+        public ICommand ArchiveBillingRecordCommand { get; }
+
+        public ICommand RestoreBillingRecordCommand { get; }
+
         public ICommand CreateNewInvoiceForSelectedTreatmentCommand { get; }
 
         public ICommand AddSelectedTreatmentToInvoiceCommand { get; }
@@ -1067,7 +1086,8 @@ namespace CruzNeryClinic.ViewModels
                 "All",
                 "Paid",
                 "Partial",
-                "Unpaid"
+                "Unpaid",
+                "Archived"
             };
 
             ToggleBalancePaymentItemsCommand = new RelayCommand(() =>
@@ -1101,9 +1121,15 @@ namespace CruzNeryClinic.ViewModels
 
 
             LatestPatientBillingRecords = new ObservableCollection<BillingRecordListItem>();
+            FilteredPatientBillingRecords = new ObservableCollection<BillingRecordListItem>();
 
             PaymentHistoryPatientResults = new ObservableCollection<BillingPatientLookupItem>();
             SelectedPatientBillingRecords = new ObservableCollection<BillingRecordListItem>();
+            TransactionHistoryFilterOptions = new ObservableCollection<string>
+            {
+                "Current",
+                "Archived"
+            };
 
             CloseReceiptPrintPreviewCommand = new RelayCommand(CloseReceiptPrintPreview);
 
@@ -1111,6 +1137,8 @@ namespace CruzNeryClinic.ViewModels
             CloseTransactionHistoryOverlayCommand = new RelayCommand(CloseTransactionHistoryOverlay);
 
             ExpandReceiptCommand = new RelayCommand<BillingRecordListItem>(ExpandReceipt);
+            ArchiveBillingRecordCommand = new RelayCommand<BillingRecordListItem>(ArchiveBillingRecord);
+            RestoreBillingRecordCommand = new RelayCommand<BillingRecordListItem>(RestoreBillingRecord);
             CloseReceiptOverlayCommand = new RelayCommand(CloseReceiptOverlay);
 
             ProcessAppointmentPaymentCommand = new RelayCommand(ProcessAppointmentPayment);
@@ -1217,12 +1245,22 @@ namespace CruzNeryClinic.ViewModels
 
             // Summary cards are computed from the full, unfiltered list so that the
             // search box and status filter never distort the totals.
-            UpdateBillingSummary(allRecords);
+            UpdateBillingSummary(allRecords.Where(record => !record.IsArchived));
 
             IEnumerable<BillingRecordListItem> records = allRecords;
 
+            if (SelectedBillingStatusFilter == "Archived")
+            {
+                records = records.Where(record => record.IsArchived);
+            }
+            else
+            {
+                records = records.Where(record => !record.IsArchived);
+            }
+
             if (!string.IsNullOrWhiteSpace(SelectedBillingStatusFilter) &&
-                SelectedBillingStatusFilter != "All")
+                SelectedBillingStatusFilter != "All" &&
+                SelectedBillingStatusFilter != "Archived")
             {
                 records = records.Where(record =>
                     string.Equals(
@@ -1291,14 +1329,32 @@ namespace CruzNeryClinic.ViewModels
         {
             SelectedPatientBillingRecords.Clear();
             LatestPatientBillingRecords.Clear();
+            FilteredPatientBillingRecords.Clear();
 
             foreach (BillingRecordListItem billing in billingRepository.GetBillingRecordsByPatientId(patientId))
                 SelectedPatientBillingRecords.Add(billing);
 
-            foreach (BillingRecordListItem billing in SelectedPatientBillingRecords.Take(3))
+            foreach (BillingRecordListItem billing in SelectedPatientBillingRecords.Where(record => !record.IsArchived).Take(3))
                 LatestPatientBillingRecords.Add(billing);
 
+            ApplyTransactionHistoryFilter();
             OnPropertyChanged(nameof(HasMoreThanThreePatientBillingRecords));
+        }
+
+        private void ApplyTransactionHistoryFilter()
+        {
+            FilteredPatientBillingRecords.Clear();
+
+            bool showArchived = string.Equals(
+                SelectedTransactionHistoryFilter,
+                "Archived",
+                StringComparison.OrdinalIgnoreCase);
+
+            IEnumerable<BillingRecordListItem> filteredRecords = SelectedPatientBillingRecords
+                .Where(record => record.IsArchived == showArchived);
+
+            foreach (BillingRecordListItem billing in filteredRecords)
+                FilteredPatientBillingRecords.Add(billing);
         }
 
         private void ClearPaymentHistorySelection()
@@ -1312,6 +1368,7 @@ namespace CruzNeryClinic.ViewModels
 
             SelectedPatientBillingRecords.Clear();
             LatestPatientBillingRecords.Clear();
+            FilteredPatientBillingRecords.Clear();
 
             OnPropertyChanged(nameof(HasMoreThanThreePatientBillingRecords));
         }
@@ -1478,6 +1535,8 @@ namespace CruzNeryClinic.ViewModels
                 return;
             }
 
+            SelectedTransactionHistoryFilter = "Current";
+            ApplyTransactionHistoryFilter();
             IsTransactionHistoryOverlayOpen = true;
         }
 
@@ -1520,6 +1579,66 @@ namespace CruzNeryClinic.ViewModels
         {
             IsReceiptOverlayOpen = false;
             SelectedReceiptDetail = null;
+        }
+
+        private void ArchiveBillingRecord(BillingRecordListItem? record)
+        {
+            if (record == null)
+                return;
+
+            MessageBoxResult result = MessageBox.Show(
+                $"Archive receipt {record.ReceiptNumber}? You can restore it from the Archived filter.",
+                "Archive Transaction",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (result != MessageBoxResult.Yes)
+                return;
+
+            try
+            {
+                billingRepository.ArchiveBillingRecord(record.BillingId);
+                RefreshBillingHistoryAfterArchiveChange();
+                ShowPrompt("Transaction Archived", "The selected billing transaction was archived.");
+            }
+            catch (Exception ex)
+            {
+                ShowPrompt("Archive Transaction", $"Failed to archive transaction: {ex.Message}");
+            }
+        }
+
+        private void RestoreBillingRecord(BillingRecordListItem? record)
+        {
+            if (record == null)
+                return;
+
+            MessageBoxResult result = MessageBox.Show(
+                $"Restore receipt {record.ReceiptNumber}? It will return to the current billing transaction list.",
+                "Restore Transaction",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (result != MessageBoxResult.Yes)
+                return;
+
+            try
+            {
+                billingRepository.RestoreBillingRecord(record.BillingId);
+                RefreshBillingHistoryAfterArchiveChange();
+                ShowPrompt("Transaction Restored", "The selected billing transaction was restored.");
+            }
+            catch (Exception ex)
+            {
+                ShowPrompt("Restore Transaction", $"Failed to restore transaction: {ex.Message}");
+            }
+        }
+
+        private void RefreshBillingHistoryAfterArchiveChange()
+        {
+            LoadBillingRecords();
+
+            if (SelectedPaymentHistoryPatient != null)
+                LoadSelectedPatientBillingRecords(SelectedPaymentHistoryPatient.PatientId);
         }
 
         #endregion

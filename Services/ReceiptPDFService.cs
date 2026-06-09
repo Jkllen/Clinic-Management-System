@@ -263,6 +263,7 @@ namespace CruzNeryClinic.Services
                             SummaryRow(table, $"Discount ({receipt.DiscountType})", receipt.DiscountAmountDisplay);
                             SummaryRow(table, "Billable Amount", receipt.SubtotalAfterDiscountDisplay);
                             SummaryRow(table, "Amount Paid", receipt.AmountPaidDisplay);
+                            SummaryRow(table, "Change", receipt.ChangeAmountDisplay);
                             SummaryRow(table, "Remaining Balance", receipt.RemainingBalanceDisplay, true);
                         });
 

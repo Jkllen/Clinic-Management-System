@@ -42,6 +42,8 @@ namespace CruzNeryClinic.Models
 
         public decimal RemainingBalance { get; set; }
 
+        public decimal ChangeAmount { get; set; }
+
         public string PaymentStatus { get; set; } = string.Empty;
 
         public string PaymentMethod { get; set; } = "Cash";
@@ -79,5 +81,6 @@ namespace CruzNeryClinic.Models
         public string RemainingBalanceDisplay => $"₱{RemainingBalance:N2}";
 
         public string VatExemptSalesDisplay => $"₱{VatExemptSales:N2}";
+        public string ChangeAmountDisplay => $"₱{ChangeAmount:N2}";
     }
 }
