@@ -208,6 +208,34 @@ namespace CruzNeryClinic.ViewModels
         private int PrintRowLimit =>
             int.TryParse(SelectedPrintRowLimit, out int n) ? n : int.MaxValue;
 
+        // ── Export format (PDF preview vs. Excel workbook) ──────────────────────
+        // Mutually exclusive: choosing one clears the other so the radio buttons
+        // stay in sync with the backing state.
+        private bool _isPdfExport = true;
+        public bool IsPdfExport
+        {
+            get => _isPdfExport;
+            set
+            {
+                if (SetProperty(ref _isPdfExport, value) && value) IsExcelExport = false;
+                OnPropertyChanged(nameof(GenerateButtonText));
+            }
+        }
+
+        private bool _isExcelExport;
+        public bool IsExcelExport
+        {
+            get => _isExcelExport;
+            set
+            {
+                if (SetProperty(ref _isExcelExport, value) && value) IsPdfExport = false;
+                OnPropertyChanged(nameof(GenerateButtonText));
+            }
+        }
+
+        // Primary action label in the Print Options dialog, reflecting the format.
+        public string GenerateButtonText => IsExcelExport ? "Export to Excel" : "Generate Preview";
+
         // ── Chart & table data ─────────────────────────────────────────────────
 
         public ObservableCollection<PatientVisitReportItem> PatientVisitsItems { get; } = new();
@@ -524,6 +552,14 @@ namespace CruzNeryClinic.ViewModels
         // it in the WebView2 print-preview overlay.
         private void PrintReport()
         {
+            // Excel export takes a different path: it writes every record (no row
+            // cap) straight to an .xlsx file instead of the HTML print preview.
+            if (IsExcelExport)
+            {
+                ExportToExcel();
+                return;
+            }
+
             string html = BuildReportHtml();
 
             // Unique file name per print: forces a reload and keeps the printed
@@ -538,6 +574,125 @@ namespace CruzNeryClinic.ViewModels
             OnPropertyChanged(nameof(ReportPrintPreviewTitle));
             IsPrintOptionsOpen = false;
             IsReportPrintPreviewOpen = true;
+        }
+
+        // Exports the full record set of the active report to an .xlsx file.
+        // Unlike the PDF preview, this ignores the "rows to print" cap and writes
+        // every record so the spreadsheet holds the complete data.
+        private void ExportToExcel()
+        {
+            string title = GetActiveReportTitle();
+            string[] headers;
+            var dataRows = new List<string[]>();
+
+            if (IsTransactionReportsSelected)
+            {
+                headers = new[] { "Transaction ID", "Date", "Patient ID", "Patient Name", "Description", "Amount", "Payment Method" };
+                foreach (TransactionReportItem t in TransactionItems)
+                    dataRows.Add(new[] { t.ReceiptNumber, t.Date, t.PatientCode, t.PatientName, t.Service, t.Amount.ToString("N2"), t.PaymentMethod });
+            }
+            else if (IsInventoryReportsSelected)
+            {
+                headers = new[] { "Item Name", "Quantity on Hand", "Reorder Level", "Last Restocked", "Status" };
+                foreach (InventoryReportItem i in InventoryItems)
+                    dataRows.Add(new[] { i.ItemName, i.CurrentStock.ToString("N0"), i.Threshold.ToString("N0"), i.LastRestocked, i.Status });
+            }
+            else if (IsUserActivityLogSelected)
+            {
+                headers = new[] { "Date / Time", "User", "Role", "Action", "Module", "Details" };
+                foreach (ActivityLogReportItem a in ActivityLogItems)
+                    dataRows.Add(new[] { a.Timestamp, a.Name, a.Role, a.Action, a.Module, a.Details });
+            }
+            else
+            {
+                headers = new[] { "Date", "Patient ID", "Patient Name", "Visit Type", "Service", "Dentist" };
+                foreach (PatientVisitReportItem p in PatientVisitsItems)
+                    dataRows.Add(new[] { p.Date, p.PatientCode, p.PatientName, p.VisitType, p.Service, p.Dentist });
+            }
+
+            var dialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Title = "Export Report to Excel",
+                Filter = "Excel Workbook (*.xlsx)|*.xlsx",
+                FileName = $"{title.Replace(' ', '_')}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx"
+            };
+            if (dialog.ShowDialog() != true) return;
+
+            try
+            {
+                using var workbook = new ClosedXML.Excel.XLWorkbook();
+                string sheetName = title.Length > 31 ? title.Substring(0, 31) : title;
+                var ws = workbook.Worksheets.Add(sheetName);
+                int colCount = headers.Length;
+
+                // Title + meta band.
+                ws.Cell(1, 1).Value = title;
+                ws.Range(1, 1, 1, colCount).Merge();
+                ws.Cell(1, 1).Style.Font.Bold = true;
+                ws.Cell(1, 1).Style.Font.FontSize = 14;
+                ws.Cell(1, 1).Style.Font.FontColor = ClosedXML.Excel.XLColor.FromHtml("#223357");
+
+                ws.Cell(2, 1).Value = $"Generated {DateTime.Now:yyyy-MM-dd HH:mm}   •   {dataRows.Count:N0} record(s)";
+                ws.Range(2, 1, 2, colCount).Merge();
+                ws.Cell(2, 1).Style.Font.FontColor = ClosedXML.Excel.XLColor.FromHtml("#777777");
+
+                // Header row.
+                const int headerRow = 4;
+                for (int c = 0; c < colCount; c++)
+                {
+                    var cell = ws.Cell(headerRow, c + 1);
+                    cell.Value = headers[c];
+                    cell.Style.Font.Bold = true;
+                    cell.Style.Font.FontColor = ClosedXML.Excel.XLColor.White;
+                    cell.Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.FromHtml("#223357");
+                }
+
+                // Data rows.
+                int r = headerRow + 1;
+                foreach (string[] row in dataRows)
+                {
+                    for (int c = 0; c < row.Length; c++)
+                        ws.Cell(r, c + 1).Value = row[c];
+                    r++;
+                }
+
+                ws.SheetView.FreezeRows(headerRow);
+                ws.Columns().AdjustToContents();
+                workbook.SaveAs(dialog.FileName);
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show(
+                    $"Failed to export to Excel: {ex.Message}",
+                    "Export Error",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Error);
+                return;
+            }
+
+            IsPrintOptionsOpen = false;
+
+            var openNow = System.Windows.MessageBox.Show(
+                $"Report exported successfully to:\n{dialog.FileName}\n\nDo you want to open it now?",
+                "Export Complete",
+                System.Windows.MessageBoxButton.YesNo,
+                System.Windows.MessageBoxImage.Information);
+
+            if (openNow == System.Windows.MessageBoxResult.Yes)
+            {
+                try
+                {
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(dialog.FileName) { UseShellExecute = true });
+                }
+                catch (Exception ex)
+                {
+                    System.Windows.MessageBox.Show(
+                        $"File saved, but could not be opened automatically: {ex.Message}",
+                        "Open File",
+                        System.Windows.MessageBoxButton.OK,
+                        System.Windows.MessageBoxImage.Warning);
+                }
+            }
         }
 
         private string BuildReportHtml()

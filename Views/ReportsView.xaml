@@ -1024,25 +1024,42 @@
                 </Border.Effect>
                 <StackPanel>
                     <TextBlock Text="Print Options" FontSize="22" FontWeight="Bold" Foreground="#223357" />
-                    <TextBlock Margin="0,6,0,18" FontSize="13" Foreground="#777777" TextWrapping="Wrap"
-                               Text="Choose what to include in the printed report." />
+                    <TextBlock Margin="0,6,0,14" FontSize="13" Foreground="#777777" TextWrapping="Wrap"
+                               Text="Choose a format and what to include in the report." />
 
-                    <CheckBox Margin="0,0,0,10" FontSize="14" Foreground="#333333"
-                              Content="Include charts" IsChecked="{Binding PrintIncludeCharts, Mode=TwoWay}" />
-                    <CheckBox Margin="0,0,0,10" FontSize="14" Foreground="#333333"
-                              Content="Include summary" IsChecked="{Binding PrintIncludeSummary, Mode=TwoWay}" />
-                    <CheckBox Margin="0,0,0,14" FontSize="14" Foreground="#333333"
-                              Content="Include detailed records" IsChecked="{Binding PrintIncludeDetailedRecords, Mode=TwoWay}" />
+                    <!-- Format selector: PDF preview vs. Excel workbook -->
+                    <TextBlock Margin="0,0,0,6" FontSize="13" FontWeight="SemiBold" Foreground="#444444" Text="Format" />
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                        <RadioButton GroupName="ExportFormat" Margin="0,0,20,0" FontSize="14" Foreground="#333333"
+                                     Content="PDF" IsChecked="{Binding IsPdfExport, Mode=TwoWay}" />
+                        <RadioButton GroupName="ExportFormat" FontSize="14" Foreground="#333333"
+                                     Content="Excel (all records)" IsChecked="{Binding IsExcelExport, Mode=TwoWay}" />
+                    </StackPanel>
 
-                    <StackPanel Orientation="Horizontal" Margin="22,0,0,4"
-                                IsEnabled="{Binding PrintIncludeDetailedRecords}">
+                    <!-- PDF-only options (hidden entirely when Excel is selected) -->
+                    <StackPanel Visibility="{Binding IsPdfExport, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <CheckBox Margin="0,0,0,10" FontSize="14" Foreground="#333333"
+                                  Content="Include charts" IsChecked="{Binding PrintIncludeCharts, Mode=TwoWay}" />
+                        <CheckBox Margin="0,0,0,10" FontSize="14" Foreground="#333333"
+                                  Content="Include summary" IsChecked="{Binding PrintIncludeSummary, Mode=TwoWay}" />
+                        <CheckBox Margin="0,0,0,14" FontSize="14" Foreground="#333333"
+                                  Content="Include detailed records" IsChecked="{Binding PrintIncludeDetailedRecords, Mode=TwoWay}" />
+
+                        <StackPanel Orientation="Horizontal" Margin="22,0,0,4"
+                                    IsEnabled="{Binding PrintIncludeDetailedRecords}">
                         <TextBlock Margin="0,0,8,0" VerticalAlignment="Center" FontSize="13"
                                    FontWeight="SemiBold" Foreground="#444444" Text="Rows to print:" />
                         <ComboBox Width="80" Height="32" VerticalContentAlignment="Center"
                                   ItemsSource="{Binding PrintRowOptions}"
                                   SelectedItem="{Binding SelectedPrintRowLimit, Mode=TwoWay}"
                                   ToolTip="Maximum number of detail rows to print" />
+                        </StackPanel>
                     </StackPanel>
+
+                    <!-- Note shown when Excel is selected -->
+                    <TextBlock Margin="0,4,0,0" FontSize="12" Foreground="#777777" TextWrapping="Wrap"
+                               Text="Excel export includes every record for this report, regardless of the row limit above."
+                               Visibility="{Binding IsExcelExport, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,24,0,0">
                         <Button Width="110" Height="42" Margin="0,0,10,0"
@@ -1051,7 +1068,7 @@
                                 Command="{Binding ClosePrintOptionsCommand}"
                                 Style="{StaticResource SecondaryButtonStyle}" />
                         <Button Width="160" Height="42"
-                                Background="#223357" Foreground="White" Content="Generate Preview"
+                                Background="#223357" Foreground="White" Content="{Binding GenerateButtonText}"
                                 Command="{Binding PrintReportCommand}"
                                 Style="{StaticResource SecondaryButtonStyle}" />
                     </StackPanel>
