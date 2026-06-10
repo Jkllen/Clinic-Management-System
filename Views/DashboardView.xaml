@@ -73,6 +73,63 @@
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
 
+        <Style x:Key="StaffCalendarDayButtonStyle" TargetType="Button">
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Background" Value="{Binding DayBackground}"/>
+            <Setter Property="BorderBrush" Value="{Binding DayBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1.2"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="DayCell"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8">
+                            <Grid>
+                                <TextBlock Text="{Binding DayNumber}"
+                                           FontSize="12"
+                                           FontWeight="SemiBold"
+                                           Foreground="{Binding DayForeground}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+
+                                <Border Width="16"
+                                        Height="16"
+                                        Margin="0,2,2,0"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Top"
+                                        Background="#E31D1D"
+                                        CornerRadius="8"
+                                        Visibility="{Binding AppointmentCountVisibility}">
+                                    <TextBlock Text="{Binding AppointmentCount}"
+                                               FontSize="9"
+                                               FontWeight="Bold"
+                                               Foreground="White"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"/>
+                                </Border>
+                            </Grid>
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource TemplatedParent}}" Value="True"/>
+                                    <Condition Binding="{Binding IsSelected}" Value="False"/>
+                                </MultiDataTrigger.Conditions>
+                                <Setter TargetName="DayCell" Property="Background" Value="#EEF6FF"/>
+                                <Setter TargetName="DayCell" Property="BorderBrush" Value="#9FC0F0"/>
+                            </MultiDataTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <!-- ── Soft drop shadow applied to dashboard cards, tables and panels ── -->
         <!-- These extend the shared styles and add the shadow only within the dashboard. -->
         <DropShadowEffect x:Key="CardDropShadow"
@@ -950,6 +1007,87 @@
                                 Style="{StaticResource ViewAllButtonStyle}"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Bottom"/>
+                    </Grid>
+                </Border>
+
+                <!-- Staff appointment calendar (non-admin only) -->
+                <Border Grid.Row="1"
+                        Style="{StaticResource DashboardCardStyle}"
+                        Height="245"
+                        Margin="0,0,0,14"
+                        Padding="18,14"
+                        Visibility="{Binding CanViewStaffAppointmentCalendar, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <Grid Grid.Row="0" Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Button Grid.Column="0"
+                                    Command="{Binding PreviousStaffCalendarMonthCommand}"
+                                    Style="{StaticResource ViewAllButtonStyle}"
+                                    Cursor="Hand"
+                                    Padding="6,0">
+                                <fa:IconBlock Icon="ChevronLeft"
+                                              FontSize="15"
+                                              Foreground="#223357"/>
+                            </Button>
+
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding StaffCalendarMonthTitle}"
+                                       FontSize="16"
+                                       FontWeight="Bold"
+                                       Foreground="#111111"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+
+                            <Button Grid.Column="2"
+                                    Command="{Binding NextStaffCalendarMonthCommand}"
+                                    Style="{StaticResource ViewAllButtonStyle}"
+                                    Cursor="Hand"
+                                    Padding="6,0">
+                                <fa:IconBlock Icon="ChevronRight"
+                                              FontSize="15"
+                                              Foreground="#223357"/>
+                            </Button>
+                        </Grid>
+
+                        <UniformGrid Grid.Row="1"
+                                     Columns="7"
+                                     Margin="0,0,0,4">
+                            <TextBlock Text="S" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center"/>
+                            <TextBlock Text="M" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center"/>
+                            <TextBlock Text="T" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center"/>
+                            <TextBlock Text="W" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center"/>
+                            <TextBlock Text="T" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center"/>
+                            <TextBlock Text="F" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center"/>
+                            <TextBlock Text="S" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        </UniformGrid>
+
+                        <ItemsControl Grid.Row="2"
+                                      ItemsSource="{Binding StaffCalendarDays}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Columns="7" Rows="6"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Style="{StaticResource StaffCalendarDayButtonStyle}"
+                                            Margin="1.5"
+                                            Command="{Binding DataContext.SelectStaffCalendarDateCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                            CommandParameter="{Binding}"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </Grid>
                 </Border>
 

@@ -481,7 +481,11 @@ namespace CruzNeryClinic.ViewModels
         public DateTime? RescheduleDate
         {
             get => rescheduleDate;
-            set => SetProperty(ref rescheduleDate, value);
+            set
+            {
+                if (SetProperty(ref rescheduleDate, value))
+                    RefreshRescheduleTimeOptions();
+            }
         }
 
         public string RescheduleTimeText
@@ -2574,22 +2578,39 @@ namespace CruzNeryClinic.ViewModels
 
         private void RefreshAppointmentTimeOptions()
         {
-            string currentTimeText = FormAppointmentTimeText;
+            RefreshTimeOptionsForDate(
+                FormAppointmentDate,
+                FormAppointmentTimeText,
+                value => FormAppointmentTimeText = value
+            );
+        }
 
+        private void RefreshRescheduleTimeOptions()
+        {
+            RefreshTimeOptionsForDate(
+                RescheduleDate,
+                RescheduleTimeText,
+                value => RescheduleTimeText = value
+            );
+        }
+
+        private void RefreshTimeOptionsForDate(
+            DateTime? selectedDate,
+            string currentTimeText,
+            Action<string> updateCurrentTime)
+        {
             AppointmentTimeOptions.Clear();
 
-            DateTime appointmentDate = FormAppointmentDate?.Date ?? DateTime.Today;
+            DateTime appointmentDate = selectedDate?.Date ?? DateTime.Today;
             TimeSpan closingTime = GetClinicClosingTime(appointmentDate);
 
             for (TimeSpan time = ClinicOpeningTime; time <= closingTime; time = time.Add(TimeSpan.FromMinutes(15)))
-            {
                 AppointmentTimeOptions.Add(DateTime.Today.Add(time).ToString("hh:mm tt"));
-            }
 
             if (!string.IsNullOrWhiteSpace(currentTimeText) &&
                 !AppointmentTimeOptions.Contains(currentTimeText))
             {
-                FormAppointmentTimeText = AppointmentTimeOptions.FirstOrDefault() ?? string.Empty;
+                updateCurrentTime(AppointmentTimeOptions.FirstOrDefault() ?? string.Empty);
             }
         }
 

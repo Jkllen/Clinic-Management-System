@@ -5,6 +5,7 @@ using CruzNeryClinic.Views;
 using System;
 using System.Windows.Input;
 using System.Windows.Controls;
+using System.Windows.Threading;
 
 namespace CruzNeryClinic.ViewModels
 {
@@ -27,6 +28,8 @@ namespace CruzNeryClinic.ViewModels
         private string _selectedModule = "Dashboard";
         private bool isEmployeePrivacyAcknowledgementOpen;
         private bool hasConfirmedEmployeePrivacyNotice;
+        private bool isLoginSuccessToastVisible;
+        private readonly DispatcherTimer loginSuccessToastTimer;
 
         public event Action? LogoutRequested;
 
@@ -43,6 +46,18 @@ namespace CruzNeryClinic.ViewModels
                 AcknowledgeEmployeePrivacy,
                 () => HasConfirmedEmployeePrivacyNotice
             );
+
+            loginSuccessToastTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(5)
+            };
+            loginSuccessToastTimer.Tick += (_, _) =>
+            {
+                loginSuccessToastTimer.Stop();
+                IsLoginSuccessToastVisible = false;
+            };
+
+            ShowLoginSuccessToast();
         }
 
         public UserControl CurrentModuleView
@@ -76,6 +91,12 @@ namespace CruzNeryClinic.ViewModels
         public string EmployeePrivacyNoticeText => EmployeePrivacyNoticeBody;
 
         public ICommand AcknowledgeEmployeePrivacyCommand { get; }
+
+        public bool IsLoginSuccessToastVisible
+        {
+            get => isLoginSuccessToastVisible;
+            set => SetProperty(ref isLoginSuccessToastVisible, value);
+        }
 
         public void NavigateTo(string moduleName)
         {
@@ -126,6 +147,13 @@ namespace CruzNeryClinic.ViewModels
             );
 
             IsEmployeePrivacyAcknowledgementOpen = false;
+        }
+
+        private void ShowLoginSuccessToast()
+        {
+            IsLoginSuccessToastVisible = true;
+            loginSuccessToastTimer.Stop();
+            loginSuccessToastTimer.Start();
         }
 
         private DashboardView CreateDashboardView()

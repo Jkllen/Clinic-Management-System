@@ -30,6 +30,10 @@ namespace CruzNeryClinic.Models
 
         public string PaymentStatus { get; set; } = string.Empty;
 
+        public bool IsArchived { get; set; }
+
+        public bool IsActive => !IsArchived;
+
         public DateTime TransactionDate { get; set; }
 
         public string TransactionDateDisplay =>
@@ -40,5 +44,7 @@ namespace CruzNeryClinic.Models
 
         public string BalanceDisplay =>
             $"₱{RemainingBalance:N2}";
+        public string ArchiveStatusDisplay =>
+            IsArchived ? "Archived" : PaymentStatus;
     }
 }

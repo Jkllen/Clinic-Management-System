@@ -10,8 +10,10 @@ namespace CruzNeryClinic.Data
         private static readonly HashSet<string> AllowedSchemaTables = new(StringComparer.OrdinalIgnoreCase)
         {
             "Appointments",
+            "BillingTransactionItems",
             "BillingTransactions",
             "Patients",
+            "PaymentRecords",
             "TreatmentRecords",
             "Users"
         };
@@ -500,6 +502,9 @@ CREATE TABLE IF NOT EXISTS BillingTransactions (
 
     CreatedAt TEXT NOT NULL,
     UpdatedAt TEXT,
+    IsArchived INTEGER NOT NULL DEFAULT 0,
+    ArchivedAt TEXT,
+    RestoredAt TEXT,
 
     FOREIGN KEY (PatientId) REFERENCES Patients(PatientId),
     FOREIGN KEY (AppointmentId) REFERENCES Appointments(AppointmentId),
@@ -1175,6 +1180,33 @@ VALUES (
                 command.ExecuteNonQuery();
             }
 
+            if (!ColumnExists(connection, "BillingTransactions", "IsArchived"))
+            {
+                using SqliteCommand command = connection.CreateCommand();
+                command.CommandText = @"
+        ALTER TABLE BillingTransactions
+        ADD COLUMN IsArchived INTEGER NOT NULL DEFAULT 0;";
+                command.ExecuteNonQuery();
+            }
+
+            if (!ColumnExists(connection, "BillingTransactions", "ArchivedAt"))
+            {
+                using SqliteCommand command = connection.CreateCommand();
+                command.CommandText = @"
+        ALTER TABLE BillingTransactions
+        ADD COLUMN ArchivedAt TEXT;";
+                command.ExecuteNonQuery();
+            }
+
+            if (!ColumnExists(connection, "BillingTransactions", "RestoredAt"))
+            {
+                using SqliteCommand command = connection.CreateCommand();
+                command.CommandText = @"
+        ALTER TABLE BillingTransactions
+        ADD COLUMN RestoredAt TEXT;";
+                command.ExecuteNonQuery();
+            }
+
             // =====================================================
             // BillingTransactionItems table
             // This stores all itemized treatments/procedures under one invoice.
@@ -1209,6 +1241,8 @@ VALUES (
         );";
                 command.ExecuteNonQuery();
             }
+
+            EnsureBillingSensitiveDataEncrypted(connection);
 
             // TreatmentRecords billing tracking fields
             // These prevent the same completed treatment from being billed again.
@@ -1280,7 +1314,129 @@ VALUES (
             }        
 
 
-        }    
+        }
+
+        private static void EnsureBillingSensitiveDataEncrypted(SqliteConnection connection)
+        {
+            EncryptTextColumns(
+                connection,
+                "BillingTransactions",
+                "BillingId",
+                "ServiceName",
+                "Description",
+                "InvoiceTitle",
+                "Notes");
+
+            EncryptDecimalColumns(
+                connection,
+                "BillingTransactions",
+                "BillingId",
+                "TotalAmount",
+                "DiscountAmount",
+                "SubtotalAfterDiscount",
+                "AmountPaid",
+                "RemainingBalance");
+
+            EncryptTextColumns(
+                connection,
+                "PaymentRecords",
+                "PaymentRecordId",
+                "PaymentMethod",
+                "Notes");
+
+            EncryptDecimalColumns(
+                connection,
+                "PaymentRecords",
+                "PaymentRecordId",
+                "AmountPaid");
+
+            EncryptTextColumns(
+                connection,
+                "BillingTransactionItems",
+                "BillingItemId",
+                "ServiceName",
+                "ItemDescription");
+
+            EncryptDecimalColumns(
+                connection,
+                "BillingTransactionItems",
+                "BillingItemId",
+                "Amount");
+        }
+
+        private static void EncryptTextColumns(SqliteConnection connection, string tableName, string keyColumn, params string[] columnNames)
+        {
+            foreach (string columnName in columnNames)
+            {
+                if (!ColumnExists(connection, tableName, columnName))
+                    continue;
+
+                EncryptColumnValues(connection, tableName, keyColumn, columnName, value => CryptoService.EncryptString(value));
+            }
+        }
+
+        private static void EncryptDecimalColumns(SqliteConnection connection, string tableName, string keyColumn, params string[] columnNames)
+        {
+            foreach (string columnName in columnNames)
+            {
+                if (!ColumnExists(connection, tableName, columnName))
+                    continue;
+
+                EncryptColumnValues(connection, tableName, keyColumn, columnName, value =>
+                {
+                    if (!decimal.TryParse(value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal amount))
+                        amount = 0m;
+
+                    return CryptoService.EncryptDecimal(amount);
+                });
+            }
+        }
+
+        private static void EncryptColumnValues(
+            SqliteConnection connection,
+            string tableName,
+            string keyColumn,
+            string columnName,
+            Func<string, string> encrypt)
+        {
+            List<(long Id, string Value)> valuesToEncrypt = new();
+
+            using (SqliteCommand selectCommand = connection.CreateCommand())
+            {
+                selectCommand.CommandText = $@"
+        SELECT {keyColumn}, {columnName}
+        FROM {tableName}
+        WHERE {columnName} IS NOT NULL;";
+
+                using SqliteDataReader reader = selectCommand.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    string rawValue = reader[columnName]?.ToString() ?? string.Empty;
+
+                    if (string.IsNullOrWhiteSpace(rawValue) ||
+                        rawValue.StartsWith("ENC:", StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
+
+                    valuesToEncrypt.Add((Convert.ToInt64(reader[keyColumn]), rawValue));
+                }
+            }
+
+            foreach ((long id, string value) in valuesToEncrypt)
+            {
+                using SqliteCommand updateCommand = connection.CreateCommand();
+                updateCommand.CommandText = $@"
+        UPDATE {tableName}
+        SET {columnName} = @EncryptedValue
+        WHERE {keyColumn} = @Id;";
+
+                updateCommand.Parameters.AddWithValue("@EncryptedValue", encrypt(value));
+                updateCommand.Parameters.AddWithValue("@Id", id);
+                updateCommand.ExecuteNonQuery();
+            }
+        }
     
     }
 }
