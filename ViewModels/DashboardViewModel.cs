@@ -30,8 +30,10 @@ namespace CruzNeryClinic.ViewModels
         private string searchText = string.Empty;
 
         public bool CanViewAdminDashboardAnalytics => SessionService.IsAdmin;
+        public bool CanViewStaffAppointmentCalendar => !SessionService.IsAdmin;
 
         private DateTime _selectedCalendarDate = DateTime.Today;
+        private DateTime _displayedStaffCalendarMonth = new(DateTime.Today.Year, DateTime.Today.Month, 1);
         private string _selectedAppointmentHeader = DateTime.Today.ToString("dddd | MMMM d, yyyy").ToUpper();
 
         public event Action<string>? NavigationRequested;
@@ -58,6 +60,7 @@ namespace CruzNeryClinic.ViewModels
             TodayQueue = new ObservableCollection<DashboardQueueItem>();
             SelectedDateAppointments = new ObservableCollection<DashboardQueueItem>();
             WeekDays = new ObservableCollection<DashboardDayItem>();
+            StaffCalendarDays = new ObservableCollection<AppointmentCalendarDay>();
 
             RecentTransactions = new ObservableCollection<DashboardTransactionItem>();
 
@@ -82,11 +85,15 @@ namespace CruzNeryClinic.ViewModels
             SelectDayCommand = new RelayCommand<DashboardDayItem>(SelectDay);
             PreviousWeekCommand = new RelayCommand(() => SelectedCalendarDate = SelectedCalendarDate.AddDays(-7));
             NextWeekCommand = new RelayCommand(() => SelectedCalendarDate = SelectedCalendarDate.AddDays(7));
+            SelectStaffCalendarDateCommand = new RelayCommand<AppointmentCalendarDay>(SelectStaffCalendarDate);
+            PreviousStaffCalendarMonthCommand = new RelayCommand(() => DisplayedStaffCalendarMonth = DisplayedStaffCalendarMonth.AddMonths(-1));
+            NextStaffCalendarMonthCommand = new RelayCommand(() => DisplayedStaffCalendarMonth = DisplayedStaffCalendarMonth.AddMonths(1));
 
             ShowQueueTabCommand = new RelayCommand(() => IsQueueTabSelected = true);
             ShowTransactionsTabCommand = new RelayCommand(() => IsQueueTabSelected = false);
 
             BuildWeekStrip();
+            BuildStaffCalendarDays();
             LoadDashboard();
         }
 
@@ -114,6 +121,8 @@ namespace CruzNeryClinic.ViewModels
         }
 
         public string CurrentMonth => SelectedCalendarDate.ToString("MMMM").ToUpper();
+
+        public string StaffCalendarMonthTitle => DisplayedStaffCalendarMonth.ToString("MMMM yyyy");
 
         public int TotalPatients
         {
@@ -206,8 +215,24 @@ namespace CruzNeryClinic.ViewModels
                     SelectedAppointmentHeader = value.ToString("dddd | MMMM d, yyyy").ToUpper();
                     LoadAppointmentsForSelectedDate();
                     BuildWeekStrip();
+                    BuildStaffCalendarDays();
                     OnPropertyChanged(nameof(CurrentMonth));
                     OnPropertyChanged(nameof(SelectedDateText));
+                }
+            }
+        }
+
+        public DateTime DisplayedStaffCalendarMonth
+        {
+            get => _displayedStaffCalendarMonth;
+            set
+            {
+                DateTime normalizedValue = new(value.Year, value.Month, 1);
+
+                if (SetProperty(ref _displayedStaffCalendarMonth, normalizedValue))
+                {
+                    OnPropertyChanged(nameof(StaffCalendarMonthTitle));
+                    BuildStaffCalendarDays();
                 }
             }
         }
@@ -226,6 +251,8 @@ namespace CruzNeryClinic.ViewModels
 
         // The 7-day strip shown in the Appointment List header.
         public ObservableCollection<DashboardDayItem> WeekDays { get; }
+
+        public ObservableCollection<AppointmentCalendarDay> StaffCalendarDays { get; }
 
         public ObservableCollection<DashboardTransactionItem> RecentTransactions { get; }
 
@@ -300,6 +327,9 @@ namespace CruzNeryClinic.ViewModels
         public ICommand SelectDayCommand { get; }
         public ICommand PreviousWeekCommand { get; }
         public ICommand NextWeekCommand { get; }
+        public ICommand SelectStaffCalendarDateCommand { get; }
+        public ICommand PreviousStaffCalendarMonthCommand { get; }
+        public ICommand NextStaffCalendarMonthCommand { get; }
 
         public ICommand ShowQueueTabCommand { get; }
         public ICommand ShowTransactionsTabCommand { get; }
@@ -404,6 +434,20 @@ namespace CruzNeryClinic.ViewModels
                 SelectedCalendarDate = day.Date;
         }
 
+        private void SelectStaffCalendarDate(AppointmentCalendarDay? day)
+        {
+            if (day == null)
+                return;
+
+            if (day.Date.Month != DisplayedStaffCalendarMonth.Month ||
+                day.Date.Year != DisplayedStaffCalendarMonth.Year)
+            {
+                DisplayedStaffCalendarMonth = day.Date;
+            }
+
+            SelectedCalendarDate = day.Date;
+        }
+
         // Rebuilds the 7-day strip (Saturday-first) around the selected date.
         private void BuildWeekStrip()
         {
@@ -419,6 +463,45 @@ namespace CruzNeryClinic.ViewModels
                 {
                     Date = day,
                     IsSelected = day == SelectedCalendarDate.Date,
+                });
+            }
+        }
+
+        private void BuildStaffCalendarDays()
+        {
+            StaffCalendarDays.Clear();
+
+            DateTime firstDayOfMonth = new(
+                DisplayedStaffCalendarMonth.Year,
+                DisplayedStaffCalendarMonth.Month,
+                1);
+
+            int daysFromSunday = (int)firstDayOfMonth.DayOfWeek;
+            DateTime calendarStartDate = firstDayOfMonth.AddDays(-daysFromSunday);
+
+            Dictionary<DateTime, int> appointmentCounts =
+                dashboardRepository.GetAppointmentCountsByDate(
+                    DisplayedStaffCalendarMonth.Year,
+                    DisplayedStaffCalendarMonth.Month);
+
+            for (int i = 0; i < 42; i++)
+            {
+                DateTime date = calendarStartDate.AddDays(i).Date;
+                bool isCurrentMonth =
+                    date.Month == DisplayedStaffCalendarMonth.Month &&
+                    date.Year == DisplayedStaffCalendarMonth.Year;
+
+                int appointmentCount = 0;
+                if (isCurrentMonth && appointmentCounts.TryGetValue(date, out int count))
+                    appointmentCount = count;
+
+                StaffCalendarDays.Add(new AppointmentCalendarDay
+                {
+                    Date = date,
+                    AppointmentCount = appointmentCount,
+                    IsCurrentMonth = isCurrentMonth,
+                    IsToday = date == DateTime.Today,
+                    IsSelected = date == SelectedCalendarDate.Date
                 });
             }
         }

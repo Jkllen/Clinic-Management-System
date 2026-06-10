@@ -177,7 +177,7 @@ LIMIT @Limit;";
         FROM Appointments a
         INNER JOIN Patients p ON a.PatientId = p.PatientId
         WHERE a.AppointmentDate = @SelectedDate
-        AND a.Status IN ('Waiting', 'In Treatment', 'Completed')
+        AND a.Status IN ('Scheduled', 'Waiting', 'In Treatment', 'Completed')
         ORDER BY 
             CASE WHEN a.Priority = 'High' THEN 0 ELSE 1 END,
             a.QueueNumber ASC,
@@ -206,6 +206,42 @@ LIMIT @Limit;";
             }
 
             return queue;
+        }
+
+        public Dictionary<DateTime, int> GetAppointmentCountsByDate(int year, int month)
+        {
+            Dictionary<DateTime, int> counts = new();
+
+            DateTime startDate = new(year, month, 1);
+            DateTime endDate = startDate.AddMonths(1);
+
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+SELECT
+    AppointmentDate,
+    COUNT(*) AS AppointmentCount
+FROM Appointments
+WHERE AppointmentDate >= @StartDate
+AND AppointmentDate < @EndDate
+AND AppointmentDate >= date('now', 'localtime')
+AND Status = 'Scheduled'
+GROUP BY AppointmentDate;";
+
+            command.Parameters.AddWithValue("@StartDate", startDate.ToString("yyyy-MM-dd"));
+            command.Parameters.AddWithValue("@EndDate", endDate.ToString("yyyy-MM-dd"));
+
+            using SqliteDataReader reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                if (DateTime.TryParse(reader["AppointmentDate"]?.ToString(), out DateTime date))
+                    counts[date.Date] = Convert.ToInt32(reader["AppointmentCount"]);
+            }
+
+            return counts;
         }
 
         public List<DashboardTransactionItem> GetRecentPatientTransactions(int limit = 5)
