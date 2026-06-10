@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace CruzNeryClinic.ViewModels
 {
@@ -33,6 +34,13 @@ namespace CruzNeryClinic.ViewModels
         private string promptTitle = string.Empty;
         private string promptMessage = string.Empty;
         private bool isPromptVisible;
+        private string backupPasswordPromptTitle = string.Empty;
+        private string backupPasswordPromptMessage = string.Empty;
+        private string backupPasswordPromptPrimaryButtonText = "Continue";
+        private string backupPasswordPromptPassword = string.Empty;
+        private bool isBackupPasswordPromptVisible;
+        private bool backupPasswordPromptAccepted;
+        private DispatcherFrame? backupPasswordPromptFrame;
 
         #endregion
 
@@ -138,6 +146,36 @@ namespace CruzNeryClinic.ViewModels
             set => SetProperty(ref isPromptVisible, value);
         }
 
+        public string BackupPasswordPromptTitle
+        {
+            get => backupPasswordPromptTitle;
+            set => SetProperty(ref backupPasswordPromptTitle, value);
+        }
+
+        public string BackupPasswordPromptMessage
+        {
+            get => backupPasswordPromptMessage;
+            set => SetProperty(ref backupPasswordPromptMessage, value);
+        }
+
+        public string BackupPasswordPromptPrimaryButtonText
+        {
+            get => backupPasswordPromptPrimaryButtonText;
+            set => SetProperty(ref backupPasswordPromptPrimaryButtonText, value);
+        }
+
+        public string BackupPasswordPromptPassword
+        {
+            get => backupPasswordPromptPassword;
+            set => SetProperty(ref backupPasswordPromptPassword, value);
+        }
+
+        public bool IsBackupPasswordPromptVisible
+        {
+            get => isBackupPasswordPromptVisible;
+            set => SetProperty(ref isBackupPasswordPromptVisible, value);
+        }
+
         // ── Backup history pagination (BackupHistoryPageSize rows per page) ────
         private int backupPage = 1;
         public int BackupPage
@@ -180,6 +218,10 @@ namespace CruzNeryClinic.ViewModels
 
         public ICommand ClosePromptCommand { get; }
 
+        public ICommand ConfirmBackupPasswordPromptCommand { get; }
+
+        public ICommand CancelBackupPasswordPromptCommand { get; }
+
         public IRelayCommand BackupNextPageCommand { get; }
 
         public IRelayCommand BackupPrevPageCommand { get; }
@@ -217,6 +259,8 @@ namespace CruzNeryClinic.ViewModels
 
             OpenBackupLocationCommand = new RelayCommand<BackupHistoryItem>(OpenBackupLocation);
             ClosePromptCommand = new RelayCommand(ClosePrompt);
+            ConfirmBackupPasswordPromptCommand = new RelayCommand(ConfirmBackupPasswordPrompt);
+            CancelBackupPasswordPromptCommand = new RelayCommand(CancelBackupPasswordPrompt);
 
             BackupNextPageCommand = new RelayCommand(BackupNextPage, () => BackupPage < BackupTotalPages);
             BackupPrevPageCommand = new RelayCommand(BackupPrevPage, () => BackupPage > 1);
@@ -297,7 +341,11 @@ namespace CruzNeryClinic.ViewModels
 
             try
             {
-                string backupPassword = PromptForBackupPassword();
+                string backupPassword = PromptForBackupPassword(
+                    "Create Backup Password",
+                    "Create a password for this encrypted backup file. Keep this password somewhere safe because it will be required if this backup is restored later.",
+                    "Create Backup"
+                );
 
                 if (string.IsNullOrWhiteSpace(backupPassword))
                 {
@@ -369,7 +417,11 @@ namespace CruzNeryClinic.ViewModels
 
                 string backupPassword = AutoBackupService.IsAutoBackupFile(backupFilePath)
                     ? AutoBackupService.GetOrCreateAutoBackupPassword()
-                    : PromptForBackupPassword();
+                    : PromptForBackupPassword(
+                        "Enter Restore Password",
+                        "Enter the password that was created for this backup file. The system needs it to decrypt and restore the selected backup.",
+                        "Restore Backup"
+                    );
 
                 if (string.IsNullOrWhiteSpace(backupPassword))
                 {
@@ -595,69 +647,49 @@ namespace CruzNeryClinic.ViewModels
 
         #region Prompt Helpers
 
-        private string PromptForBackupPassword()
+        private string PromptForBackupPassword(string title, string message, string primaryButtonText)
         {
-            // This is temporary for backend testing.
-            // Later, we can replace this with a custom styled password overlay
-            // that matches your modern prompt design.
-            using Form form = new()
-            {
-                Width = 420,
-                Height = 190,
-                FormBorderStyle = FormBorderStyle.FixedDialog,
-                Text = "Backup Password",
-                StartPosition = FormStartPosition.CenterScreen,
-                MaximizeBox = false,
-                MinimizeBox = false
-            };
+            BackupPasswordPromptTitle = title;
+            BackupPasswordPromptMessage = message;
+            BackupPasswordPromptPrimaryButtonText = primaryButtonText;
+            BackupPasswordPromptPassword = string.Empty;
+            backupPasswordPromptAccepted = false;
 
-            Label label = new()
-            {
-                Left = 20,
-                Top = 20,
-                Width = 360,
-                Text = "Enter backup password:"
-            };
+            IsBackupPasswordPromptVisible = true;
 
-            TextBox passwordBox = new()
-            {
-                Left = 20,
-                Top = 50,
-                Width = 360,
-                PasswordChar = '●'
-            };
+            backupPasswordPromptFrame = new DispatcherFrame();
+            Dispatcher.PushFrame(backupPasswordPromptFrame);
 
-            Button okButton = new()
-            {
-                Text = "OK",
-                Left = 220,
-                Width = 75,
-                Top = 90,
-                DialogResult = DialogResult.OK
-            };
-
-            Button cancelButton = new()
-            {
-                Text = "Cancel",
-                Left = 305,
-                Width = 75,
-                Top = 90,
-                DialogResult = DialogResult.Cancel
-            };
-
-            form.Controls.Add(label);
-            form.Controls.Add(passwordBox);
-            form.Controls.Add(okButton);
-            form.Controls.Add(cancelButton);
-
-            form.AcceptButton = okButton;
-            form.CancelButton = cancelButton;
-
-            DialogResult result = form.ShowDialog();
-
-            return result == DialogResult.OK
-                ? passwordBox.Text
+            string password = backupPasswordPromptAccepted
+                ? BackupPasswordPromptPassword
                 : string.Empty;
+
+            BackupPasswordPromptPassword = string.Empty;
+
+            return password;
+        }
+
+        private void ConfirmBackupPasswordPrompt()
+        {
+            backupPasswordPromptAccepted = true;
+            CloseBackupPasswordPromptFrame();
+        }
+
+        private void CancelBackupPasswordPrompt()
+        {
+            backupPasswordPromptAccepted = false;
+            CloseBackupPasswordPromptFrame();
+        }
+
+        private void CloseBackupPasswordPromptFrame()
+        {
+            IsBackupPasswordPromptVisible = false;
+
+            if (backupPasswordPromptFrame != null)
+            {
+                backupPasswordPromptFrame.Continue = false;
+                backupPasswordPromptFrame = null;
+            }
         }
 
         private void ShowPrompt(string title, string message)

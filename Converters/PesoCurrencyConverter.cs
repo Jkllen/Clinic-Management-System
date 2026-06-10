@@ -2,6 +2,8 @@ using System;
 using System.Globalization;
 using System.Windows.Data;
 
+/// <summary>
+/// Converter that converts a numeric value to a formatted Peso currency string and vice versa.
 namespace CruzNeryClinic.Converters
 {
     public class PesoCurrencyConverter : IValueConverter

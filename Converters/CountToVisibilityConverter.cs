@@ -3,6 +3,8 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 
+/// <summary>
+/// Converter that converts a count of items to a Visibility value.
 namespace CruzNeryClinic.Converters
 {
     public class CountToVisibilityConverter : IValueConverter
