@@ -62,6 +62,22 @@ namespace CruzNeryClinic.Repositories
             return $"INV-{nextId:D3}";
         }
 
+        public bool ItemNameExists(string itemName, int excludeItemId = 0)
+        {
+            using SqliteConnection connection = DatabaseService.GetConnection();
+            connection.Open();
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"
+                SELECT COUNT(1) FROM InventoryItems
+                WHERE ItemName = @ItemName COLLATE NOCASE
+                  AND ItemId <> @ExcludeItemId;";
+
+            command.Parameters.AddWithValue("@ItemName", itemName);
+            command.Parameters.AddWithValue("@ExcludeItemId", excludeItemId);
+            return Convert.ToInt32(command.ExecuteScalar()) > 0;
+        }
+
         public void AddItem(string itemName, int quantity, double unitPrice, int minimumThreshold, string stockStatus, string note, string timestamp)
         {
             using SqliteConnection connection = DatabaseService.GetConnection();

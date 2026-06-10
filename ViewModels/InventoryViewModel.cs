@@ -702,6 +702,15 @@ namespace CruzNeryClinic.ViewModels
                 HasItemOverlayError = true;
                 return;
             }
+            if (_repository.ItemNameExists(EditItemName.Trim(), EditIsAddMode ? 0 : _editingItemId))
+            {
+                MessageBox.Show(
+                    $"An item named '{EditItemName.Trim()}' already exists. Please use a different name.",
+                    "Duplicate Item Name",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return;
+            }
 
             HasItemOverlayError = false;
 
@@ -739,6 +748,11 @@ namespace CruzNeryClinic.ViewModels
                     _repository.UpdateItem(_editingItemId, EditItemName.Trim(), stock, Convert.ToDouble(price), threshold, stockStatus, EditNotes.Trim(), timeStampStr);
                     LoadInventoryFromDatabase();
                     IsItemOverlayOpen = false;
+                    MessageBox.Show(
+                        "Item updated successfully.",
+                        "Changes Saved",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
                 }
                 catch (Exception ex)
                 {
