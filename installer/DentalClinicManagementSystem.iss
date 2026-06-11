@@ -1,5 +1,5 @@
 #define MyAppName "Cruz-Nery Dental Clinic Management System"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.2.0"
 #define MyAppPublisher "Cruz-Nery Dental Clinic"
 #define MyAppExeName "Dental Clinic Management System.exe"
 
