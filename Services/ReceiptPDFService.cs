@@ -23,7 +23,8 @@ namespace CruzNeryClinic.Services
             QuestPDF.Settings.License = LicenseType.Community;
 
             string receiptsFolder = Path.Combine(
-                AppDomain.CurrentDomain.BaseDirectory,
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "CruzNeryClinic",
                 "Receipts"
             );
 

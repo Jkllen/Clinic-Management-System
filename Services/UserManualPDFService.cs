@@ -24,7 +24,8 @@ namespace CruzNeryClinic.Services
             QuestPDF.Settings.License = LicenseType.Community;
 
             string manualsFolder = Path.Combine(
-                AppDomain.CurrentDomain.BaseDirectory,
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "CruzNeryClinic",
                 "Manuals"
             );
 

@@ -1,196 +1,207 @@
+# Cruz-Nery Dental Clinic Management System
 
-```
-CruzNeryClinic
-├─ App.xaml
-├─ App.xaml.cs
-├─ AssemblyInfo.cs
-├─ Assets
-│  ├─ Fonts
-│  │  └─ OpenSans
-│  │     ├─ OpenSans-Bold.ttf
-│  │     ├─ OpenSans-Italic.ttf
-│  │     ├─ OpenSans-Light.ttf
-│  │     ├─ OpenSans-Medium.ttf
-│  │     ├─ OpenSans-MediumItalic.ttf
-│  │     ├─ OpenSans-Regular.ttf
-│  │     ├─ OpenSans-SemiBold.ttf
-│  │     └─ OpenSans-SemiBoldItalic.ttf
-│  └─ Images
-│     ├─ logo.png
-│     └─ pin.png
-├─ BigPicture
-├─ Converters
-│  ├─ CountToVisibilityConverter.cs
-│  └─ PesoCurrencyConverter.cs
-├─ CruzNeryClinic.csproj
-├─ CruzNeryClinic.csproj.lscache
-├─ CruzNeryClinic.sln
-├─ Data
-│  ├─ DatabaseInitializer.cs
-│  └─ DatabaseService.cs
-├─ MainWindow.xaml
-├─ MainWindow.xaml.cs
-├─ Models
-│  ├─ ActivityLog.cs
-│  ├─ Appointment.cs
-│  ├─ AppointmentCalendarDay.cs
-│  ├─ AppointmentDentistOption.cs
-│  ├─ AppointmentListItem.cs
-│  ├─ AppointmentPatientMedicalAlert.cs
-│  ├─ AppointmentPatientSearchItem.cs
-│  ├─ AppointmentPaymentItem.cs
-│  ├─ AppointmentServiceOption.cs
-│  ├─ BalancePaymentItem.cs
-│  ├─ BillingPatientLookupItem.cs
-│  ├─ BillingReceiptDetails.cs
-│  ├─ BillingRecordListItem.cs
-│  ├─ BillingTransaction.cs
-│  ├─ Dashboard
-│  │  ├─ DashboardActivityItem.cs
-│  │  ├─ DashboardLowStockItem.cs
-│  │  ├─ DashboardQueueItem.cs
-│  │  ├─ DashboardSummary.cs
-│  │  └─ DashboardTransactionItems.cs
-│  ├─ FAQItem.cs
-│  ├─ HelpManualTopic.cs
-│  ├─ Inventory
-│  │  └─ InventoryItem.cs
-│  ├─ Maintenance
-│  │  ├─ BackupHistoryItem.cs
-│  │  └─ BackupMetadata.cs
-│  ├─ Patient.cs
-│  ├─ PatientListItem.cs
-│  ├─ PaymentRecord.cs
-│  ├─ ReportsModels.cs
-│  ├─ SecurityQuestion.cs
-│  ├─ ServiceItem.cs
-│  ├─ TreatmentRecord.cs
-│  ├─ TreatmentRecordListItem.cs
-│  ├─ User.cs
-│  └─ UserManagement
-│     └─ UserListItem.cs
-├─ README.md
-├─ Repositories
-│  ├─ AppointmentRepository.cs
-│  ├─ BillingRepository.cs
-│  ├─ DashboardRepository.cs
-│  ├─ InventoryRepository.cs
-│  ├─ PatientRepository.cs
-│  ├─ ReportsRepository.cs
-│  └─ UserRepository.cs
-├─ Required_package.txt
-├─ Requirements_Traceability_Matrix.md
-├─ runClean.bat
-├─ Services
-│  ├─ ActivityLogService.cs
-│  ├─ BackupPackageService.cs
-│  ├─ CryptoService.cs
-│  ├─ PasswordService.cs
-│  ├─ ReceiptPDFService.cs
-│  └─ SessionService.cs
-├─ ViewModels
-│  ├─ AppointmentManagementViewModel.cs
-│  ├─ BaseViewModel.cs
-│  ├─ BillingViewModel.cs
-│  ├─ CreateNewPasswordViewModel.cs
-│  ├─ DashboardViewModel.cs
-│  ├─ ForgotPasswordViewModel.cs
-│  ├─ HelpViewModel.cs
-│  ├─ InventoryViewModel.cs
-│  ├─ LoginViewModel.cs
-│  ├─ MainShellViewModel.cs
-│  ├─ MaintenanceViewModel.cs
-│  ├─ PatientManagementViewModel.cs
-│  ├─ ReportsViewModel.cs
-│  ├─ SecurityQuestionsViewModel.cs
-│  ├─ Shared
-│  │  └─ SidebarViewModel.cs
-│  ├─ SplashViewModel.cs
-│  └─ UserManagementViewModel.cs
-└─ Views
-   ├─ AppointmentManagement
-   │  ├─ AddScheduledAppointmentOverlayView.xaml
-   │  ├─ AddScheduledAppointmentOverlayView.xaml.cs
-   │  ├─ AddWalkInAppointmentOverlayView.xaml
-   │  ├─ AddWalkInAppointmentOverlayView.xaml.cs
-   │  └─ AppointmentManagementStyles.xaml
-   ├─ AppointmentManagementView.xaml
-   ├─ AppointmentManagementView.xaml.cs
-   ├─ Billing
-   │  ├─ BalancePaymentView.xaml
-   │  ├─ BalancePaymentView.xaml.cs
-   │  ├─ BillingManagementStyles.xaml
-   │  ├─ ManualTransactionView.xaml
-   │  └─ ManualTransactionView.xaml.cs
-   ├─ BillingView.xaml
-   ├─ BillingView.xaml.cs
-   ├─ CreateNewPasswordView.xaml
-   ├─ CreateNewPasswordView.xaml.cs
-   ├─ DashboardView.xaml
-   ├─ DashboardView.xaml.cs
-   ├─ ForgotPasswordView.xaml
-   ├─ ForgotPasswordView.xaml.cs
-   ├─ HelpView.xaml
-   ├─ HelpView.xaml.cs
-   ├─ InventoryView.xaml
-   ├─ InventoryView.xaml.cs
-   ├─ LoginView.xaml
-   ├─ LoginView.xaml.cs
-   ├─ MainShellView.xaml
-   ├─ MainShellView.xaml.cs
-   ├─ MaintenanceView.xaml
-   ├─ MaintenanceView.xaml.cs
-   ├─ PatientManagement
-   │  ├─ AddPatientOverlayView.xaml
-   │  ├─ AddPatientOverlayView.xaml.cs
-   │  ├─ PatientManagementStyles.xaml
-   │  ├─ UpdatePatientOverlayView.xaml
-   │  └─ UpdatePatientOverlayView.xaml.cs
-   ├─ PatientManagement.xaml
-   ├─ PatientManagement.xaml.cs
-   ├─ ReportsView.xaml
-   ├─ ReportsView.xaml.cs
-   ├─ SecurityQuestionsView.xaml
-   ├─ SecurityQuestionsView.xaml.cs
-   ├─ Shared
-   │  ├─ SidebarView.xaml
-   │  └─ SidebarView.xaml.cs
-   ├─ splash.xaml.cs
-   ├─ SplashView.xaml
-   ├─ UserManagement
-   │  ├─ AddUserOverlayView.xaml
-   │  ├─ AddUserOverlayView.xaml.cs
-   │  ├─ UpdateUserOverlayView.xaml
-   │  ├─ UpdateUserOverlayView.xaml.cs
-   │  └─ UserManagementStyles.xaml
-   ├─ UserManagementView.xaml
-   └─ UserManagementView.xaml.cs
+## Publishing and Installer Guide
 
+This guide explains how to publish the WPF application and package it into a Windows installer using Inno Setup.
+
+## Requirements
+
+Install the following before publishing:
+
+- .NET SDK that supports `net10.0-windows`
+- Inno Setup
+- WebView2 Runtime on the target computer if it is not already installed
+
+Official Inno Setup download:
+
+```text
+https://jrsoftware.org/isdl.php
 ```
 
----
+Optional install through winget:
 
-## Summary of Changes (June 2, 2026)
+```powershell
+winget install --id JRSoftware.InnoSetup -e -s winget -i
+```
 
-### Billing
-- Senior Citizen / PWD discount changed from **20% to 15%** (applies to invoice payments and manual transactions).
+## Project Output Name and Icon
 
-### Dashboard
-- Made the **search bar functional** — typing a patient or user name/ID shows live suggestions; selecting one navigates to Patient Management or Manage Users with the record pre-searched.
-- Added a **Month / Year selector** beside the search bar that re-scopes the Patient Visits Trend, Revenue Trend, and Recent Activity Log.
-- The **New Patients** card now follows the selected period (relabels to "This Month" / "This Year").
+The executable name and icon are configured in `CruzNeryClinic.csproj`.
 
-### Appointments
-- Add Walk-in and Add Schedule now support **multiple services/treatments** in one appointment.
-- Added **teeth image upload** (multiple photos) when creating an appointment and from the **View** (Appointment Details) screen, with view/remove support.
-- Restyled the **calendar** day cells (selected, today, and hover states) and fixed clipped day numbers.
-- Fixed the treatment dropdown that displayed the class name instead of the treatment name.
+```xml
+<AssemblyName>Dental Clinic Management System</AssemblyName>
+<ApplicationIcon>Assets\Icons\clinic.ico</ApplicationIcon>
+```
 
-### Inventory
-- Added **text labels** to the table action buttons (View / Edit / Archive), matching the Manage Users style.
+This produces:
 
-### Maintenance
-- Fixed the **Backup History table** layout (enabled scrolling, rebalanced columns, and stopped the action buttons from being clipped).
+```text
+Dental Clinic Management System.exe
+```
 
-### General UI
-- Fixed the **Add Schedule** button being cut off the right side of the Appointment toolbar.
+Do not manually rename only the `.exe` after publishing. Publish again after changing the project file so the `.exe`, `.dll`, `.deps.json`, and `.runtimeconfig.json` stay consistent.
+
+## Publish the Application
+
+From the project root, run:
+
+```powershell
+dotnet publish CruzNeryClinic.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=false -o publish\win-x64
+```
+
+The published application will be placed here:
+
+```text
+publish\win-x64
+```
+
+Because the executable name contains spaces, run it in PowerShell with the call operator:
+
+```powershell
+& ".\publish\win-x64\Dental Clinic Management System.exe"
+```
+
+Before building the installer, test the published app directly:
+
+```text
+Login
+Dashboard loads
+Patient records load
+Appointments work
+Billing and receipt preview work
+Reports open
+Backup and restore work
+```
+
+## Writable App Data
+
+After installation, the app runs from `Program Files`, which is not writable for normal users. Runtime-generated files must be stored in app data folders.
+
+The system currently stores generated output such as receipts and manuals under:
+
+```text
+%LOCALAPPDATA%\CruzNeryClinic\Receipts
+%LOCALAPPDATA%\CruzNeryClinic\Manuals
+%LOCALAPPDATA%\CruzNeryClinic\Backups
+```
+
+Do not configure generated receipts, manuals, database files, keys, or backups to write directly inside the installed app folder.
+
+## Inno Setup Script
+
+The installer script is located at:
+
+```text
+installer\DentalClinicManagementSystem.iss
+```
+
+Current important values:
+
+```ini
+#define MyAppName "Cruz-Nery Dental Clinic Management System"
+#define MyAppVersion "1.0.0"
+#define MyAppPublisher "Cruz-Nery Dental Clinic"
+#define MyAppExeName "Dental Clinic Management System.exe"
+```
+
+The installer packages everything from:
+
+```ini
+Source: "..\publish\win-x64\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+```
+
+This is correct. Include the entire published folder, not only the `.exe`.
+
+The installer icon is configured with:
+
+```ini
+SetupIconFile=..\Assets\Icons\clinic.ico
+UninstallDisplayIcon={app}\{#MyAppExeName}
+```
+
+The output installer file name is:
+
+```ini
+OutputBaseFilename=CruzNeryDentalClinic-Setup-1.0.0
+```
+
+The compiled installer will be created under:
+
+```text
+installer\Output
+```
+
+## Compile the Installer
+
+Open Inno Setup Compiler.
+
+Open this file:
+
+```text
+installer\DentalClinicManagementSystem.iss
+```
+
+Compile using:
+
+```text
+Build > Compile
+```
+
+or press:
+
+```text
+Ctrl + F9
+```
+
+Expected output:
+
+```text
+installer\Output\CruzNeryDentalClinic-Setup-1.0.0.exe
+```
+
+## Test the Installer
+
+After compiling, test the installer on the development computer or a clean test machine.
+
+Check the following:
+
+```text
+Installer opens with the clinic icon
+Application installs successfully
+Start Menu shortcut launches the app
+Desktop shortcut launches the app if selected
+Login works
+Receipt preview works
+Manual/FAQ print preview works
+Backup and restore work
+Uninstall entry appears in Windows settings
+```
+
+If an installed build fails with an access denied error under `C:\Program Files`, that feature is probably still writing to the install folder instead of `%LOCALAPPDATA%`.
+
+## Releasing an Update
+
+For each new version:
+
+Update the version in the Inno Setup script:
+
+```ini
+#define MyAppVersion "1.0.1"
+OutputBaseFilename=CruzNeryDentalClinic-Setup-1.0.1
+```
+
+Publish again:
+
+```powershell
+dotnet publish CruzNeryClinic.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=false -o publish\win-x64
+```
+
+Compile the Inno Setup script again.
+
+Keep the same `AppId` so Windows treats the installer as an update to the same application.
+
+## Notes
+
+The temporary `*_wpftmp.csproj` file generated during WPF builds is normal. It is created by the WPF build process and should not be edited or included manually.
+
+The `bin`, `obj`, `publish`, and `installer\Output` folders should not be committed unless a release artifact is intentionally being archived.
